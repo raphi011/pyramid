@@ -1,3 +1,19 @@
+
+## Features
+
+* Challenge Suggestions
+* Challenging
+* Statistics
+* WhatsApp integration (DM if someone was challenged, as well as message to group) via Twilio?
+* Pyramid View
+* Admin (block player, invite player, ...)
+* Social logins for users (facebook, google, ...)
+* Mobile First
+* Save Vacation
+* Withdraw challenge
+
+## Nextjs related
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
