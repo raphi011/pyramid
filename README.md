@@ -7,10 +7,37 @@
 * WhatsApp integration (DM if someone was challenged, as well as message to group) via Twilio?
 * Pyramid View
 * Admin (block player, invite player, ...)
-* Social logins for users (facebook, google, ...)
 * Mobile First
 * Save Vacation
+* Indicators if someone has moved up/down/stayed the same in position since the last results
 * Withdraw challenge
+
+
+## Event Types
+
+* Challenge
+* Result
+* Withdrawal
+* New Player
+* End of Season
+* Beginning of Season
+
+## Fordern kann man, wenn ...
+
+* links in der selben reihe
+* rechts in der darueber
+* man nicht gefordert ist/hat
+* der andere nicht gefordert ist/hat
+* beide nicht verhindert sind (urlaub)
+* die saison noch aktiv ist
+
+## Later
+
+* Social logins for users (facebook, google, ...)
+
+## UI
+
+* https://tailwindui.com/
 
 ## Nextjs related
 
