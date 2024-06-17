@@ -1,3 +1,5 @@
+import { doSomething } from "./actions";
+
 const standings = [
   { id: 1, name: "Christoph Traxler", won: 4, lost: 0 },
   { id: 2, name: "Gerhard Brueckl", won: 4, lost: 0 },
@@ -84,7 +86,7 @@ function standingsToPyramid(input) {
 
   if (lastRowWidth != rows.length) {
     for (let i = 0; i < rows.length - lastRowWidth; i++) {
-      rows[rows.length - 1].push({ name: "-" });
+      rows[rows.length - 1].push({});
     }
   }
 
@@ -118,25 +120,49 @@ function playerClassName(standings, currentPlayerId, playerId) {
   return "rounded m-1 w-36 truncate text-center p-1 border border-black";
 }
 
+function renderPlayer(standings, currentPlayerId, player, index) {
+  if (!player.id) {
+    return (
+      <div
+        key={index}
+        className="rounded m-1 w-36 truncate text-center p-1 border border-black"
+      >
+        -
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={`/player/${player.id}`}
+      key={index}
+      className={playerClassName(standings, currentPlayerId, player.id)}
+    >
+      {player.name} ({player.won}:{player.lost})
+    </a>
+  );
+}
+
 export default async function Home() {
   const pyramid = standingsToPyramid(standings);
 
-  const currentPlayerId = 11;
+  const currentPlayerId = 5;
 
   return (
     <main className="flex min-h-screen flex-col">
       <div className="overflow-x-auto py-4 w-full text-xs grid items-center justify-items-center">
         {pyramid.map((row, i) => (
           <div key={i} className="flex items-center justify-center content-around">
-            {row.map((p, i) => (
-              <div key={i} className={playerClassName(standings, currentPlayerId, p.id)}>
-                {p.name} ({p.won}:{p.lost})
-              </div>
-            ))}
+            {row.map((p, i) => renderPlayer(standings, currentPlayerId, p, i))}
           </div>
         ))}
       </div>
       <div>{events.map((row, i) => renderEvent(row, i))}</div>
+      <div>
+        <form action={doSomething}>
+          <button type="submit">Do something!</button>
+        </form>
+      </div>
     </main>
   );
 }
