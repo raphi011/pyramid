@@ -122,7 +122,7 @@ export default async function Home() {
       </div>
 
       <div className="border-b border-gray-200 pb-5">
-        <h3 className="text-base font-semibold leading-6 text-gray-900">Events</h3>
+        <h3 className="text-base font-semibold leading-6 text-gray-900">Neuigkeiten</h3>
       </div>
       <div>{events.map((row, i) => renderEvent(row, i))}</div>
       {/* <div>
