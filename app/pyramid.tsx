@@ -14,7 +14,7 @@ export default function Pyramid({ standings, currentPlayerId }) {
       <div className="overflow-x-auto mx-1 gap-2 items-center justify-items-center p-4 text-xs grid">
         {pyramid.map((row, i) => (
           <div key={i} className="flex gap-2">
-            {row.map((p, i) => renderPlayer(standings, currentPlayerId, p, i))}
+            {row.map((p, i) => renderPlayer(selected.ranks, currentPlayerId, p, i))}
           </div>
         ))}
       </div>
