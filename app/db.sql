@@ -35,9 +35,10 @@ CREATE TABLE matches (
     player1_id INT NOT NULL,
     player2_id INT NOT NULL,
     winner_id INT,
-    player1score INT ARRAY,
-    player2score INT ARRAY,
-    when TIMESTAMP,
+    player1_score INT ARRAY,
+    player2_score INT ARRAY,
+    game_at TIMESTAMP,
+    challenged_at TIMESTAMP,
     status VARCHAR(32),
 
     CONSTRAINT fk_player1 FOREIGN KEY(player1_id) REFERENCES player(id),

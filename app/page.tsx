@@ -1,17 +1,72 @@
 import { doSomething } from "./actions";
+import Pyramid from "./pyramid";
 
 const standings = [
-  { id: 1, name: "Christoph Traxler", won: 4, lost: 0 },
-  { id: 2, name: "Gerhard Brueckl", won: 4, lost: 0 },
-  { id: 3, name: "Martin Neid", won: 4, lost: 0 },
-  { id: 4, name: "Raphael Gruber", won: 4, lost: 0 },
-  { id: 5, name: "Martin Unger", won: 4, lost: 0 },
-  { id: 6, name: "Stefan Schreier", won: 4, lost: 0 },
-  { id: 7, name: "Martin Pisecky", won: 4, lost: 0 },
-  { id: 8, name: "Georg Maier", won: 4, lost: 0 },
-  { id: 9, name: "Gernot", won: 4, lost: 0 },
-  { id: 10, name: "Roman Vicena", won: 4, lost: 0 },
-  { id: 11, name: "Wolfgang Ager", won: 4, lost: 0 },
+  {
+    id: 1,
+    date: "2024-06-17T08:20:28.438Z",
+    ranks: [
+      { id: 1, name: "Preston Hilton", won: 4, lost: 0 },
+      { id: 2, name: "Peregrine Jewell", won: 4, lost: 0 },
+      { id: 3, name: "Waldo Symons", won: 4, lost: 0 },
+      { id: 4, name: "Seymour Nicholson", won: 4, lost: 0 },
+      { id: 5, name: "Sheard Tyler", won: 4, lost: 0 },
+      { id: 6, name: "Thomas Post", won: 4, lost: 0 },
+      { id: 7, name: "Landen Dean", won: 4, lost: 0 },
+      { id: 8, name: "Koda Abbott", won: 4, lost: 0 },
+      { id: 9, name: "Quentin Berry", won: 4, lost: 0 },
+      { id: 10, name: "Anson Dickinson", won: 4, lost: 0 },
+      { id: 11, name: "Oscar Kelsey", won: 4, lost: 0 },
+    ],
+  },
+  {
+    id: 2,
+    date: "2024-06-13T08:20:28.438Z",
+    ranks: [
+      { id: 2, name: "Peregrine Jewell", won: 4, lost: 0 },
+      { id: 1, name: "Preston Hilton", won: 4, lost: 0 },
+      { id: 3, name: "Waldo Symons", won: 4, lost: 0 },
+      { id: 4, name: "Seymour Nicholson", won: 4, lost: 0 },
+      { id: 5, name: "Sheard Tyler", won: 4, lost: 0 },
+      { id: 6, name: "Thomas Post", won: 4, lost: 0 },
+      { id: 7, name: "Landen Dean", won: 4, lost: 0 },
+      { id: 8, name: "Koda Abbott", won: 4, lost: 0 },
+      { id: 9, name: "Quentin Berry", won: 4, lost: 0 },
+      { id: 10, name: "Anson Dickinson", won: 4, lost: 0 },
+      { id: 11, name: "Oscar Kelsey", won: 4, lost: 0 },
+    ],
+  },
+];
+
+const matches = [
+  {
+    player1: {
+      id: 5,
+      name: "Sheard Tyler",
+    },
+    player2: {
+      id: 6,
+      name: "Thomas Post",
+    },
+    status: "challenged",
+    challengedAt: "2024-06-17T08:20:28.438Z",
+  },
+  {
+    player1: {
+      id: 5,
+      name: "Sheard Tyler",
+    },
+    player2: {
+      id: 6,
+      name: "Thomas Post",
+    },
+    winner_id: 5,
+    status: "done",
+    challengedAt: "2024-06-13T08:20:28.438Z",
+    gameAt: "2024-06-15T08:20:28.438Z",
+    player1Score: [6, 3, 6],
+    player2Score: [4, 6, 1],
+  },
 ];
 
 const events = [
@@ -34,65 +89,6 @@ const events = [
   },
 ];
 
-const matches = [
-  {
-    player1Id: 4,
-    player2Id: 3,
-    status: "challenged",
-  },
-];
-
-function canChallenge(standings, challengerId, challengeeId) {
-  const challengerRank = rank(standings, challengerId);
-
-  if (challengerRank == 3 && [1, 2].includes(challengeeId)) {
-    return true;
-  }
-
-  const maxRank =
-    challengerRank + 1 - Math.floor((1 + Math.sqrt(8 * challengerRank - 7)) / 2);
-
-  const challengeeRank = rank(standings, challengeeId);
-
-  return challengeeRank >= maxRank && challengeeRank < challengerRank;
-}
-
-function rank(standings, playerId) {
-  for (let i = 0; i < standings.length; i++) {
-    if (standings[i].id == playerId) {
-      return i + 1;
-    }
-  }
-
-  return -1;
-}
-
-function standingsToPyramid(input) {
-  if (input.length == 0) {
-    return [];
-  }
-
-  const rows = [];
-  let currentIndex = 0;
-
-  for (let i = 1; currentIndex < input.length; i++) {
-    let row = input.slice(currentIndex, Math.min(currentIndex + i, input.length));
-    rows.push(row);
-
-    currentIndex += i;
-  }
-
-  const lastRowWidth = rows[rows.length - 1].length;
-
-  if (lastRowWidth != rows.length) {
-    for (let i = 0; i < rows.length - lastRowWidth; i++) {
-      rows[rows.length - 1].push({});
-    }
-  }
-
-  return rows;
-}
-
 function renderEvent(event, index) {
   if (event.type == "result") {
     return (
@@ -110,59 +106,30 @@ function renderEvent(event, index) {
   }
 }
 
-function playerClassName(standings, currentPlayerId, playerId) {
-  if (playerId == currentPlayerId) {
-    return "bg-cyan-400 rounded m-1 w-36 truncate text-center p-1 border border-black";
-  } else if (canChallenge(standings, currentPlayerId, playerId)) {
-    return "bg-emerald-400 rounded m-1 w-36 truncate text-center p-1 border border-black";
-  }
-
-  return "rounded m-1 w-36 truncate text-center p-1 border border-black";
-}
-
-function renderPlayer(standings, currentPlayerId, player, index) {
-  if (!player.id) {
-    return (
-      <div
-        key={index}
-        className="rounded m-1 w-36 truncate text-center p-1 border border-black"
-      >
-        -
-      </div>
-    );
-  }
-
-  return (
-    <a
-      href={`/player/${player.id}`}
-      key={index}
-      className={playerClassName(standings, currentPlayerId, player.id)}
-    >
-      {player.name} ({player.won}:{player.lost})
-    </a>
-  );
-}
-
 export default async function Home() {
-  const pyramid = standingsToPyramid(standings);
-
   const currentPlayerId = 5;
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <div className="overflow-x-auto py-4 w-full text-xs grid items-center justify-items-center">
-        {pyramid.map((row, i) => (
-          <div key={i} className="flex items-center justify-center content-around">
-            {row.map((p, i) => renderPlayer(standings, currentPlayerId, p, i))}
-          </div>
-        ))}
+    <main className="p-4">
+      <div className="border-b border-gray-200 pb-5">
+        <h3 className="text-base font-semibold leading-6 text-gray-900">Rangliste</h3>
+      </div>
+      <div>
+        <Pyramid standings={standings} currentPlayerId={currentPlayerId} />
+      </div>
+      <div className="border-b border-gray-200 pb-5">
+        <h3 className="text-base font-semibold leading-6 text-gray-900">Meine Spiele</h3>
+      </div>
+
+      <div className="border-b border-gray-200 pb-5">
+        <h3 className="text-base font-semibold leading-6 text-gray-900">Events</h3>
       </div>
       <div>{events.map((row, i) => renderEvent(row, i))}</div>
-      <div>
+      {/* <div>
         <form action={doSomething}>
           <button type="submit">Do something!</button>
         </form>
-      </div>
+      </div> */}
     </main>
   );
 }
