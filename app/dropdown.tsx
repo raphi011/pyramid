@@ -15,7 +15,7 @@ export default function Dropdown({ standings, selected, onChange }) {
       >
         {standings.map((s, i) => (
           <option value={i} key={s.date}>
-            {formatDate(new Date(s.date))} {i == 0 ? "(Aktuell)" : ""}
+            {s.latest ? "Aktuell" : formatDate(new Date(s.date))}
           </option>
         ))}
       </select>

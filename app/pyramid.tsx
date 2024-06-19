@@ -1,20 +1,31 @@
 "use client";
 
+import ChallengeDialog from "./challenge-dialog";
 import Dropdown from "./dropdown";
 import { useState } from "react";
 
-export default function Pyramid({ standings, currentPlayerId }) {
-  const [selected, setSelected] = useState(standings[0]);
+export default function Pyramid({ standings, currentPlayer }) {
+  const [selectedStanding, setSelectedStanding] = useState(standings[0]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const pyramid = standingsToPyramid(selected.ranks);
+  const pyramid = standingsToPyramid(selectedStanding.ranks);
+
+  const onCloseDialog = () => setSelectedPlayer(null);
 
   return (
     <div>
-      <Dropdown standings={standings} selected={selected} onChange={setSelected} />
+      <Dropdown
+        standings={standings}
+        selected={selectedStanding}
+        onChange={setSelectedStanding}
+      />
+      <ChallengeDialog player={selectedPlayer} onClose={onCloseDialog} />
       <div className="overflow-x-auto mx-1 gap-2 items-center justify-items-center p-4 text-xs grid">
         {pyramid.map((row, i) => (
           <div key={i} className="flex gap-2">
-            {row.map((p, i) => renderPlayer(selected.ranks, currentPlayerId, p, i))}
+            {row.map((p, i) =>
+              renderPlayer(selectedStanding, setSelectedPlayer, currentPlayer, p, i),
+            )}
           </div>
         ))}
       </div>
@@ -22,7 +33,7 @@ export default function Pyramid({ standings, currentPlayerId }) {
   );
 }
 
-function renderPlayer(standings, currentPlayerId, player, index) {
+function renderPlayer(standings, onClick, currentPlayer, player, index) {
   if (!player.id) {
     return (
       <div
@@ -34,10 +45,23 @@ function renderPlayer(standings, currentPlayerId, player, index) {
     );
   }
 
+  const challangeable =
+    standings.latest && canChallenge(standings.ranks, currentPlayer.id, player.id);
+
   return (
-    <p key={index} className={playerClassName(standings, currentPlayerId, player.id)}>
+    <a
+      href={`/player/${player.id}`}
+      onClick={(e) => {
+        if (challangeable) {
+          e.preventDefault();
+          onClick(player);
+        }
+      }}
+      key={index}
+      className={playerClassName(challangeable, currentPlayer, player)}
+    >
       {player.name} ({player.won}:{player.lost})
-    </p>
+    </a>
   );
 }
 
@@ -92,10 +116,10 @@ function canChallenge(standings, challengerId, challengeeId) {
   return challengeeRank >= maxRank && challengeeRank < challengerRank;
 }
 
-function playerClassName(standings, currentPlayerId, playerId) {
-  if (playerId == currentPlayerId) {
+function playerClassName(challangeable, currentPlayer, player) {
+  if (player.id == currentPlayer.id) {
     return "bg-cyan-400 rounded w-36 truncate text-center p-1 border border-black";
-  } else if (canChallenge(standings, currentPlayerId, playerId)) {
+  } else if (challangeable) {
     return "bg-emerald-400 rounded w-36 truncate text-center p-1 border border-black";
   }
 
