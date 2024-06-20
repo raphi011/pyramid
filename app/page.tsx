@@ -1,7 +1,10 @@
-import { doSomething } from "./actions";
 import Events from "./events";
 import Games from "./games";
-import Pyramid from "./pyramid";
+import Navigation from "./navigation";
+import Footer from "./components/footer";
+import PageHeader from "./components/page-header";
+import Dropdown from "./components/dropdown";
+import PyramidSection from "./pyramid-section";
 
 const standings = [
   {
@@ -178,25 +181,21 @@ const events = [
 export default async function Home() {
   return (
     <main className="p-4">
-      <div className="border-b border-gray-200 pb-5">
-        <h3 className="text-base font-semibold leading-6 text-gray-900">Rangliste</h3>
-      </div>
-      <div>
-        <Pyramid standings={standings} currentPlayer={currentPlayer} />
-      </div>
-      <div className="border-b border-gray-200 pb-5">
-        <h3 className="text-base font-semibold leading-6 text-gray-900">Meine Spiele</h3>
-      </div>
-      <Games games={matches} />
-      <div className="border-b border-gray-200 pb-5">
-        <h3 className="text-base font-semibold leading-6 text-gray-900">Neuigkeiten</h3>
-      </div>
-      <Events events={events} />
-      {/* <div>
-        <form action={doSomething}>
-          <button type="submit">Do something!</button>
-        </form>
-      </div> */}
+      <Navigation>
+        <PageHeader />
+        <PyramidSection standings={standings} currentPlayer={currentPlayer} />
+        <div className="border-b border-gray-200 pb-5">
+          <h3 className="text-base font-semibold leading-6 text-gray-900">
+            Meine Spiele
+          </h3>
+        </div>
+        <Games games={matches} />
+        <div className="border-b border-gray-200 pb-5">
+          <h3 className="text-base font-semibold leading-6 text-gray-900">Neuigkeiten</h3>
+        </div>
+        <Events events={events} />
+        <Footer />
+      </Navigation>
     </main>
   );
 }

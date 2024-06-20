@@ -1,30 +1,23 @@
 "use client";
 
 import ChallengeDialog from "./challenge-dialog";
-import Dropdown from "./dropdown";
 import { useState } from "react";
 
 export default function Pyramid({ standings, currentPlayer }) {
-  const [selectedStanding, setSelectedStanding] = useState(standings[0]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const pyramid = standingsToPyramid(selectedStanding.ranks);
+  const pyramid = standingsToPyramid(standings.ranks);
 
   const onCloseDialog = () => setSelectedPlayer(null);
 
   return (
     <div>
-      <Dropdown
-        standings={standings}
-        selected={selectedStanding}
-        onChange={setSelectedStanding}
-      />
       <ChallengeDialog player={selectedPlayer} onClose={onCloseDialog} />
       <div className="overflow-x-auto mx-1 gap-2 items-center justify-items-center p-4 text-xs grid">
         {pyramid.map((row, i) => (
           <div key={i} className="flex gap-2">
             {row.map((p, i) =>
-              renderPlayer(selectedStanding, setSelectedPlayer, currentPlayer, p, i),
+              renderPlayer(standings, setSelectedPlayer, currentPlayer, p, i),
             )}
           </div>
         ))}
