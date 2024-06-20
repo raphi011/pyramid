@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon, CalendarIcon } from "@heroicons/react/20/solid";
+import { UserIcon, ArrowTrendingUpIcon, CalendarIcon } from "@heroicons/react/20/solid";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -8,7 +8,7 @@ function classNames(...classes) {
 
 export default function PageHeader() {
   return (
-    <div className="md:flex pb-6 md:items-center md:justify-between">
+    <div className="md:flex md:items-center md:justify-between">
       <div className="min-w-0 flex-1">
         <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
           UTV Obersdorf Herren
@@ -20,6 +20,13 @@ export default function PageHeader() {
               aria-hidden="true"
             />
             20 Spieler
+          </div>
+          <div className="mt-2 flex items-center text-sm text-gray-500">
+            <ArrowTrendingUpIcon
+              className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
+              aria-hidden="true"
+            />
+            20 Matches
           </div>
           <div className="mt-2 flex items-center text-sm text-gray-500">
             <CalendarIcon

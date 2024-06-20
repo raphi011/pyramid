@@ -1,17 +1,12 @@
+import { Button } from "./components/button";
+import SectionHeader from "./components/section-header";
+import GamesList from "./games-list";
+
 export default function Games({ games }) {
   return (
-    <div>
-      {games.map((g) => (
-        <Game game={g} />
-      ))}
-    </div>
-  );
-}
-
-function Game({ game }) {
-  return (
-    <div>
-      {game.player1.name} {game.status} {game.player2.name}
-    </div>
+    <>
+      <SectionHeader title="Meine Spiele" side={<Button color="blue">Fordern</Button>} />
+      <GamesList games={games} />
+    </>
   );
 }

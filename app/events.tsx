@@ -1,21 +1,37 @@
+import { Text, TextLink } from "./components/text";
+import Divider from "./components/divider";
+import { formatDateTime } from "./date";
+
 export default function Events({ events }) {
-  return <div>{events.map((row, i) => renderEvent(row, i))}</div>;
+  return (
+    <div>
+      {events.map((event, i) => (
+        <>
+          <div className="flex justify-between">
+            {renderEvent(event, i)}
+            <p>{formatDateTime(new Date(event.date))}</p>
+          </div>
+          <Divider />
+        </>
+      ))}
+    </div>
+  );
 }
 
 function renderEvent(event, index) {
   if (event.type == "result") {
     return (
-      <p key={index}>
-        <a href="#"> {event.winnerName} </a> hat gegen {event.loserName} gewonnen (
-        {event.score})
-      </p>
+      <Text key={index}>
+        <TextLink href="#"> {event.winnerName} </TextLink> hat gegen{" "}
+        <TextLink href="#">{event.loserName}</TextLink> gewonnen ({event.score})
+      </Text>
     );
   } else if (event.type == "challenge") {
     return (
-      <p key={index}>
-        <a href="#"> {event.challengerName} </a> has {event.challengeeName}{" "}
+      <Text key={index}>
+        <TextLink href="#"> {event.challengerName} </TextLink> has {event.challengeeName}{" "}
         herausgefordert.
-      </p>
+      </Text>
     );
   }
 }

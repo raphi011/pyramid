@@ -5,6 +5,7 @@ import Footer from "./components/footer";
 import PageHeader from "./components/page-header";
 import Dropdown from "./components/dropdown";
 import PyramidSection from "./pyramid-section";
+import SectionHeader from "./components/section-header";
 
 const standings = [
   {
@@ -138,7 +139,7 @@ const matches = [
       name: "Thomas Post",
     },
     status: "challenged",
-    challengedAt: "2024-06-17T08:20:28.438Z",
+    created: "2024-06-17T08:20:28.438Z",
   },
   {
     player1: {
@@ -151,7 +152,7 @@ const matches = [
     },
     winner_id: 5,
     status: "done",
-    challengedAt: "2024-06-13T08:20:28.438Z",
+    created: "2024-06-13T08:20:28.438Z",
     gameAt: "2024-06-15T08:20:28.438Z",
     player1Score: [6, 3, 6],
     player2Score: [4, 6, 1],
@@ -161,7 +162,7 @@ const matches = [
 const events = [
   {
     type: "challenge",
-    date: "",
+    date: "2024-06-17T08:20:28.438Z",
     challengerId: 1,
     challengerName: "Preston Hilton",
     challengeeId: 2,
@@ -169,7 +170,7 @@ const events = [
   },
   {
     type: "result",
-    date: "",
+    date: "2024-06-17T05:20:28.438Z",
     winnerId: 3,
     winnerName: "Waldo Symons",
     loserId: 4,
@@ -180,22 +181,13 @@ const events = [
 
 export default async function Home() {
   return (
-    <main className="p-4">
-      <Navigation>
-        <PageHeader />
-        <PyramidSection standings={standings} currentPlayer={currentPlayer} />
-        <div className="border-b border-gray-200 pb-5">
-          <h3 className="text-base font-semibold leading-6 text-gray-900">
-            Meine Spiele
-          </h3>
-        </div>
-        <Games games={matches} />
-        <div className="border-b border-gray-200 pb-5">
-          <h3 className="text-base font-semibold leading-6 text-gray-900">Neuigkeiten</h3>
-        </div>
-        <Events events={events} />
-        <Footer />
-      </Navigation>
-    </main>
+    <Navigation>
+      <PageHeader />
+      <PyramidSection standings={standings} currentPlayer={currentPlayer} />
+      <Games games={matches} />
+      <SectionHeader title="Neuigkeiten" />
+      <Events events={events} />
+      <Footer />
+    </Navigation>
   );
 }
