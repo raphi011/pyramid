@@ -69,6 +69,7 @@ CREATE TABLE season_standings (
     season_id INT,
     results INT ARRAY NOT NULL,
     match_id INT,
+    created TIMESTAMP NOT NULL,
     comment varchar(256),
 
     CONSTRAINT fk_match FOREIGN KEY(match_id) REFERENCES matches(id),

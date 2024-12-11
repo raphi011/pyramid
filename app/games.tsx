@@ -6,7 +6,7 @@ export default function Games({ games }) {
   return (
     <>
       <SectionHeader
-        title="Meine Spiele"
+        title=" Spiele"
         side={<RadioButton options={[{ text: "Meine" }, { text: "Alle" }]} />}
       />
       <GamesList games={games} />
