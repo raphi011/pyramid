@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar } from "./components/avatar";
 import {
   Dropdown,
@@ -36,6 +38,20 @@ import {
 import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
 const navItems = [{ label: "Home", url: "/" }];
+
+function LogoutButton() {
+  return (
+    <form action="/api/auth/logout" method="POST" className="w-full">
+      <button
+        type="submit"
+        className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-base/6 text-zinc-950 sm:py-2 sm:text-sm/5 data-[focus]:bg-zinc-950/5 dark:text-white dark:data-[focus]:bg-white/5"
+      >
+        <ArrowRightStartOnRectangleIcon className="size-4" />
+        <span>Abmelden</span>
+      </button>
+    </form>
+  );
+}
 
 interface Player {
   id: number;
@@ -117,10 +133,7 @@ export default function Navigation({
                   <DropdownLabel>Feedback teilen</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/api/auth/logout">
-                  <ArrowRightStartOnRectangleIcon />
-                  <DropdownLabel>Abmelden</DropdownLabel>
-                </DropdownItem>
+                <LogoutButton />
               </DropdownMenu>
             </Dropdown>
           </NavbarSection>

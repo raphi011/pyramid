@@ -72,7 +72,7 @@ CREATE TABLE season_standings (
     created TIMESTAMP NOT NULL,
     comment varchar(256),
 
-    CONSTRAINT fk_match FOREIGN KEY(match_id) REFERENCES matches(id),
+    CONSTRAINT fk_match FOREIGN KEY(match_id) REFERENCES season_matches(id),
     CONSTRAINT fk_season FOREIGN KEY(season_id) REFERENCES seasons(id)
 );
 

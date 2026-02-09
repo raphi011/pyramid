@@ -20,7 +20,15 @@ export async function POST(request: NextRequest) {
     // But only send email if player exists
     if (player) {
       const token = await createMagicLink(player.id);
-      await sendMagicLinkEmail(player.email, player.name, token);
+      const emailResult = await sendMagicLinkEmail(player.email, player.name, token);
+
+      if (!emailResult.success) {
+        // Log the failure but don't expose to user (enumeration protection)
+        console.error("Failed to send magic link email:", {
+          playerId: player.id,
+          error: emailResult.error,
+        });
+      }
     }
 
     return NextResponse.json({

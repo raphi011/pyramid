@@ -101,7 +101,7 @@ export async function getCurrentPlayer(): Promise<{
   }
 
   const result = await sql`
-    SELECT id, name, email FROM player
+    SELECT id, name, email_address AS email FROM player
     WHERE id = ${session.playerId}
   `;
 
@@ -131,8 +131,8 @@ export async function getPlayerByEmail(
   email: string
 ): Promise<{ id: number; name: string; email: string } | null> {
   const result = await sql`
-    SELECT id, name, email FROM player
-    WHERE LOWER(email) = LOWER(${email})
+    SELECT id, name, email_address AS email FROM player
+    WHERE LOWER(email_address) = LOWER(${email})
   `;
 
   if (result.length === 0) {

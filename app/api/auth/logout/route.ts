@@ -7,11 +7,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   } catch (error) {
     console.error("Logout error:", error);
-    return NextResponse.redirect(new URL("/login", request.url));
+    // Ensure cookie is deleted even if DB operation failed
+    const response = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.delete("session_token");
+    return response;
   }
-}
-
-// Also support GET for simple logout links
-export async function GET(request: NextRequest) {
-  return POST(request);
 }

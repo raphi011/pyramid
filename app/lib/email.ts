@@ -4,13 +4,20 @@ let _resend: Resend | null = null;
 
 function getResend(): Resend {
   if (!_resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY environment variable is not set");
+    }
     _resend = new Resend(process.env.RESEND_API_KEY);
   }
   return _resend;
 }
 
 function getAppUrl(): string {
-  return process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL;
+  if (!appUrl && process.env.NODE_ENV === "production") {
+    throw new Error("APP_URL environment variable is required in production");
+  }
+  return appUrl || "http://localhost:3000";
 }
 
 export async function sendMagicLinkEmail(
