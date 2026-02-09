@@ -1,15 +1,13 @@
-FROM node:20-alpine AS deps
-RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
+FROM oven/bun:1-alpine AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-FROM node:20-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
+FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm run build
+RUN bun run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app

@@ -1,15 +1,17 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-let _resend: Resend | null = null;
+let _transporter: nodemailer.Transporter | null = null;
 
-function getResend(): Resend {
-  if (!_resend) {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY environment variable is not set");
-    }
-    _resend = new Resend(process.env.RESEND_API_KEY);
+function getTransporter(): nodemailer.Transporter {
+  if (!_transporter) {
+    _transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "postfix-relay.postfix.svc.cluster.local",
+      port: parseInt(process.env.SMTP_PORT || "587"),
+      secure: false,
+      tls: { rejectUnauthorized: false },
+    });
   }
-  return _resend;
+  return _transporter;
 }
 
 function getAppUrl(): string {
@@ -28,8 +30,8 @@ export async function sendMagicLinkEmail(
   const magicLinkUrl = `${getAppUrl()}/api/auth/verify?token=${token}`;
 
   try {
-    const { error } = await getResend().emails.send({
-      from: "Pyramid <noreply@pyramid.tennis>",
+    await getTransporter().sendMail({
+      from: process.env.SMTP_FROM || "Pyramid <pyramid@raphi011.dev>",
       to: email,
       subject: "Dein Login-Link für Pyramid",
       html: `
@@ -59,11 +61,6 @@ export async function sendMagicLinkEmail(
         </div>
       `,
     });
-
-    if (error) {
-      console.error("Failed to send magic link email:", error);
-      return { success: false, error: error.message };
-    }
 
     return { success: true };
   } catch (err) {
