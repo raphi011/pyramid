@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyramid
+  namespace: pyramid
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pyramid
+  template:
+    metadata:
+      labels:
+        app: pyramid
+    spec:
+      containers:
+        - name: pyramid
+          image: pyramid:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: pyramid-config
+            - secretRef:
+                name: pyramid-secrets
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

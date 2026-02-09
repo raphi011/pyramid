@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.gitignore
+.vercel
+k8s
+K8S_DEPLOYMENT.md
+CLAUDE.md
+README.md
+.claude

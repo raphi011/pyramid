@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pyramid-db-init
+  namespace: pyramid
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS clubs (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(64),
+        created TIMESTAMP NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS player (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(64) NOT NULL,
+        phone_number VARCHAR(32) NOT NULL DEFAULT '',
+        email_address VARCHAR(64) NOT NULL,
+        created TIMESTAMP NOT NULL,
+        unavailable_from TIMESTAMP,
+        unavailable_until TIMESTAMP,
+        unavailable_reason VARCHAR(128) NOT NULL DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS seasons (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(64) NOT NULL,
+        has_ended BOOL NOT NULL DEFAULT false,
+        club_id INT NOT NULL,
+        created TIMESTAMP NOT NULL,
+        CONSTRAINT fk_club FOREIGN KEY(club_id) REFERENCES clubs(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS season_players (
+        player_id INT NOT NULL,
+        season_id INT NOT NULL,
+        created TIMESTAMP NOT NULL,
+        admin BOOL NOT NULL DEFAULT false,
+        PRIMARY KEY(player_id, season_id),
+        CONSTRAINT fk_season FOREIGN KEY(season_id) REFERENCES seasons(id),
+        CONSTRAINT fk_player FOREIGN KEY(player_id) REFERENCES player(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS season_matches (
+        id SERIAL PRIMARY KEY,
+        player1_id INT NOT NULL,
+        player2_id INT NOT NULL,
+        winner_id INT,
+        player1_score INT ARRAY,
+        player2_score INT ARRAY,
+        season_id INT NOT NULL,
+        game_at TIMESTAMP,
+        created TIMESTAMP NOT NULL,
+        status VARCHAR(32),
+        challenge_text VARCHAR(256),
+        CONSTRAINT fk_season FOREIGN KEY(season_id) REFERENCES seasons(id),
+        CONSTRAINT fk_player1 FOREIGN KEY(player1_id) REFERENCES player(id),
+        CONSTRAINT fk_player2 FOREIGN KEY(player2_id) REFERENCES player(id),
+        CONSTRAINT fk_winner FOREIGN KEY(winner_id) REFERENCES player(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS match_comments (
+        id SERIAL PRIMARY KEY,
+        player_id INT NOT NULL,
+        created TIMESTAMP NOT NULL,
+        comment VARCHAR(256) NOT NULL,
+        CONSTRAINT fk_player FOREIGN KEY(player_id) REFERENCES player(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS season_standings (
+        season_id INT,
+        results INT ARRAY NOT NULL,
+        match_id INT,
+        created TIMESTAMP NOT NULL,
+        comment VARCHAR(256),
+        CONSTRAINT fk_match FOREIGN KEY(match_id) REFERENCES season_matches(id),
+        CONSTRAINT fk_season FOREIGN KEY(season_id) REFERENCES seasons(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS magic_links (
+        id SERIAL PRIMARY KEY,
+        player_id INT NOT NULL UNIQUE,
+        token VARCHAR(64) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_magic_player FOREIGN KEY(player_id)
+            REFERENCES player(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_magic_links_token ON magic_links(token);
+
+    CREATE TABLE IF NOT EXISTS sessions (
+        id SERIAL PRIMARY KEY,
+        player_id INT NOT NULL,
+        token VARCHAR(64) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_session_player FOREIGN KEY(player_id)
+            REFERENCES player(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);

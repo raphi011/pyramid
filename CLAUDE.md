@@ -95,9 +95,21 @@ In `app/pyramid.tsx`:
 - Accessibility: 44x44px touch targets, aria-hidden, sr-only
 - TypeScript errors currently ignored in build (`next.config.mjs`)
 
+## Deployment
+
+Hosted on **Vercel** (project: `raphi011s-projects/deployment`).
+
+```bash
+vercel --prod   # Deploy to production
+```
+
+Production URL: https://deployment-flax-ten.vercel.app
+
+Vercel auto-detects Next.js settings. No `vercel.json` needed. Environment variables are configured in the Vercel dashboard.
+
 ## Environment Variables
 
-Required for production:
+Required for production (set in Vercel dashboard):
 - `DATABASE_URL` - Neon connection string
 - `RESEND_API_KEY` - Resend API key for emails
 - `APP_URL` - Application base URL (e.g., `https://pyramid.example.com`)
