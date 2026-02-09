@@ -1,11 +1,12 @@
+import { redirect } from "next/navigation";
 import Events from "./events";
 import Games from "./games";
 import Navigation from "./navigation";
 import Footer from "./components/footer";
 import PageHeader from "./components/page-header";
-import Dropdown from "./components/dropdown";
 import PyramidSection from "./pyramid-section";
 import SectionHeader from "./components/section-header";
+import { getCurrentPlayer } from "./lib/auth";
 
 const standings = [
   {
@@ -123,10 +124,7 @@ const standings = [
   },
 ];
 
-const currentPlayer = {
-  id: 5,
-  name: "Sheard Tyler",
-};
+// currentPlayer is now fetched from auth below
 
 const matches = [
   {
@@ -180,8 +178,14 @@ const events = [
 ];
 
 export default async function Home() {
+  const currentPlayer = await getCurrentPlayer();
+
+  if (!currentPlayer) {
+    redirect("/login");
+  }
+
   return (
-    <Navigation>
+    <Navigation currentPlayer={currentPlayer}>
       <PageHeader />
       <PyramidSection standings={standings} currentPlayer={currentPlayer} />
       <Games games={matches} />

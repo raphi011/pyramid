@@ -32,8 +32,8 @@ CREATE TABLE season_players (
     created TIMESTAMP NOT NULL,
     admin BOOL NOT NULL DEFAULT false,
 
-    PRIMARY KEY(player_id, club_id),
-    CONSTRAINT fk_club FOREIGN KEY(club_id) REFERENCES clubs(id),
+    PRIMARY KEY(player_id, season_id),
+    CONSTRAINT fk_season FOREIGN KEY(season_id) REFERENCES seasons(id),
     CONSTRAINT fk_player FOREIGN KEY(player_id) REFERENCES player(id)
 );
 
@@ -74,4 +74,29 @@ CREATE TABLE season_standings (
 
     CONSTRAINT fk_match FOREIGN KEY(match_id) REFERENCES matches(id),
     CONSTRAINT fk_season FOREIGN KEY(season_id) REFERENCES seasons(id)
-)
+);
+
+-- Magic links for passwordless authentication
+-- UNIQUE on player_id ensures single active link per user (new link invalidates old)
+CREATE TABLE magic_links (
+    id SERIAL PRIMARY KEY,
+    player_id INT NOT NULL UNIQUE,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_magic_player FOREIGN KEY(player_id)
+        REFERENCES player(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_magic_links_token ON magic_links(token);
+
+-- Sessions for keeping users logged in (database-backed for revocability)
+CREATE TABLE sessions (
+    id SERIAL PRIMARY KEY,
+    player_id INT NOT NULL,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_session_player FOREIGN KEY(player_id)
+        REFERENCES player(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_sessions_token ON sessions(token);

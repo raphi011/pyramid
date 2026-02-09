@@ -37,6 +37,12 @@ import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
 const navItems = [{ label: "Home", url: "/" }];
 
+interface Player {
+  id: number;
+  name: string;
+  email: string;
+}
+
 function TeamDropdownMenu() {
   return (
     <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
@@ -53,7 +59,13 @@ function TeamDropdownMenu() {
   );
 }
 
-export default function Navigation({ children }) {
+export default function Navigation({
+  children,
+  currentPlayer,
+}: {
+  children: React.ReactNode;
+  currentPlayer: Player;
+}) {
   return (
     <StackedLayout
       navbar={
@@ -81,6 +93,15 @@ export default function Navigation({ children }) {
                 <Avatar src="/profile-photo.jpg" square />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
+                <div className="px-3.5 py-2.5">
+                  <p className="text-sm font-medium text-zinc-950 dark:text-white">
+                    {currentPlayer.name}
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {currentPlayer.email}
+                  </p>
+                </div>
+                <DropdownDivider />
                 <DropdownItem href="/my-profile">
                   <UserIcon />
                   <DropdownLabel>Mein Profil</DropdownLabel>
@@ -96,7 +117,7 @@ export default function Navigation({ children }) {
                   <DropdownLabel>Feedback teilen</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/logout">
+                <DropdownItem href="/api/auth/logout">
                   <ArrowRightStartOnRectangleIcon />
                   <DropdownLabel>Abmelden</DropdownLabel>
                 </DropdownItem>
