@@ -1,0 +1,1209 @@
+# UI Specification
+
+Complete page-by-page specification for the Pyramid app — a sport-agnostic pyramid ranking system.
+
+---
+
+## Key Decisions
+
+Summary of design decisions from the spec review:
+
+- **Sport-agnostic**: No hardcoded sport terminology. Scoring is "best of N" with simple validation.
+- **Multi-club**: Players can be in multiple clubs. Global club switcher in nav.
+- **Multiple active seasons per club**: e.g., singles + doubles can run simultaneously.
+- **Feed replaces Events**: Single feed page with club filter tabs. No separate Events page.
+- **Challenge limit**: One open challenge per player per season (as challenger or challengee).
+- **Forfeit vs Withdraw**: Forfeit = counts as loss (rankings update). Withdraw = cancel, no effect.
+- **Scoring**: Best of N games. Winner auto-determined from game wins. Simple validation only.
+- **Season membership**: All club members auto-added to new seasons. Can opt out. Admin can remove before start.
+- **New seasons from old**: Options — keep ranks, shuffle, or invert.
+- **Club creation**: App admin only, then transfers ownership to club admin.
+- **Team formation**: Admin creates teams and assigns players.
+- **Profile stats**: Three scopes — This Season, This Club, All Time.
+- **Data retention**: All records preserved with player name, even after leaving.
+- **Image storage**: Profile photos stored in database (base64/BYTEA).
+- **Notifications**: In-app (bell icon in header) + email for important events.
+- **i18n**: English (default) + German. Per-user language setting.
+- **QR codes + rank charts**: Both MVP.
+
+---
+
+## Information Architecture
+
+### Sitemap
+
+```
+/                                 → Feed (home, cross-club news feed)
+/join                             → Join club (enter code / scan QR)
+/onboarding                       → Complete profile (first login only)
+/rankings                         → Rankings (pyramid + list toggle)
+/matches                          → Match list (my matches + all)
+/matches/[id]                     → Match detail (scores, comments, date proposals)
+/profile                          → Own profile (stats, settings, availability)
+/player/[id]                      → Other player's profile
+/notifications                    → Notification center
+
+/admin/club/[id]                  → Club admin dashboard
+/admin/club/[id]/season/new       → Create season
+/admin/club/[id]/season/[id]      → Season management
+/admin/club/[id]/season/[id]/teams → Team management (for team seasons)
+/admin/club/[id]/members          → Member management
+/admin/club/[id]/announcements    → Broadcast messages
+/admin/app                        → App-level super admin
+
+/login                            → Magic link login
+/check-email                      → Email confirmation
+/settings                         → App settings (language, notifications, dark mode)
+```
+
+### Navigation Structure
+
+**Top Bar (mobile)** — persistent header:
+```
+┌──────────────────────────────┐
+│ [Club Switcher ▼]    🔔 (3) │  ← bell with unread badge
+└──────────────────────────────┘
+```
+
+**Bottom Nav (mobile)** — 5 items:
+
+| Position | Icon | Label (EN) | Label (DE) | Route |
+|----------|------|------------|------------|-------|
+| 1 | Home/Feed | Feed | Feed | `/` |
+| 2 | Trophy | Rankings | Rangliste | `/rankings` |
+| 3 | ⊕ (FAB) | Challenge | Fordern | opens challenge flow |
+| 4 | Swords | Matches | Spiele | `/matches` |
+| 5 | User | Profile | Profil | `/profile` |
+
+The center item (3) is a floating action button (FAB) — raised, `court-500`, larger than other nav items. Tapping it opens the quick challenge flow.
+
+**Sidebar Nav (desktop, lg+)** — same items + extras:
+
+```
+[Club Switcher Dropdown]     ← switches active club context
+─────────────────────────
+Feed                         /
+Rankings                     /rankings
+Matches                      /matches
+─────────────────────────
+Notifications (badge)        /notifications
+Profile                      /profile
+Settings                     /settings
+─────────────────────────
+Admin  (if admin)            /admin/club/[id]
+```
+
+**Club Switcher** — dropdown in top bar (mobile) and top of sidebar (desktop). Shows all clubs the player belongs to. Switching changes the context for rankings, matches, and the FAB challenge flow. Feed always shows cross-club content but has club filter tabs.
+
+---
+
+## User Flows
+
+### First-Time User Flow
+
+```
+Admin invites player by email
+        ↓
+Player receives magic link email
+        ↓
+Clicks link → /api/auth/verify → session created
+        ↓
+Redirect to /onboarding (profile incomplete)
+        ↓
+Enters name (required), uploads photo (optional)
+        ↓
+Has clubs? ──No──→ Redirect to /join
+        │
+       Yes
+        ↓
+Redirect to / (feed)
+```
+
+### Challenge Flow
+
+```
+Player taps FAB or challengeable player in pyramid
+        ↓
+System shows eligible opponents (filtered by rules)
+        ↓
+Player selects opponent, optionally adds message
+        ↓
+Challenge created (status: challenged)
+        ↓
+Opponent notified (in-app + email)
+        ↓
+Both players propose dates (structured date cards)
+        ↓                              ↓
+Date accepted                    No date after deadline
+        ↓                              ↓
+Status → date_set               Email reminder to both
+        ↓                         + flagged to admin
+Match played
+        ↓
+Either player enters result
+        ↓
+Other player confirms ──or──→ disputes (flagged to admin)
+        ↓
+Rankings updated, events created
+```
+
+### Challenge Rules
+
+A player **can** challenge another player if ALL of these are true:
+- Challenger has no open challenge in this season (as challenger or challengee)
+- Challengee has no open challenge in this season (as challenger or challengee)
+- Both players are not marked as unavailable
+- The season is active (not ended)
+- The pyramid position rules are met:
+  - Left neighbor in the same row
+  - Right neighbor in the row above
+  - Rank 3 can challenge ranks 1 and 2 (special case)
+  - Formula: `maxRank = challengerRank + 1 - floor((1 + sqrt(8 * challengerRank - 7)) / 2)`
+
+### Challenge Outcomes
+
+| Outcome | Action | Rankings |
+|---------|--------|----------|
+| **Completed** | Either player enters score, other confirms | Winner takes loser's position if challenger wins; no change if challengee wins |
+| **Forfeit** | Player gives up | Counts as a loss for the forfeiting player. Rankings update as if they lost. |
+| **Withdraw** | Challenger cancels | No result, no ranking change. Challenge disappears. |
+| **Admin resolve** | Admin overrides | Admin sets winner or cancels. Rankings update accordingly. |
+
+---
+
+## Pages
+
+### 1. Login (`/login`)
+
+**Purpose**: Passwordless magic link authentication.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│                          │
+│      [Pyramid Logo]      │
+│                          │
+│   ┌──────────────────┐   │
+│   │  Email input     │   │
+│   └──────────────────┘   │
+│   ┌──────────────────┐   │
+│   │  Sign in →       │   │
+│   └──────────────────┘   │
+│                          │
+│   Don't have an account? │
+│   Ask your club admin.   │
+│                          │
+└──────────────────────────┘
+```
+
+**Behavior**:
+- Centered card on page, `court-500` sign-in button.
+- On submit → redirect to `/check-email`.
+- Error: red inline message if submission fails.
+- No self-registration — players are invited by club admins.
+
+---
+
+### 2. Check Email (`/check-email`)
+
+**Purpose**: Confirmation that magic link was sent.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│      [Envelope icon]     │
+│                          │
+│   Check your email       │
+│   We sent a sign-in      │
+│   link to you@mail.com   │
+│                          │
+│   Link valid for 15 min  │
+│                          │
+│   [← Back to login]      │
+└──────────────────────────┘
+```
+
+---
+
+### 3. Onboarding (`/onboarding`)
+
+**Purpose**: Complete profile on first login. Shown when player has no name set.
+
+**When shown**: Forced redirect after magic link verification if `player.name` is null/empty.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│   Welcome to Pyramid!    │
+│                          │
+│   Complete your profile  │
+│   to get started.        │
+│                          │
+│   ┌──────────────────┐   │
+│   │  [Upload photo]  │   │  ← optional, shows avatar circle
+│   └──────────────────┘   │
+│   ┌──────────────────┐   │
+│   │  Your name *     │   │  ← required
+│   └──────────────────┘   │
+│   ┌──────────────────┐   │
+│   │  Phone (optional)│   │
+│   └──────────────────┘   │
+│   ┌──────────────────┐   │
+│   │  Continue →      │   │
+│   └──────────────────┘   │
+└──────────────────────────┘
+```
+
+**After submit**: redirect to `/join` if 0 clubs, or `/` if already a club member.
+
+---
+
+### 4. Join Club (`/join`)
+
+**Purpose**: Join a club by entering an invite code or scanning a QR code.
+
+**When shown**: Forced redirect after onboarding if player has 0 clubs. Also reachable from settings.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│   Join a club             │
+│                          │
+│   Enter your club's      │
+│   invite code:           │
+│                          │
+│   ┌──────────────────┐   │
+│   │  A B C 1 2 3     │   │  ← large, spaced character input
+│   └──────────────────┘   │
+│   ┌──────────────────┐   │
+│   │  Join Club →     │   │
+│   └──────────────────┘   │
+│                          │
+│   ─── or ───             │
+│                          │
+│   [📷 Scan QR code]      │  ← opens camera
+└──────────────────────────┘
+
+After code validated:
+┌──────────────────────────┐
+│   Join "TC Example"?     │
+│   24 members             │
+│                          │
+│   [Join] [Cancel]        │
+└──────────────────────────┘
+```
+
+**Behavior**:
+- Validates code, shows club name + member count as confirmation step before joining.
+- After join → redirect to `/` (feed).
+- Player is auto-added to all active seasons in the club.
+
+---
+
+### 5. Feed / Home (`/`)
+
+**Purpose**: News feed — latest activity. The first thing players see after login.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Feed                     │
+├──────────────────────────┤
+│                          │
+│ [All clubs|Club A|Club B]│  ← filter tabs (pill-style)
+│                          │
+│ ┌──────────────────────┐ │
+│ │ ● Result             │ │  ← event card
+│ │ Player A beat B      │ │
+│ │ 6-4, 3-6, 7-5       │ │
+│ │ Club Name · 2h ago   │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ ⚔ Challenge           │ │
+│ │ Player C challenged D│ │
+│ │ Club Name · 5h ago   │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ ↑ Rank Change        │ │
+│ │ Player A moved from  │ │
+│ │ #5 → #3              │ │
+│ │ Club Name · 5h ago   │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ 👋 New Player        │ │
+│ │ Player E joined      │ │
+│ │ Club Name · 1d ago   │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ 📅 Season Start      │ │
+│ │ "Summer 2026"        │ │
+│ │ started              │ │
+│ │ Club Name · 3d ago   │ │
+│ └──────────────────────┘ │
+│                          │
+│ [Load more...]           │
+└──────────────────────────┘
+```
+
+**Filter tabs**: "All clubs" shows cross-club events. Individual club tabs filter to that club only. Club name label on each event card only shown on "All clubs" tab.
+
+**Event types in feed**:
+
+| Type | Icon | Content |
+|------|------|---------|
+| `result` | Trophy | "{winner} beat {loser}" + score + rank change |
+| `challenge` | Swords | "{challenger} challenged {challengee}" |
+| `withdrawal` | X | "{player} withdrew challenge against {player}" |
+| `forfeit` | Flag | "{player} forfeited against {player}" |
+| `rank_change` | Arrow up/down | "{player} moved from #X to #Y" |
+| `new_player` | Wave | "{player} joined {club}" |
+| `season_start` | Calendar | "Season '{name}' started" |
+| `season_end` | Flag | "Season '{name}' ended" |
+| `unavailable` | Clock | "{player} is unavailable until {date}" |
+
+**Behavior**:
+- Infinite scroll with pagination.
+- Each event card is tappable → navigates to the relevant detail (match, player profile, rankings).
+- Pull-to-refresh on mobile.
+
+---
+
+### 6. Rankings (`/rankings`)
+
+**Purpose**: View the current pyramid/standings for the active club's selected season.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Rankings                 │
+│ [Season selector ▼]     │  ← shows ALL active + archived seasons
+│                          │
+│ [Toggle: Pyramid | List] │
+│                          │
+│ ── Pyramid View ──       │
+│                          │
+│        ┌─────┐           │
+│        │ #1  │           │
+│        └─────┘           │
+│     ┌─────┐┌─────┐      │
+│     │ #2  ││ #3  │      │
+│     └─────┘└─────┘      │
+│   ┌─────┐┌─────┐┌─────┐ │
+│   │ #4  ││ #5  ││ #6  │ │
+│   └─────┘└─────┘└─────┘ │
+│  ┌───┐┌───┐┌───┐┌───┐   │
+│  │#7 ││#8 ││#9 ││#10│   │
+│  └───┘└───┘└───┘└───┘   │
+│                          │
+│ Legend:                   │
+│ ■ You  ■ Challengeable   │
+│ ■ Challenged ■ Unavail.  │
+│                          │
+│ ── or List View ──       │
+│                          │
+│ #  Player       W  L  ▲  │
+│ 1  Player A    12  3  ─  │
+│ 2  Player B     9  5  ↑2 │
+│ 3  You          8  4  ↓1 │
+│ 4  Player D     7  6  ↑1 │
+│ ...                      │
+└──────────────────────────┘
+```
+
+**Season selector**: Dropdown showing all seasons for the active club. Multiple seasons can be active simultaneously (e.g., singles + doubles). Archived seasons are labeled "(archived)" and show read-only standings — no challenge interactions, just history.
+
+**Pyramid view**:
+- Each player card shows: avatar/initials, name (truncated), rank number.
+- Card variants: current player (`court-500`), challengeable (`court-50` + `court-400` ring), challenged (`orange-50` + `orange-400` ring), unavailable (dimmed).
+- Tap a challengeable player → opens ChallengeSheet directly (no FAB needed — 1 tap to initiate).
+- Tap any other player → opens their profile.
+- For team seasons: cards show team name instead of player name, team members listed below.
+
+**List view**:
+- Sortable table/list: Rank, Player/Team (avatar + name), Wins, Losses, Movement (arrow + number since last change).
+- Tap a row → player/team profile.
+- Challengeable rows have a subtle green left accent.
+
+**Movement indicator**: Arrow shows direction + magnitude since the last standings update (most recent completed match). `↑2` means moved up 2 positions since last result.
+
+**Admin extras** (inline, if user is club admin):
+- "Edit standings" button → opens reorderable list to manually change ranks.
+- Drag-and-drop or move up/down buttons per player/team.
+
+---
+
+### 7. Quick Challenge Flow (FAB)
+
+**Purpose**: Challenge someone in the fewest taps possible.
+
+**Triggered by**: Center FAB in bottom nav (mobile) or "Challenge" button in page header (desktop).
+
+**Context**: Uses the currently selected club + season from the club switcher and season selector. If multiple active seasons exist, shows a season picker first.
+
+**Flow**:
+```
+Step 0 (only if multiple active seasons):
+┌──────────────────────────┐
+│ Which season?            │
+│                          │
+│ ┌──────────────────────┐ │
+│ │ Singles 2026          │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ Doubles 2026          │ │
+│ └──────────────────────┘ │
+└──────────────────────────┘
+
+Step 1 (bottom sheet / dialog):
+┌──────────────────────────┐
+│ Who do you want to       │
+│ challenge?               │
+│                          │
+│ Players you can          │
+│ challenge:               │
+│                          │
+│ ┌──────────────────────┐ │
+│ │ 👤 Player A  (#3)    │ │  ← tap to select
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ 👤 Player B  (#4)    │ │
+│ └──────────────────────┘ │
+│                          │
+│ No one available?        │
+│ Players may be on        │
+│ vacation or already in   │
+│ an open challenge.       │
+└──────────────────────────┘
+
+Step 2 (same sheet, transitions):
+┌──────────────────────────┐
+│ Challenge Player A?      │
+│                          │
+│ Message (optional):      │
+│ ┌──────────────────────┐ │
+│ │ "How about Thursday  │ │
+│ │  or Friday evening?" │ │
+│ └──────────────────────┘ │
+│                          │
+│ ┌──────────────────────┐ │
+│ │  Send Challenge →    │ │  ← court-500 button
+│ └──────────────────────┘ │
+│ [Cancel]                 │
+└──────────────────────────┘
+```
+
+**Result**: 2-3 taps (FAB → select player → send). 4 taps if multiple seasons.
+
+**Disabled state**: If the current player already has an open challenge in the selected season, the FAB is dimmed and tapping shows a message: "You already have an open challenge in this season."
+
+---
+
+### 8. Matches (`/matches`)
+
+**Purpose**: List of all matches for the active club's selected season.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Matches                  │
+│ [Season selector ▼]     │
+│                          │
+│ [Tabs: My | All | Open]  │
+│                          │
+│ ── Open Challenges ──    │
+│ ┌──────────────────────┐ │
+│ │ You → Player B       │ │
+│ │ Challenged 2d ago    │ │
+│ │ ⏳ Awaiting date      │ │
+│ │ [View →]             │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Completed ──          │
+│ ┌──────────────────────┐ │
+│ │ Player A vs Player C │ │
+│ │ 6-4, 3-6, 7-5       │ │
+│ │ 3 days ago           │ │
+│ │ [View →]             │ │
+│ └──────────────────────┘ │
+│ ...                      │
+└──────────────────────────┘
+```
+
+**Tabs**:
+- **My**: Matches involving the current player (open + completed).
+- **All**: All matches in the season.
+- **Open**: Only open challenges (not yet played).
+
+**Match statuses**: `challenged` → `date_set` → `completed` / `withdrawn` / `forfeited` / `disputed`.
+
+**Match card** shows:
+- Both players/teams (avatars + names).
+- Status badge: `Challenged`, `Date Set`, `Completed`, `Withdrawn`, `Forfeited`, `Disputed`.
+- Score (if completed).
+- Time ago.
+- Tap → match detail.
+
+**Admin extras**: "Override result" and "Resolve" options on matches.
+
+---
+
+### 9. Match Detail (`/matches/[id]`)
+
+**Purpose**: Full match view with scores, date scheduling, and comments.
+
+**Layout**:
+```
+┌──────────────────────────────┐
+│ ← Back                       │
+│                              │
+│ ┌──────────────────────────┐ │
+│ │   Player A    vs    Player B│
+│ │   👤 #3        ⚔     👤 #5│
+│ │                            │
+│ │   Status: Date Set         │
+│ │   📅 Thu, Jan 15, 18:00   │
+│ └──────────────────────────┘ │
+│                              │
+│ ── Score (if completed) ──   │
+│ ┌──────────────────────────┐ │
+│ │  Game 1:  6 - 4          │ │
+│ │  Game 2:  3 - 6          │ │
+│ │  Game 3:  7 - 5          │ │
+│ │                          │ │
+│ │  Winner: Player A 🏆     │ │
+│ └──────────────────────────┘ │
+│                              │
+│ ── Date Proposals ──         │
+│ ┌──────────────────────────┐ │
+│ │ Player A proposed:       │ │
+│ │ ┌────────────────────┐   │ │
+│ │ │ Thu Jan 15, 18:00  │   │ │  ← tappable card
+│ │ │ [Accept] [Decline] │   │ │
+│ │ └────────────────────┘   │ │
+│ │ ┌────────────────────┐   │ │
+│ │ │ Fri Jan 16, 19:00  │   │ │
+│ │ │ [Accept] [Decline] │   │ │
+│ │ └────────────────────┘   │ │
+│ │                          │ │
+│ │ [Propose a date]         │ │  ← opens date+time picker
+│ └──────────────────────────┘ │
+│                              │
+│ ── Comments ──               │
+│ ┌──────────────────────────┐ │
+│ │ Player A · 2h ago        │ │
+│ │ "Courts 3 and 4 are      │ │
+│ │  available on Thursday"   │ │
+│ ├──────────────────────────┤ │
+│ │ Player B · 1h ago        │ │
+│ │ "Thursday works!"        │ │
+│ └──────────────────────────┘ │
+│ ┌──────────────────────────┐ │
+│ │ Type a comment...   [→]  │ │  ← sticky input at bottom
+│ └──────────────────────────┘ │
+│                              │
+│ ── Actions ──                │
+│ [Enter Result]               │
+│ [Forfeit]                    │
+│ [Withdraw Challenge]         │
+└──────────────────────────────┘
+```
+
+**Date proposal flow**:
+- Either player can tap "Propose a date" → date + time picker → creates a structured proposal card.
+- Other player sees the proposal with Accept / Decline buttons.
+- When a date is accepted, it becomes the match date. Status → `date_set`. Other open proposals are dismissed.
+- If no date agreed within configurable deadline → system sends email reminder to both players + flags match to admin.
+
+**Score entry**:
+- "Enter Result" button visible to both players (either can initiate).
+- Opens a sheet with `MatchScoreInput` — game-by-game score pairs based on season's "best of N" config.
+- Winner auto-determined: player who wins the majority of games.
+- Validation: must have a clear winner (e.g., best of 3 → need 2 game wins).
+- Submit → other player gets notified to confirm or dispute.
+- If confirmed → standings update. If disputed → flagged to admin.
+
+**Action visibility**:
+
+| Action | Who sees it | When |
+|--------|-------------|------|
+| Enter Result | Both players | After match date, or anytime if no date set |
+| Forfeit | Both players | While challenge is open (before result) |
+| Withdraw | Challenger only | While challenge is open (before result) |
+
+**Admin extras**:
+- "Edit Result" button to override scores on completed matches.
+- "Resolve Dispute" button if score is disputed.
+- "Cancel Match" to void the challenge entirely.
+
+---
+
+### 10. Profile — Own (`/profile`)
+
+**Purpose**: Player's own profile with stats, settings, and availability management.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ ┌──────────────────────┐ │
+│ │     [Avatar photo]   │ │  ← tappable to change
+│ │     Player Name      │ │
+│ │     player@email.com │ │
+│ │     [Edit Profile]   │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Stats ──              │
+│ [Season | Club | All]    │  ← scope tabs
+│ ┌────┐ ┌────┐ ┌────┐    │
+│ │ 12 │ │  3 │ │ #3 │    │
+│ │Wins│ │Loss│ │Rank│    │
+│ └────┘ └────┘ └────┘    │
+│                          │
+│ ── Availability ──       │
+│ ┌──────────────────────┐ │
+│ │ ● Available          │ │
+│ │ [Set unavailable]    │ │  ← opens date range picker
+│ └──────────────────────┘ │
+│ or:                      │
+│ ┌──────────────────────┐ │
+│ │ ⏸ Unavailable        │ │
+│ │ Until Jan 20, 2026   │ │
+│ │ [Cancel unavailability]│ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Match History ──      │
+│ ┌──────────────────────┐ │
+│ │ vs Player B  W 6-4.. │ │
+│ │ vs Player C  L 3-6.. │ │
+│ │ vs Player A  W 6-2.. │ │
+│ │ [See all matches →]  │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Rank Progression ──   │
+│ ┌──────────────────────┐ │
+│ │   📈 Line chart:     │ │
+│ │   rank over time     │ │
+│ │   (x=date, y=rank)   │ │
+│ │   inverted y-axis    │ │
+│ │   (rank 1 at top)    │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Head to Head ──       │
+│ ┌──────────────────────┐ │
+│ │ vs Player A: 3W - 1L │ │
+│ │ vs Player B: 2W - 2L │ │
+│ │ vs Player C: 0W - 3L │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Clubs ──              │
+│ TC Example · Admin       │
+│ SC Other · Player        │
+│ [Join another club]      │
+│                          │
+│ [Sign out]               │
+└──────────────────────────┘
+```
+
+**Stats scope tabs**:
+- **Season**: Stats for the currently selected season (in the active club).
+- **Club**: Aggregate stats across all seasons in the active club.
+- **All**: Aggregate stats across all clubs and seasons.
+
+**Edit profile sheet** (ResponsiveDialog):
+- Name, email, phone number.
+- Upload / remove profile photo.
+- Language preference (EN / DE).
+
+**Unavailability**:
+- Set date range (from / until). Reason is private.
+- While unavailable: can't be challenged, shown as dimmed in pyramid.
+- Other players see "unavailable until {date}" but NOT the reason.
+
+---
+
+### 11. Profile — Other Player (`/player/[id]`)
+
+**Purpose**: View another player's stats and history.
+
+**Layout**: Same structure as own profile but read-only. No edit, no availability management. Shows:
+- Avatar, name, rank in current season.
+- Stats with scope tabs (Season / Club / All).
+- Match history, head-to-head record with current viewer.
+- Rank progression chart.
+- Availability status (dates visible, reason hidden).
+- If challengeable: prominent "Challenge" button at top of page.
+
+---
+
+### 12. Notifications (`/notifications`)
+
+**Purpose**: In-app notification center. Bell icon in top bar with unread badge count.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Notifications            │
+│ [Mark all as read]       │
+│                          │
+│ ── New ──                │
+│ ┌──────────────────────┐ │
+│ │ ● Player B challenged│ │
+│ │   you                │ │
+│ │   2 hours ago        │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ ● Player A proposed  │ │
+│ │   Thu Jan 15         │ │
+│ │   5 hours ago        │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Earlier ──            │
+│ ┌──────────────────────┐ │
+│ │ ○ Player C confirmed │ │
+│ │   your result        │ │
+│ │   2 days ago         │ │
+│ └──────────────────────┘ │
+│ ...                      │
+└──────────────────────────┘
+```
+
+**Notification types**:
+
+| Event | Notification text | Also email? |
+|-------|-------------------|-------------|
+| Challenged | "{player} challenged you" | Yes |
+| Challenge accepted | "{player} accepted your challenge" | No |
+| Challenge withdrawn | "{player} withdrew their challenge" | Yes |
+| Forfeit | "{player} forfeited against you" | Yes |
+| Date proposed | "{player} proposed {date}" | No |
+| Date accepted | "{player} accepted {date}" | No |
+| Date reminder | "No date agreed for match vs {player}" | Yes |
+| Result entered | "{player} entered the result" | Yes |
+| Result confirmed | "{player} confirmed the result" | No |
+| Result disputed | "{player} disputed the result" | Yes |
+| Rank changed | "You moved from #{x} to #{y}" | No |
+| Season started | "Season '{name}' has started" | Yes |
+| Season ended | "Season '{name}' has ended" | Yes |
+| Admin broadcast | "{admin}: {message}" | Yes |
+| Deadline exceeded | "Match deadline exceeded vs {player}" | Yes (to both + admin) |
+| Invited to club | "You've been invited to {club}" | Yes |
+
+**Behavior**:
+- Bell icon in top bar shows unread count badge (red dot with number).
+- Tapping a notification navigates to the relevant page (match detail, rankings, etc.).
+- Unread = filled dot (●), read = empty dot (○).
+- Grouped by "New" and "Earlier" (today vs older).
+
+---
+
+### 13. Settings (`/settings`)
+
+**Purpose**: App-wide settings.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Settings                 │
+│                          │
+│ ── Appearance ──         │
+│ Dark mode       [toggle] │
+│ Language        [EN ▼]   │
+│                          │
+│ ── Notifications ──      │
+│ Email notifs    [toggle] │  ← master toggle
+│ Challenge emails[toggle] │
+│ Result emails   [toggle] │
+│ Reminder emails [toggle] │
+│                          │
+│ ── Account ──            │
+│ Email    player@mail.com │
+│ Phone    +43 123 456     │
+│ [Edit account →]         │
+│                          │
+│ ── Clubs ──              │
+│ [Join another club →]    │
+│ [Leave club →]           │  ← shows club picker, then ConfirmDialog
+│                          │
+│ [Sign out]               │
+│                          │
+│ ── Danger Zone ──        │
+│ [Delete account]         │  ← ConfirmDialog with warning text
+└──────────────────────────┘
+```
+
+**Leave club**: removes player from club. Match history and stats are preserved (attributed). Player is removed from all active seasons in that club.
+
+**Delete account**: permanently deletes the player account. Match records are preserved with the player's name for historical integrity. Requires confirmation with "type DELETE to confirm" pattern.
+
+---
+
+### 14. Admin — Club Dashboard (`/admin/club/[id]`)
+
+**Purpose**: Club admin's management hub.
+
+**Access**: Visible to players with `admin` role in the club. Nav item "Admin" appears in sidebar/bottom nav only for admins.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Club Admin: TC Example   │
+│                          │
+│ ── Quick Stats ──        │
+│ ┌────┐ ┌────┐ ┌────┐    │
+│ │ 24 │ │  3 │ │ 12 │    │
+│ │Plyr│ │Sesn│ │Open│    │
+│ └────┘ └────┘ └────┘    │
+│                          │
+│ ── Active Seasons ──     │  ← list of all active seasons
+│ ┌──────────────────────┐ │
+│ │ Singles 2026          │ │
+│ │ 18 players · 4 open  │ │
+│ │ Overdue: 2 ⚠         │ │
+│ │ [Manage →]           │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ Doubles 2026          │ │
+│ │ 8 teams · 1 open     │ │
+│ │ [Manage →]           │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Overdue Matches ──    │
+│ ┌──────────────────────┐ │
+│ │ Player A vs Player B │ │
+│ │ Challenged 21d ago   │ │
+│ │ ⚠ No date agreed     │ │
+│ │ [Nudge] [Resolve]    │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Actions ──            │
+│ [Manage members →]       │
+│ [Create new season →]    │
+│ [Send announcement →]    │
+│ [Club settings →]        │
+│                          │
+│ ── Invite Link ──        │
+│ ┌──────────────────────┐ │
+│ │ Join code: ABC123    │ │
+│ │ [Copy] [Share] [QR]  │ │
+│ │ [Regenerate code]    │ │
+│ └──────────────────────┘ │
+└──────────────────────────┘
+```
+
+**Nudge button**: sends a reminder email to both players in the overdue match.
+
+**Resolve button**: opens the match detail with admin controls (cancel, set winner, override).
+
+---
+
+### 15. Admin — Create Season (`/admin/club/[id]/season/new`)
+
+**Purpose**: Create a new season with scoring and participation config.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ ← Back to Club Admin     │
+│ Create Season             │
+│                          │
+│ ── Basics ──             │
+│ Name         [          ]│
+│ Type         [Individual ▼]│  ← Individual or Team
+│ Team size    [2 ▼]       │  ← only if Team selected
+│                          │
+│ ── Scoring ──            │
+│ Best of      [3 ▼]      │  ← 1, 3, 5, 7...
+│                          │
+│ ── Deadlines ──          │
+│ Match deadline   [14] days│ ← reminder sent after
+│ Reminder after   [7] days │ ← email if no date agreed
+│                          │
+│ ── Starting Ranks ──     │
+│ ○ Empty (manual order)   │
+│ ○ From season: [▼]      │
+│   ○ Keep current ranks   │
+│   ○ Shuffle randomly     │
+│   ○ Invert ranks         │
+│                          │
+│ ── Players ──            │
+│ All 24 club members      │
+│ auto-enrolled.           │
+│                          │
+│ Remove before start:     │
+│ ☑ Player A               │
+│ ☑ Player B               │
+│ ☐ Player C (remove)      │
+│ ...                      │
+│                          │
+│ [Create Season →]        │
+└──────────────────────────┘
+```
+
+**After creation**: Season is created in `draft` state. Admin must set initial standings order (if not from previous season), then explicitly start the season.
+
+---
+
+### 16. Admin — Season Management (`/admin/club/[id]/season/[id]`)
+
+**Purpose**: Configure and manage an active or archived season.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ ← Back to Club Admin     │
+│ Season: Singles 2026     │
+│ Status: Active ●         │
+│                          │
+│ ── Configuration ──      │
+│ Name         [Singles 26]│
+│ Best of      [3]         │
+│ Match deadline [14 days] │
+│ Reminder     [7 days]    │
+│ [Save changes]           │
+│                          │
+│ ── Standings ──          │
+│ [Edit rankings →]        │  ← drag-and-drop reorder
+│ [View pyramid →]         │
+│                          │
+│ ── Players ──            │
+│ 18 active · 2 opted out  │
+│ [Manage players →]       │
+│                          │
+│ ── Season Lifecycle ──   │
+│ [End season]             │  ← ConfirmDialog
+│                          │
+│ ── New Season ──         │
+│ [Create season from      │
+│  this one →]             │
+└──────────────────────────┘
+```
+
+**For team seasons**: additional section:
+
+```
+│ ── Teams ──              │
+│ [Manage teams →]         │  ← /admin/club/[id]/season/[id]/teams
+```
+
+---
+
+### 17. Admin — Team Management (`/admin/club/[id]/season/[id]/teams`)
+
+**Purpose**: Create and manage teams for team-based seasons.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ ← Back to Season         │
+│ Teams                    │
+│ [Create team]            │
+│                          │
+│ ┌──────────────────────┐ │
+│ │ Team Alpha            │ │
+│ │ 👤 Player A           │ │
+│ │ 👤 Player B           │ │
+│ │ [Edit] [Delete]       │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ Team Beta             │ │
+│ │ 👤 Player C           │ │
+│ │ 👤 Player D           │ │
+│ │ [Edit] [Delete]       │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Unassigned Players ── │
+│ Player E, Player F       │
+│                          │
+│ ── Create Team ──        │
+│ Team name: [           ] │
+│ Members:                 │
+│ [Player dropdown + add]  │
+│ [Create →]               │
+└──────────────────────────┘
+```
+
+**Behavior**:
+- Admin creates teams, names them, and assigns players from the season roster.
+- Team size enforced per season config (e.g., 2 for doubles).
+- Unassigned players are listed at the bottom as a reminder.
+- Teams participate in the pyramid the same way individual players do.
+
+---
+
+### 18. Admin — Member Management (`/admin/club/[id]/members`)
+
+**Purpose**: Manage club members (across all seasons).
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Members (24)             │
+│ [Invite new player]      │
+│ [Search...          🔍]  │
+│                          │
+│ ┌──────────────────────┐ │
+│ │ 👤 Player A          │ │
+│ │ player.a@mail.com    │ │
+│ │ Role: Player         │ │
+│ │ [Make admin] [Remove]│ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ 👤 Player B          │ │
+│ │ player.b@mail.com    │ │
+│ │ Role: Admin ★        │ │
+│ │ [Demote] [Remove]    │ │
+│ └──────────────────────┘ │
+│ ...                      │
+│                          │
+│ ── Invite New Player ──  │
+│ (expanded when tapped)   │
+│ ┌──────────────────────┐ │
+│ │ Email:               │ │
+│ │ [email@example.com]  │ │
+│ │ Name:  (optional)    │ │
+│ │ [Send invite →]      │ │
+│ └──────────────────────┘ │
+└──────────────────────────┘
+```
+
+**Invite flow**:
+- Admin enters email (required) and optionally a name.
+- If email already has an account → player added to club directly, notified.
+- If email has no account → player account created (with optional name), magic link sent.
+- New player follows: magic link → onboarding (if name not set) → auto-joined to club.
+
+**Admin role**: per club, not per season. A club admin is admin for all seasons in that club.
+
+**Remove**: removes from club + all active seasons. Match history preserved (attributed). Requires ConfirmDialog.
+
+---
+
+### 19. Admin — Announcements (`/admin/club/[id]/announcements`)
+
+**Purpose**: Broadcast messages to all club members.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ Announcements            │
+│                          │
+│ ┌──────────────────────┐ │
+│ │ New announcement     │ │
+│ │ ┌──────────────────┐ │ │
+│ │ │ Type message...  │ │ │
+│ │ └──────────────────┘ │ │
+│ │ [x] Send as email    │ │
+│ │ [Send →]             │ │
+│ └──────────────────────┘ │
+│                          │
+│ ── Past Announcements ── │
+│ ┌──────────────────────┐ │
+│ │ "Courts closed next  │ │
+│ │  week for resurfacing"│ │
+│ │ Sent by Admin · 3d   │ │
+│ │ Emailed: Yes         │ │
+│ └──────────────────────┘ │
+│ ...                      │
+└──────────────────────────┘
+```
+
+**Behavior**:
+- Announcement appears as in-app notification to all club members.
+- Optionally also sent as email (checkbox).
+- Announcements are shown in a separate section (NOT in the feed) — accessible from the admin area and via notification tap.
+- Past announcements are listed with timestamp and delivery method.
+
+---
+
+### 20. Admin — App Super Admin (`/admin/app`)
+
+**Purpose**: Global admin for managing the entire app instance.
+
+**Access**: Only for users with `is_app_admin` flag. The first user to deploy the instance is the initial app admin.
+
+**Layout**:
+```
+┌──────────────────────────┐
+│ App Administration       │
+│                          │
+│ ── Overview ──           │
+│ ┌────┐ ┌────┐ ┌────┐    │
+│ │  5 │ │ 87 │ │ 12 │    │
+│ │Club│ │Plyr│ │Sesn│    │
+│ └────┘ └────┘ └────┘    │
+│                          │
+│ ── Clubs ──              │
+│ ┌──────────────────────┐ │
+│ │ TC Example           │ │
+│ │ 24 members · Active  │ │
+│ │ Admin: admin@ex.com  │ │
+│ │ [View] [Disable]     │ │
+│ └──────────────────────┘ │
+│ [Create new club →]      │
+│                          │
+│ ── App Admins ──         │
+│ ┌──────────────────────┐ │
+│ │ admin@example.com ★  │ │
+│ │ [Revoke admin]       │ │
+│ └──────────────────────┘ │
+│ [Add app admin]          │
+└──────────────────────────┘
+```
+
+**Create club flow**:
+- App admin enters club name.
+- Club created with a join code.
+- App admin assigns an initial club admin (by email). That person becomes the club's admin.
+
+---
+
+## Inline Admin Actions (on Regular Pages)
+
+Admin sees extra UI on regular pages (no separate "admin mode"):
+
+| Page | Admin Extra |
+|------|-------------|
+| Rankings (pyramid) | "Edit standings" button → drag-and-drop reorder mode |
+| Rankings (list) | Drag handle on each row to reorder |
+| Match detail | "Edit result" / "Resolve dispute" / "Cancel match" buttons |
+| Player card (pyramid) | "..." menu: "Remove from season", "Change rank" |
+| Player profile | "..." menu: "Make admin", "Remove from club" |
+| Bottom nav / sidebar | "Admin" nav item appears |
+
+On mobile, admin actions are hidden behind a "..." overflow menu to keep the UI clean. On desktop, they appear as inline buttons.
+
+---
+
+## Responsive Behavior Summary
+
+| Element | Mobile (< lg) | Desktop (lg+) |
+|---------|---------------|---------------|
+| Navigation | Bottom nav (fixed) + top bar | Sidebar (left) |
+| Notification bell | Top bar, right side | Sidebar, with badge |
+| Club switcher | Top bar, left side | Top of sidebar |
+| Dialogs / sheets | Bottom sheet (`rounded-t-3xl`) | Centered dialog |
+| Challenge FAB | Center of bottom nav, raised | Button in page header |
+| Pyramid cards | Compact (name + rank only) | Full (name + rank + W/L) |
+| Match detail | Full-width cards, stacked | Two-column layout |
+| Admin actions | Hidden in "..." menu | Visible inline buttons |
+| Rankings toggle | Tabs above content | Toggle buttons top-right |
+| Feed cards | Full-width, edge-to-edge | Max-width `2xl` centered |
+| Profile stats | Horizontal scroll for tabs | Inline tabs |
+
+---
+
+## i18n
+
+All user-facing text must be translation-ready. Use `next-intl` for the translation system.
+
+**Supported languages**: English (default), German.
+
+**Language selection**: per-user setting in `/settings`, stored in DB. Falls back to browser locale → English.
+
+**What gets translated**:
+- All UI labels, buttons, headings, empty states, error messages, notification text.
+- Email templates (subject + body).
+
+**What stays untranslated**:
+- Player names, club names, season names, team names.
+- Comments, announcements (user-generated content).
+- Score numbers.
