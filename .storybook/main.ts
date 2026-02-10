@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { StorybookConfig } from "@storybook/react-vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -13,6 +14,11 @@ const config: StorybookConfig = {
     options: {},
   },
   viteFinal(config) {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, ".."),
+    };
     config.plugins = config.plugins || [];
     config.plugins.push(tailwindcss());
     config.plugins.push(react());

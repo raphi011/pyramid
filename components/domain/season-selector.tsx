@@ -1,0 +1,42 @@
+"use client";
+
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+
+type Season = {
+  id: string | number;
+  name: string;
+  archived?: boolean;
+};
+
+type SeasonSelectorProps = {
+  seasons: Season[];
+  value?: string | number;
+  onChange?: (seasonId: string) => void;
+  className?: string;
+};
+
+function SeasonSelector({
+  seasons,
+  value,
+  onChange,
+  className,
+}: SeasonSelectorProps) {
+  return (
+    <Select
+      value={value?.toString() ?? ""}
+      onChange={(e) => onChange?.(e.target.value)}
+      className={cn("w-48", className)}
+    >
+      {seasons.map((season) => (
+        <option key={season.id} value={season.id.toString()}>
+          {season.name}
+          {season.archived ? " (Archiv)" : ""}
+        </option>
+      ))}
+    </Select>
+  );
+}
+
+export { SeasonSelector };
+export type { SeasonSelectorProps, Season };

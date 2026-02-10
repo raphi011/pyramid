@@ -1,21 +1,27 @@
+import { useEffect } from "react";
 import type { Preview, ReactRenderer } from "@storybook/react";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { DecoratorFunction } from "@storybook/types";
 import "../app/globals.css";
 
 /**
- * Wraps every story in a container that responds to the `dark` class
- * by setting the correct background and text color.
+ * Sets body + wrapper bg/text to match the active theme.
+ * useEffect ensures the iframe body itself gets the dark background,
+ * not just the wrapper div (which doesn't fill centered layouts).
  */
 const withThemeBackground: DecoratorFunction<ReactRenderer> = (
   Story,
   context,
 ) => {
   const isDark = context.globals?.theme === "dark";
+
+  useEffect(() => {
+    document.body.style.backgroundColor = isDark ? "#020617" : "#f8fafc";
+    document.body.style.color = isDark ? "#94a3b8" : "#475569";
+  }, [isDark]);
+
   return (
-    <div
-      className={`min-h-screen font-sans ${isDark ? "bg-slate-950 text-slate-400" : "bg-slate-50 text-slate-600"}`}
-    >
+    <div className="font-sans">
       <Story />
     </div>
   );
@@ -23,7 +29,7 @@ const withThemeBackground: DecoratorFunction<ReactRenderer> = (
 
 const preview: Preview = {
   parameters: {
-    layout: "fullscreen",
+    layout: "centered",
     viewport: {
       viewports: {
         mobile: {
