@@ -14,7 +14,7 @@ function getTransporter(): nodemailer.Transporter {
   return _transporter;
 }
 
-function getAppUrl(): string {
+export function getAppUrl(): string {
   const appUrl = process.env.APP_URL;
   if (!appUrl && process.env.NODE_ENV === "production") {
     throw new Error("APP_URL environment variable is required in production");

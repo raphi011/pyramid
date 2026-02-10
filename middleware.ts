@@ -24,7 +24,8 @@ export async function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("session_token")?.value;
 
   if (!sessionToken) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const baseUrl = process.env.APP_URL || request.url;
+    return NextResponse.redirect(new URL("/login", baseUrl));
   }
 
   // Note: We can't validate the session against DB in edge middleware
