@@ -3,11 +3,11 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
-  HomeIcon,
   TrophyIcon,
   PlusIcon,
   BoltIcon,
   UserIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
 import { BottomNav } from "@/components/bottom-nav";
 
@@ -24,14 +24,14 @@ export default meta;
 type Story = StoryObj<typeof BottomNav>;
 
 const navItems = [
-  { icon: <HomeIcon />, label: "Feed", href: "/" },
+  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
   { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
   { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
   { icon: <UserIcon />, label: "Profil", href: "/profile" },
 ];
 
 function BottomNavDemo() {
-  const [active, setActive] = useState("/");
+  const [active, setActive] = useState("/neuigkeiten");
   return (
     <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
       <div className="p-4">
@@ -58,7 +58,7 @@ export const Default: Story = {
 export const WithBadge: Story = {
   render: () => {
     const itemsWithBadge = [
-      { icon: <HomeIcon />, label: "Feed", href: "/", badge: 3 },
+      { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 5 },
       { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
       { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
       { icon: <UserIcon />, label: "Profil", href: "/profile" },
@@ -84,7 +84,7 @@ export const FABDisabled: Story = {
     <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
       <BottomNav
         items={navItems}
-        activeHref="/"
+        activeHref="/neuigkeiten"
         fab={{
           icon: <PlusIcon />,
           label: "Fordern",

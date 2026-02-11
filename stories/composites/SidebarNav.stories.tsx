@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
-  HomeIcon,
   TrophyIcon,
   BoltIcon,
   UserIcon,
@@ -23,10 +22,9 @@ export default meta;
 type Story = StoryObj<typeof SidebarNav>;
 
 const sidebarItems = [
-  { icon: <HomeIcon />, label: "Feed", href: "/" },
+  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
   { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
   { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/notifications", badge: 5 },
   { icon: <UserIcon />, label: "Profil", href: "/profile" },
   { icon: <Cog6ToothIcon />, label: "Einstellungen", href: "/settings" },
 ];
