@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { Badge } from "@/components/ui/badge";
 
 function ColorSwatch({
   name,
@@ -65,9 +66,9 @@ function ColorTokens() {
 
       <div>
         <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          Sample UI Elements
+          Sample Buttons
         </h2>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button className="rounded-xl bg-court-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-court-600 active:bg-court-700 active:shadow-none">
             Primary Button
           </button>
@@ -77,21 +78,19 @@ function ColorTokens() {
           <button className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-600 active:bg-red-700">
             Destructive
           </button>
-          <span className="rounded-full bg-court-100 px-2 py-0.5 text-xs font-medium text-court-700">
-            Win
-          </span>
-          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-            Loss
-          </span>
-          <span className="rounded-full bg-trophy-100 px-2 py-0.5 text-xs font-medium text-trophy-600">
-            Pending
-          </span>
-          <span className="rounded-full bg-trophy-500 px-2 py-0.5 text-xs font-medium text-white">
-            #1
-          </span>
-          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
-            Info
-          </span>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
+          Sample Badges
+        </h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="win">Win</Badge>
+          <Badge variant="loss">Loss</Badge>
+          <Badge variant="pending">Pending</Badge>
+          <Badge variant="rank">#1</Badge>
+          <Badge variant="info">Info</Badge>
         </div>
       </div>
     </div>

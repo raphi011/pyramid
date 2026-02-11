@@ -5,8 +5,6 @@ import type { Meta, StoryObj } from "@storybook/react";
 import {
   TrophyIcon,
   PlusIcon,
-  BoltIcon,
-  UserIcon,
   BellIcon,
 } from "@heroicons/react/24/outline";
 import { BottomNav } from "@/components/bottom-nav";
@@ -24,10 +22,8 @@ export default meta;
 type Story = StoryObj<typeof BottomNav>;
 
 const navItems = [
+  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
   { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
-  { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
-  { icon: <UserIcon />, label: "Profil", href: "/profile" },
 ];
 
 function BottomNavDemo() {
@@ -58,16 +54,14 @@ export const Default: Story = {
 export const WithBadge: Story = {
   render: () => {
     const itemsWithBadge = [
+      { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
       { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 5 },
-      { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
-      { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
-      { icon: <UserIcon />, label: "Profil", href: "/profile" },
     ];
     return (
       <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
         <BottomNav
           items={itemsWithBadge}
-          activeHref="/rankings"
+          activeHref="/rangliste"
           fab={{
             icon: <PlusIcon />,
             label: "Fordern",

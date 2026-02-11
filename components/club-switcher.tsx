@@ -49,6 +49,7 @@ function ClubSwitcher({
 
   return (
     <DropdownMenu
+      align="left"
       trigger={
         <button
           className={cn(

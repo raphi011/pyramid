@@ -87,7 +87,7 @@ function DropdownMenuItem({
           )}
         >
           {icon && (
-            <span className="size-4 shrink-0 [&_svg]:size-4">{icon}</span>
+            <span className="shrink-0 [&_svg]:size-4">{icon}</span>
           )}
           {children}
         </button>

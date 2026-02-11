@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 type SidebarItem = {
@@ -9,21 +10,38 @@ type SidebarItem = {
   badge?: number;
 };
 
+type ProfileInfo = {
+  name: string;
+  avatarSrc?: string | null;
+  href: string;
+};
+
+type FabAction = {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+};
+
 type SidebarNavProps = {
   items: SidebarItem[];
   adminItems?: SidebarItem[];
+  profile?: ProfileInfo;
   activeHref: string;
   onNavigate?: (href: string) => void;
   clubSwitcher?: React.ReactNode;
+  fab?: FabAction;
   className?: string;
 };
 
 function SidebarNav({
   items,
   adminItems,
+  profile,
   activeHref,
   onNavigate,
   clubSwitcher,
+  fab,
   className,
 }: SidebarNavProps) {
   return (
@@ -37,6 +55,25 @@ function SidebarNav({
     >
       {clubSwitcher && (
         <div className="p-4 pb-2">{clubSwitcher}</div>
+      )}
+
+      {fab && (
+        <div className="px-3 pb-1 pt-2">
+          <button
+            onClick={fab.onClick}
+            disabled={fab.disabled}
+            className={cn(
+              "flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5",
+              "bg-court-500 text-sm font-semibold text-white",
+              "transition-colors hover:bg-court-600",
+              "disabled:opacity-50",
+              "[&_svg]:size-5 [&_svg]:shrink-0",
+            )}
+          >
+            {fab.icon}
+            <span>{fab.label}</span>
+          </button>
+        </div>
       )}
 
       <div className="flex-1 space-y-1 px-3 py-2">
@@ -66,6 +103,25 @@ function SidebarNav({
           </>
         )}
       </div>
+
+      {profile && (
+        <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-800">
+          <button
+            onClick={() => onNavigate?.(profile.href)}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+              "transition-colors duration-150",
+              activeHref === profile.href
+                ? "bg-court-50 text-court-700 dark:bg-court-950 dark:text-court-400"
+                : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
+            )}
+            aria-current={activeHref === profile.href ? "page" : undefined}
+          >
+            <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
+            <span>Profil</span>
+          </button>
+        </div>
+      )}
     </nav>
   );
 }
@@ -104,4 +160,4 @@ function SidebarButton({
 }
 
 export { SidebarNav };
-export type { SidebarNavProps, SidebarItem };
+export type { SidebarNavProps, SidebarItem, ProfileInfo };

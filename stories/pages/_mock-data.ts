@@ -59,14 +59,24 @@ export const feedEvents: TimelineEvent[] = [
     title: "Julia Fischer hat gegen Anna Schmidt gewonnen",
     description: "6:3, 7:5",
     timestamp: "Vor 2 Stunden",
+    group: "Heute",
     player: { name: "Julia Fischer" },
+    href: "/matches/m3",
+    context: {
+      scores: [[6, 3], [7, 5]],
+      player1Name: "Julia Fischer",
+      player2Name: "Anna Schmidt",
+      winnerId: "player1",
+    },
   },
   {
     id: "e2",
     type: "challenge",
     title: "Tom Weber fordert Anna Schmidt heraus",
     timestamp: "Vor 5 Stunden",
+    group: "Heute",
     player: { name: "Tom Weber" },
+    href: "/matches/m2",
   },
   {
     id: "e3",
@@ -74,7 +84,10 @@ export const feedEvents: TimelineEvent[] = [
     title: "Felix Wagner zieht Forderung zurück",
     description: "Forderung gegen Paul Becker zurückgezogen",
     timestamp: "Gestern",
+    group: "Gestern",
     player: { name: "Felix Wagner" },
+    href: "/matches/m5",
+    context: { challengedPlayer: "Paul Becker" },
   },
   {
     id: "e4",
@@ -82,7 +95,10 @@ export const feedEvents: TimelineEvent[] = [
     title: "Marie Koch gibt auf",
     description: "Spiel gegen Laura Richter aufgegeben",
     timestamp: "Gestern",
+    group: "Gestern",
     player: { name: "Marie Koch" },
+    href: "/matches/m6",
+    context: { challengedPlayer: "Laura Richter" },
   },
   {
     id: "e5",
@@ -90,13 +106,19 @@ export const feedEvents: TimelineEvent[] = [
     title: "Tom Weber steigt auf Rang 2",
     description: "Nach Sieg gegen Anna Schmidt",
     timestamp: "Vor 2 Tagen",
+    group: "Vor 2 Tagen",
+    href: "/player/p3",
+    context: { rankBefore: 5, rankAfter: 2 },
   },
   {
     id: "e6",
     type: "new_player",
     title: "Emma Bauer tritt dem Verein bei",
     timestamp: "Vor 3 Tagen",
+    group: "Vor 3 Tagen",
     player: { name: "Emma Bauer" },
+    href: "/player/p12",
+    context: { startingRank: 12 },
   },
   {
     id: "e7",
@@ -104,6 +126,7 @@ export const feedEvents: TimelineEvent[] = [
     title: "Sommer 2026 hat begonnen",
     description: "24 Spieler nehmen teil",
     timestamp: "Vor 1 Woche",
+    group: "Letzte Woche",
   },
   {
     id: "e8",
@@ -111,7 +134,10 @@ export const feedEvents: TimelineEvent[] = [
     title: "Sophie Hoffmann ist abwesend",
     description: "Bis 15.03.2026",
     timestamp: "Vor 1 Woche",
+    group: "Letzte Woche",
     player: { name: "Sophie Hoffmann" },
+    href: "/player/p6",
+    context: { returnDate: "15.03.2026" },
   },
   {
     id: "e9",
@@ -119,6 +145,7 @@ export const feedEvents: TimelineEvent[] = [
     title: "Winter 2025/26 ist beendet",
     description: "Julia Fischer gewinnt die Saison",
     timestamp: "Vor 2 Wochen",
+    group: "Vor 2 Wochen",
   },
 ];
 
@@ -212,65 +239,161 @@ export const standingsPlayers: StandingsPlayer[] = players.map((p) => ({
   challengeable: p.rank === 3 || p.rank === 4,
 }));
 
-// ── Notifications ────────────────────────────
+// ── Historical pyramid & standings (before match m3) ──
 
-export type Notification = {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  read: boolean;
-  avatarName: string;
-};
+const historicalPlayers = [
+  { id: "p1", name: "Julia Fischer", rank: 2, wins: 11, losses: 2 },
+  { id: "p2", name: "Anna Schmidt", rank: 1, wins: 10, losses: 3 },
+  { id: "p3", name: "Tom Weber", rank: 3, wins: 9, losses: 5 },
+  { id: "p4", name: "Lisa Müller", rank: 5, wins: 7, losses: 5 },
+  { id: "p5", name: "Max Braun", rank: 4, wins: 7, losses: 6 },
+  { id: "p6", name: "Sophie Hoffmann", rank: 7, wins: 6, losses: 7 },
+  { id: "p7", name: "Paul Becker", rank: 6, wins: 6, losses: 7 },
+  { id: "p8", name: "Laura Richter", rank: 9, wins: 5, losses: 8 },
+  { id: "p9", name: "Felix Wagner", rank: 8, wins: 5, losses: 8 },
+  { id: "p10", name: "Marie Koch", rank: 10, wins: 3, losses: 10 },
+  { id: "p11", name: "Lukas Schäfer", rank: 12, wins: 1, losses: 11 },
+  { id: "p12", name: "Emma Bauer", rank: 11, wins: 2, losses: 10 },
+] as const;
 
-export const notifications: Notification[] = [
+export const pyramidPlayersHistorical: PyramidPlayer[] = historicalPlayers.map((p) => ({
+  ...p,
+  variant: p.id === currentPlayer.id
+    ? "current" as const
+    : p.rank === 3 || p.rank === 5
+      ? "challengeable" as const
+      : "default" as const,
+}));
+
+export const standingsPlayersHistorical: StandingsPlayer[] = historicalPlayers.map((p) => ({
+  ...p,
+  movement: p.rank <= 2
+    ? "up" as const
+    : p.rank >= 11
+      ? "down" as const
+      : "none" as const,
+  challengeable: p.rank === 3 || p.rank === 5,
+}));
+
+// ── Combined feed (chronological) ───────────
+
+export const allEvents: TimelineEvent[] = [
   {
     id: "n1",
-    title: "Lisa Müller hat deine Forderung angenommen",
+    type: "challenge",
+    title: "Lisa Müller hat die Forderung von Max Braun angenommen",
     description: "Schlage einen Termin vor",
     timestamp: "Vor 10 Minuten",
-    read: false,
-    avatarName: "Lisa Müller",
+    group: "Heute",
+    player: { name: "Lisa Müller" },
+    unread: true,
+    href: "/matches/m1",
   },
   {
-    id: "n2",
-    title: "Neues Ergebnis eingetragen",
-    description: "Julia Fischer vs Anna Schmidt — 6:3, 7:5",
+    id: "e1",
+    type: "result",
+    title: "Julia Fischer hat gegen Anna Schmidt gewonnen",
+    description: "6:3, 7:5",
     timestamp: "Vor 2 Stunden",
-    read: false,
-    avatarName: "Julia Fischer",
+    group: "Heute",
+    player: { name: "Julia Fischer" },
+    unread: true,
+    href: "/matches/m3",
+    context: {
+      scores: [[6, 3], [7, 5]],
+      player1Name: "Julia Fischer",
+      player2Name: "Anna Schmidt",
+      winnerId: "player1",
+    },
   },
   {
     id: "n3",
+    type: "unavailable",
     title: "Sophie Hoffmann ist wieder verfügbar",
-    description: "Du kannst sie jetzt herausfordern",
+    description: "Max Braun kann sie jetzt herausfordern",
     timestamp: "Vor 5 Stunden",
-    read: false,
-    avatarName: "Sophie Hoffmann",
+    group: "Heute",
+    player: { name: "Sophie Hoffmann" },
+    unread: true,
+    href: "/player/p6",
   },
   {
-    id: "n4",
+    id: "e2",
+    type: "challenge",
     title: "Tom Weber fordert Anna Schmidt heraus",
-    description: "Rang 3 fordert Rang 2",
-    timestamp: "Gestern",
-    read: true,
-    avatarName: "Tom Weber",
+    timestamp: "Vor 5 Stunden",
+    group: "Heute",
+    player: { name: "Tom Weber" },
+    href: "/matches/m2",
   },
   {
-    id: "n5",
-    title: "Saisonstart: Sommer 2026",
-    description: "Die neue Saison hat begonnen",
-    timestamp: "Vor 1 Woche",
-    read: true,
-    avatarName: "TC Musterstadt",
-  },
-  {
-    id: "n6",
+    id: "e3",
+    type: "withdrawal",
     title: "Felix Wagner zieht Forderung zurück",
-    description: "Forderung gegen Paul Becker",
+    description: "Forderung gegen Paul Becker zurückgezogen",
+    timestamp: "Gestern",
+    group: "Gestern",
+    player: { name: "Felix Wagner" },
+    href: "/matches/m5",
+    context: { challengedPlayer: "Paul Becker" },
+  },
+  {
+    id: "e4",
+    type: "forfeit",
+    title: "Marie Koch gibt auf",
+    description: "Spiel gegen Laura Richter aufgegeben",
+    timestamp: "Gestern",
+    group: "Gestern",
+    player: { name: "Marie Koch" },
+    href: "/matches/m6",
+    context: { challengedPlayer: "Laura Richter" },
+  },
+  {
+    id: "e5",
+    type: "rank_change",
+    title: "Tom Weber steigt auf Rang 2",
+    description: "Nach Sieg gegen Anna Schmidt",
+    timestamp: "Vor 2 Tagen",
+    group: "Vor 2 Tagen",
+    href: "/player/p3",
+    context: { rankBefore: 5, rankAfter: 2 },
+  },
+  {
+    id: "e6",
+    type: "new_player",
+    title: "Emma Bauer tritt dem Verein bei",
+    timestamp: "Vor 3 Tagen",
+    group: "Vor 3 Tagen",
+    player: { name: "Emma Bauer" },
+    href: "/player/p12",
+    context: { startingRank: 12 },
+  },
+  {
+    id: "e7",
+    type: "season_start",
+    title: "Sommer 2026 hat begonnen",
+    description: "24 Spieler nehmen teil",
     timestamp: "Vor 1 Woche",
-    read: true,
-    avatarName: "Felix Wagner",
+    group: "Letzte Woche",
+  },
+  {
+    id: "e8",
+    type: "unavailable",
+    title: "Sophie Hoffmann ist abwesend",
+    description: "Bis 15.03.2026",
+    timestamp: "Vor 1 Woche",
+    group: "Letzte Woche",
+    player: { name: "Sophie Hoffmann" },
+    href: "/player/p6",
+    context: { returnDate: "15.03.2026" },
+  },
+  {
+    id: "e9",
+    type: "season_end",
+    title: "Winter 2025/26 ist beendet",
+    description: "Julia Fischer gewinnt die Saison",
+    timestamp: "Vor 2 Wochen",
+    group: "Vor 2 Wochen",
   },
 ];
 

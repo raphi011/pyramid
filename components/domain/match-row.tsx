@@ -18,6 +18,7 @@ type MatchRowProps = {
   winnerId?: "player1" | "player2";
   scores?: [number, number][];
   date?: string;
+  selected?: boolean;
   onClick?: () => void;
   className?: string;
 };
@@ -40,6 +41,7 @@ function MatchRow({
   winnerId,
   scores,
   date,
+  selected,
   onClick,
   className,
 }: MatchRowProps) {
@@ -52,18 +54,19 @@ function MatchRow({
       disabled={!onClick}
       className={cn(
         "flex w-full items-center gap-3 rounded-xl p-3 text-left",
-        "ring-1 ring-slate-200 dark:ring-slate-800",
-        "bg-white dark:bg-slate-900",
         "transition-shadow duration-150",
+        selected
+          ? "relative z-10 ring-2 ring-court-500 bg-court-50/50 dark:bg-court-950/30"
+          : "ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900",
         onClick && "hover:shadow-sm",
         isMuted && "opacity-60",
         className,
       )}
     >
       {/* Player avatars */}
-      <div className="flex -space-x-2">
-        <Avatar name={player1.name} src={player1.avatarSrc} size="sm" />
-        <Avatar name={player2.name} src={player2.avatarSrc} size="sm" />
+      <div className="flex -space-x-0.5">
+        <Avatar name={player1.name} src={player1.avatarSrc} size="sm" className="ring-2 ring-white dark:ring-slate-900" />
+        <Avatar name={player2.name} src={player2.avatarSrc} size="sm" className="ring-2 ring-white dark:ring-slate-900" />
       </div>
 
       {/* Names + date */}

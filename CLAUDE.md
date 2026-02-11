@@ -14,10 +14,11 @@ Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challeng
 ## Development Commands
 
 ```bash
-pnpm install   # Install dependencies
-pnpm run dev   # Start dev server at http://localhost:3000
-pnpm run build # Production build
-pnpm run lint  # ESLint
+bun install    # Install dependencies
+bun run dev    # Start dev server at http://localhost:3000
+bun run build  # Production build
+bun run lint   # ESLint
+bun storybook  # Start Storybook at http://localhost:6006
 ```
 
 ## Architecture

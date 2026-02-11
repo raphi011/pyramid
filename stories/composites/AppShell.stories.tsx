@@ -5,8 +5,6 @@ import type { Meta, StoryObj } from "@storybook/react";
 import {
   TrophyIcon,
   PlusIcon,
-  BoltIcon,
-  UserIcon,
   BellIcon,
   Cog6ToothIcon,
   ShieldCheckIcon,
@@ -26,17 +24,13 @@ export default meta;
 type Story = StoryObj<typeof AppShell>;
 
 const navItems = [
+  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
   { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
-  { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
-  { icon: <UserIcon />, label: "Profil", href: "/profile" },
 ];
 
 const sidebarItems = [
   { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rankings" },
-  { icon: <BoltIcon />, label: "Spiele", href: "/matches" },
-  { icon: <UserIcon />, label: "Profil", href: "/profile" },
+  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
   { icon: <Cog6ToothIcon />, label: "Einstellungen", href: "/settings" },
 ];
 
@@ -45,7 +39,7 @@ const adminItems = [
 ];
 
 function AppShellDemo() {
-  const [active, setActive] = useState("/rankings");
+  const [active, setActive] = useState("/rangliste");
   return (
     <AppShell
       navItems={navItems}
