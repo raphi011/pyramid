@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { within, userEvent, expect } from "@storybook/test";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 
@@ -35,6 +36,27 @@ function DestructiveDemo() {
 
 export const Destructive: Story = {
   render: () => <DestructiveDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    // Click trigger button
+    await userEvent.click(canvas.getByRole("button", { name: /spieler entfernen/i }));
+
+    // Dialog should appear (portaled to body)
+    const dialog = await body.findByRole("dialog");
+    const dialogScope = within(dialog);
+
+    // Verify dialog content
+    await expect(dialogScope.getByText("Spieler entfernen?")).toBeInTheDocument();
+    await expect(dialogScope.getByText(/Max Mustermann/)).toBeInTheDocument();
+
+    // Click cancel to close
+    await userEvent.click(dialogScope.getByRole("button", { name: /abbrechen/i }));
+
+    // Dialog should be gone
+    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+  },
 };
 
 function WithCustomLabelsDemo() {

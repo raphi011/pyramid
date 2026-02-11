@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,14 @@ function MatchScoreInput({
   maxSets = 5,
   readOnly = false,
   error,
-  player1Name = "Spieler 1",
-  player2Name = "Spieler 2",
+  player1Name,
+  player2Name,
   className,
 }: MatchScoreInputProps) {
+  const t = useTranslations("match");
+  const p1 = player1Name ?? t("player1Default");
+  const p2 = player2Name ?? t("player2Default");
+
   function addSet() {
     if (sets.length < maxSets) {
       onChange([...sets, { player1: "", player2: "" }]);
@@ -53,9 +58,9 @@ function MatchScoreInput({
     <div className={cn("space-y-3", className)}>
       {/* Header */}
       <div className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-        <span className="text-center">{player1Name}</span>
+        <span className="text-center">{p1}</span>
         <span />
-        <span className="text-center">{player2Name}</span>
+        <span className="text-center">{p2}</span>
         <span className="w-8" />
       </div>
 
@@ -73,7 +78,7 @@ function MatchScoreInput({
             onChange={(e) => updateScore(idx, "player1", e.target.value)}
             readOnly={readOnly}
             className="text-center tabular-nums"
-            aria-label={`Satz ${idx + 1} ${player1Name}`}
+            aria-label={t("setAriaLabel", { set: idx + 1, player: p1 })}
           />
           <span className="text-sm font-bold text-slate-400">:</span>
           <Input
@@ -84,13 +89,13 @@ function MatchScoreInput({
             onChange={(e) => updateScore(idx, "player2", e.target.value)}
             readOnly={readOnly}
             className="text-center tabular-nums"
-            aria-label={`Satz ${idx + 1} ${player2Name}`}
+            aria-label={t("setAriaLabel", { set: idx + 1, player: p2 })}
           />
           {!readOnly && sets.length > 1 ? (
             <button
               onClick={() => removeSet(idx)}
               className="flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-              aria-label={`Satz ${idx + 1} entfernen`}
+              aria-label={t("removeSetAriaLabel", { set: idx + 1 })}
             >
               <XMarkIcon className="size-4" />
             </button>
@@ -104,7 +109,7 @@ function MatchScoreInput({
       {!readOnly && sets.length < maxSets && (
         <Button variant="ghost" size="sm" onClick={addSet} className="w-full">
           <PlusIcon className="size-4" />
-          Satz hinzufügen
+          {t("addSet")}
         </Button>
       )}
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { within, userEvent, expect } from "@storybook/test";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
@@ -40,6 +41,22 @@ function SimpleDemo() {
 
 export const Default: Story = {
   render: () => <SimpleDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    // Open dialog
+    await userEvent.click(canvas.getByRole("button", { name: /dialog öffnen/i }));
+
+    // Verify title is visible
+    const dialog = await body.findByRole("dialog");
+    const dialogScope = within(dialog);
+    await expect(dialogScope.getByText("Spieler einladen")).toBeInTheDocument();
+
+    // Close
+    await userEvent.click(dialogScope.getByRole("button", { name: /schließen/i }));
+    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+  },
 };
 
 function WithFormDemo() {

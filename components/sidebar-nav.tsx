@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,9 @@ function SidebarNav({
   fab,
   className,
 }: SidebarNavProps) {
+  const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
+
   return (
     <nav
       className={cn(
@@ -54,7 +58,7 @@ function SidebarNav({
       )}
     >
       {clubSwitcher && (
-        <div className="p-4 pb-2">{clubSwitcher}</div>
+        <div className="px-3 pt-4 pb-2">{clubSwitcher}</div>
       )}
 
       {fab && (
@@ -90,7 +94,7 @@ function SidebarNav({
           <>
             <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
             <p className="px-3 pb-1 pt-2 text-xs font-medium tracking-wide text-slate-400">
-              Admin
+              {tCommon("admin")}
             </p>
             {adminItems.map((item) => (
               <SidebarButton
@@ -118,7 +122,7 @@ function SidebarNav({
             aria-current={activeHref === profile.href ? "page" : undefined}
           >
             <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
-            <span>Profil</span>
+            <span>{t("profile")}</span>
           </button>
         </div>
       )}

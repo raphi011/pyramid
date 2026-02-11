@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { within, userEvent, expect } from "@storybook/test";
 import { FormField } from "@/components/form-field";
 
 const meta: Meta<typeof FormField> = {
@@ -21,6 +22,17 @@ export const Default: Story = {
   args: {
     label: "E-Mail-Adresse",
     placeholder: "name@beispiel.de",
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Find input by label
+    const input = canvas.getByLabelText("E-Mail-Adresse");
+    await expect(input).toBeInTheDocument();
+
+    // Type a value
+    await userEvent.type(input, "test@example.com");
+    await expect(input).toHaveValue("test@example.com");
   },
 };
 

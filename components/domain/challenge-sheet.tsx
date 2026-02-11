@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,11 +32,14 @@ function ChallengeSheet({
   loading,
   className,
 }: ChallengeSheetProps) {
+  const t = useTranslations("challenge");
+  const tCommon = useTranslations("common");
+
   return (
     <ResponsiveDialog
       open={open}
       onClose={onClose}
-      title="Herausfordern"
+      title={t("title")}
       className={className}
     >
       <div className="space-y-4">
@@ -47,7 +51,7 @@ function ChallengeSheet({
               {player.name}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Rang {player.rank}
+              {t("rank", { rank: player.rank })}
             </p>
           </div>
         </div>
@@ -55,12 +59,12 @@ function ChallengeSheet({
         {/* Message */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            Nachricht (optional)
+            {t("messageLabel")}
           </label>
           <Textarea
             value={message}
             onChange={(e) => onMessageChange(e.target.value)}
-            placeholder="z.B. Hast du am Samstag Zeit?"
+            placeholder={t("messagePlaceholder")}
             rows={3}
           />
         </div>
@@ -73,14 +77,14 @@ function ChallengeSheet({
             onClick={onClose}
             disabled={loading}
           >
-            Abbrechen
+            {tCommon("cancel")}
           </Button>
           <Button
             className="flex-1"
             onClick={() => onSubmit(message)}
             loading={loading}
           >
-            Herausfordern
+            {t("submit")}
           </Button>
         </div>
       </div>

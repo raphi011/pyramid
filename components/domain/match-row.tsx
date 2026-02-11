@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,8 @@ type MatchStatus =
   | "withdrawn"
   | "forfeited";
 
+type MatchRowPosition = "first" | "middle" | "last" | "only";
+
 type MatchRowProps = {
   player1: { name: string; avatarSrc?: string | null };
   player2: { name: string; avatarSrc?: string | null };
@@ -19,19 +22,32 @@ type MatchRowProps = {
   scores?: [number, number][];
   date?: string;
   selected?: boolean;
+  position?: MatchRowPosition;
   onClick?: () => void;
   className?: string;
 };
 
-const statusConfig: Record<
-  MatchStatus,
-  { label: string; variant: BadgeVariant }
-> = {
-  challenged: { label: "Offen", variant: "pending" },
-  date_set: { label: "Geplant", variant: "info" },
-  completed: { label: "Beendet", variant: "win" },
-  withdrawn: { label: "Zurückgezogen", variant: "info" },
-  forfeited: { label: "Aufgegeben", variant: "loss" },
+const statusVariants: Record<MatchStatus, BadgeVariant> = {
+  challenged: "pending",
+  date_set: "info",
+  completed: "win",
+  withdrawn: "info",
+  forfeited: "loss",
+};
+
+const statusKeys: Record<MatchStatus, string> = {
+  challenged: "statusChallenged",
+  date_set: "statusDateSet",
+  completed: "statusCompleted",
+  withdrawn: "statusWithdrawn",
+  forfeited: "statusForfeited",
+};
+
+const positionRounding: Record<MatchRowPosition, string> = {
+  first: "rounded-t-xl rounded-b-none",
+  middle: "rounded-none",
+  last: "rounded-b-xl rounded-t-none",
+  only: "rounded-xl",
 };
 
 function MatchRow({
@@ -42,22 +58,27 @@ function MatchRow({
   scores,
   date,
   selected,
+  position,
   onClick,
   className,
 }: MatchRowProps) {
-  const config = statusConfig[status];
+  const t = useTranslations("match");
   const isMuted = status === "withdrawn" || status === "forfeited";
+  const grouped = position != null;
 
   return (
     <button
       onClick={onClick}
       disabled={!onClick}
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl p-3 text-left",
+        "flex w-full items-center gap-3 p-3 text-left",
         "transition-shadow duration-150",
+        grouped ? positionRounding[position] : "rounded-xl",
         selected
-          ? "relative z-10 ring-2 ring-court-500 bg-court-50/50 dark:bg-court-950/30"
-          : "ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900",
+          ? "relative z-10 ring-2 ring-inset ring-court-500 bg-court-50/50 dark:bg-court-950/30"
+          : grouped
+            ? "bg-white dark:bg-slate-900"
+            : "ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900",
         onClick && "hover:shadow-sm",
         isMuted && "opacity-60",
         className,
@@ -100,12 +121,12 @@ function MatchRow({
       )}
 
       {/* Status badge */}
-      <Badge variant={config.variant} size="sm">
-        {config.label}
+      <Badge variant={statusVariants[status]} size="sm">
+        {t(statusKeys[status])}
       </Badge>
     </button>
   );
 }
 
 export { MatchRow };
-export type { MatchRowProps, MatchStatus };
+export type { MatchRowProps, MatchRowPosition, MatchStatus };

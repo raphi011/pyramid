@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";
 
@@ -20,10 +21,12 @@ function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = "Bestätigen",
-  cancelLabel = "Abbrechen",
+  confirmLabel,
+  cancelLabel,
   loading,
 }: ConfirmDialogProps) {
+  const t = useTranslations("common");
+
   return (
     <ResponsiveDialog open={open} onClose={onClose} title={title}>
       {description && (
@@ -38,7 +41,7 @@ function ConfirmDialog({
           onClick={onClose}
           disabled={loading}
         >
-          {cancelLabel}
+          {cancelLabel ?? t("cancel")}
         </Button>
         <Button
           variant="destructive"
@@ -46,7 +49,7 @@ function ConfirmDialog({
           onClick={onConfirm}
           loading={loading}
         >
-          {confirmLabel}
+          {confirmLabel ?? t("confirm")}
         </Button>
       </div>
     </ResponsiveDialog>

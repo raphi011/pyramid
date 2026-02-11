@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
@@ -85,6 +86,7 @@ function EventTimeline({
   onRead,
   className,
 }: EventTimelineProps) {
+  const t = useTranslations("events");
   const calledRef = useRef(false);
 
   useEffect(() => {
@@ -110,8 +112,8 @@ function EventTimeline({
     return (
       <EmptyState
         icon={<BellIcon />}
-        title="Keine Neuigkeiten"
-        description="Sobald etwas passiert, wirst du hier benachrichtigt."
+        title={t("noNews")}
+        description={t("noNewsDesc")}
         className={className}
       />
     );

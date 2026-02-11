@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ function PlayerCard({
   onClick,
   className,
 }: PlayerCardProps) {
+  const t = useTranslations("ranking");
   const isCurrent = variant === "current";
 
   if (compact) {
@@ -134,7 +136,7 @@ function PlayerCard({
               variant === "unavailable" && "text-slate-300",
             )}
           >
-            {wins ?? 0}S · {losses ?? 0}N
+            {t("winsLosses", { wins: wins ?? 0, losses: losses ?? 0 })}
           </p>
         )}
       </div>

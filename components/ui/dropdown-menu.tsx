@@ -24,7 +24,7 @@ function DropdownMenu({
   className,
 }: DropdownMenuProps) {
   return (
-    <Menu as="div" className="relative inline-block text-left">
+    <Menu as="div" className="relative text-left">
       <MenuButton as={Fragment}>{trigger}</MenuButton>
       <Transition
         as={Fragment}

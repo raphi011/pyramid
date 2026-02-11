@@ -397,6 +397,49 @@ export const allEvents: TimelineEvent[] = [
   },
 ];
 
+// ── Large pyramid (25 players) ───────────────
+
+const bigPlayerNames = [
+  "Julia Fischer", "Anna Schmidt", "Tom Weber", "Lisa Müller",
+  "Max Braun", "Sophie Hoffmann", "Paul Becker", "Laura Richter",
+  "Felix Wagner", "Marie Koch", "Lukas Schäfer", "Emma Bauer",
+  "Nico Hartmann", "Lena Fuchs", "Moritz Krause", "Clara Vogel",
+  "Jonas Meier", "Lea Wolf", "Tim Schulz", "Nina Berger",
+  "David Roth", "Sarah Lang", "Finn Peters", "Mia Schwarz",
+  "Jan Weiß",
+];
+
+export const bigPlayers = bigPlayerNames.map((name, i) => ({
+  id: `bp${i + 1}`,
+  name,
+  rank: i + 1,
+  wins: Math.max(0, 20 - i * 2 + Math.floor(Math.random() * 4)),
+  losses: Math.max(0, i * 2 - 3 + Math.floor(Math.random() * 4)),
+}));
+
+export const bigPyramidPlayers: PyramidPlayer[] = bigPlayers.map((p) => ({
+  ...p,
+  variant:
+    p.id === "bp5"
+      ? ("current" as const)
+      : p.rank === 3 || p.rank === 4
+        ? ("challengeable" as const)
+        : p.rank === 18
+          ? ("unavailable" as const)
+          : ("default" as const),
+}));
+
+export const bigStandingsPlayers: StandingsPlayer[] = bigPlayers.map((p) => ({
+  ...p,
+  movement:
+    p.rank <= 3
+      ? ("up" as const)
+      : p.rank >= 22
+        ? ("down" as const)
+        : ("none" as const),
+  challengeable: p.rank === 3 || p.rank === 4,
+}));
+
 // ── Rank chart data ──────────────────────────
 
 export const rankChartData: RankDataPoint[] = [

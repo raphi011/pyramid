@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,8 @@ function SeasonSelector({
   onChange,
   className,
 }: SeasonSelectorProps) {
+  const t = useTranslations("season");
+
   return (
     <Select
       value={value?.toString() ?? ""}
@@ -31,7 +34,7 @@ function SeasonSelector({
       {seasons.map((season) => (
         <option key={season.id} value={season.id.toString()}>
           {season.name}
-          {season.archived ? " (Archiv)" : ""}
+          {season.archived ? ` ${t("archived")}` : ""}
         </option>
       ))}
     </Select>

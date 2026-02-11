@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { PencilIcon } from "@heroicons/react/20/solid";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,8 @@ function PlayerProfile({
   rankChartSlot,
   className,
 }: PlayerProfileProps) {
+  const t = useTranslations("profile");
+
   return (
     <div className={cn("space-y-6", className)}>
       {/* Header */}
@@ -54,21 +57,21 @@ function PlayerProfile({
             <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
               {name}
             </h2>
-            {unavailable && <Badge variant="info">Abwesend</Badge>}
+            {unavailable && <Badge variant="info">{t("unavailable")}</Badge>}
           </div>
           <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-            Rang {rank}
+            {t("rank", { rank })}
           </p>
           <div className="mt-3 flex gap-2">
             {isOwnProfile && onEdit && (
               <Button variant="outline" size="sm" onClick={onEdit}>
                 <PencilIcon className="size-4" />
-                Bearbeiten
+                {t("edit")}
               </Button>
             )}
             {!isOwnProfile && canChallenge && onChallenge && (
               <Button size="sm" onClick={onChallenge}>
-                Herausfordern
+                {t("challenge")}
               </Button>
             )}
           </div>
@@ -78,14 +81,14 @@ function PlayerProfile({
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatBlock
-          label="Rang"
+          label={t("rankLabel")}
           value={rank}
           trend={trend}
           trendValue={trendValue}
         />
-        <StatBlock label="Siege" value={wins} />
-        <StatBlock label="Niederlagen" value={losses} />
-        <StatBlock label="Siegquote" value={winRate} />
+        <StatBlock label={t("winsLabel")} value={wins} />
+        <StatBlock label={t("lossesLabel")} value={losses} />
+        <StatBlock label={t("winRateLabel")} value={winRate} />
       </div>
 
       {/* Rank chart slot */}

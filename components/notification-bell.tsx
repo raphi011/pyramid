@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,8 @@ function NotificationBell({
   onClick,
   className,
 }: NotificationBellProps) {
+  const t = useTranslations("notifications");
+
   return (
     <button
       onClick={onClick}
@@ -26,7 +29,7 @@ function NotificationBell({
         className,
       )}
       aria-label={
-        count > 0 ? `${count} ungelesene Benachrichtigungen` : "Benachrichtigungen"
+        count > 0 ? t("ariaLabelWithCount", { count }) : t("ariaLabel")
       }
     >
       <BellIcon className="size-5" />

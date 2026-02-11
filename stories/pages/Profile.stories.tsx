@@ -107,7 +107,8 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
             <DataList
               items={playerMatches}
               keyExtractor={(m) => m.id}
-              renderItem={(m) => (
+              className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden"
+              renderItem={(m, index) => (
                 <MatchRow
                   player1={m.player1}
                   player2={m.player2}
@@ -115,6 +116,15 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
                   winnerId={m.winnerId}
                   scores={m.scores}
                   date={m.date}
+                  position={
+                    playerMatches.length === 1
+                      ? "only"
+                      : index === 0
+                        ? "first"
+                        : index === playerMatches.length - 1
+                          ? "last"
+                          : "middle"
+                  }
                   onClick={() => {}}
                 />
               )}

@@ -2,7 +2,28 @@ import { useEffect } from "react";
 import type { Preview, ReactRenderer } from "@storybook/react";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { DecoratorFunction } from "@storybook/types";
+import { NextIntlClientProvider } from "next-intl";
+import deMessages from "../messages/de.json";
+import enMessages from "../messages/en.json";
 import "../app/globals.css";
+
+const messages: Record<string, typeof deMessages> = {
+  de: deMessages,
+  en: enMessages,
+};
+
+/**
+ * Wraps every story in NextIntlClientProvider so useTranslations() works.
+ * The locale is controlled via the toolbar globe icon.
+ */
+const withIntl: DecoratorFunction<ReactRenderer> = (Story, context) => {
+  const locale = (context.globals?.locale as string) ?? "de";
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages[locale]}>
+      <Story />
+    </NextIntlClientProvider>
+  );
+};
 
 /**
  * Sets body + wrapper bg/text to match the active theme.
@@ -28,6 +49,23 @@ const withThemeBackground: DecoratorFunction<ReactRenderer> = (
 };
 
 const preview: Preview = {
+  globalTypes: {
+    locale: {
+      description: "Locale for translations",
+      toolbar: {
+        title: "Locale",
+        icon: "globe",
+        items: [
+          { value: "de", title: "DE Deutsch" },
+          { value: "en", title: "EN English" },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: {
+    locale: "de",
+  },
   parameters: {
     layout: "centered",
     viewport: {
@@ -44,6 +82,7 @@ const preview: Preview = {
     },
   },
   decorators: [
+    withIntl,
     withThemeBackground,
     withThemeByClassName({
       themes: {

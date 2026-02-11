@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ClipboardDocumentIcon } from "@heroicons/react/20/solid";
 import {
   Card,
@@ -31,11 +32,14 @@ type ClubJoinCardProps =
     };
 
 function ClubJoinCard(props: ClubJoinCardProps) {
+  const t = useTranslations("club");
+  const tCommon = useTranslations("common");
+
   if (props.mode === "admin") {
     return (
       <Card className={props.className}>
         <CardHeader>
-          <CardTitle>Einladungscode</CardTitle>
+          <CardTitle>{t("inviteCode")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -63,7 +67,7 @@ function ClubJoinCard(props: ClubJoinCardProps) {
                 className="w-full"
                 onClick={props.onShare}
               >
-                Teilen
+                {tCommon("share")}
               </Button>
             )}
           </div>
@@ -75,17 +79,17 @@ function ClubJoinCard(props: ClubJoinCardProps) {
   return (
     <Card className={props.className}>
       <CardHeader>
-        <CardTitle>Verein beitreten</CardTitle>
+        <CardTitle>{t("joinTitle")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Gib den Einladungscode ein, den du von deinem Verein erhalten hast.
+            {t("joinDesc")}
           </p>
           <Input
             value={props.code}
             onChange={(e) => props.onCodeChange(e.target.value)}
-            placeholder="Code eingeben..."
+            placeholder={t("codePlaceholder")}
             error={!!props.error}
             className="text-center text-lg font-bold tracking-widest"
           />
@@ -98,7 +102,7 @@ function ClubJoinCard(props: ClubJoinCardProps) {
             loading={props.loading}
             disabled={!props.code.trim()}
           >
-            Beitreten
+            {t("join")}
           </Button>
         </div>
       </CardContent>

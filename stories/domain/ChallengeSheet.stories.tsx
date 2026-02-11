@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { within, userEvent, expect } from "@storybook/test";
 import { ChallengeSheet } from "@/components/domain/challenge-sheet";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +35,34 @@ function ChallengeDemo() {
 
 export const Default: Story = {
   render: () => <ChallengeDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    // Open sheet
+    await userEvent.click(canvas.getByRole("button", { name: /herausfordern/i }));
+
+    // Sheet should appear
+    const dialog = await body.findByRole("dialog");
+    const dialogScope = within(dialog);
+
+    // Verify player info
+    await expect(dialogScope.getByText("Anna Schmidt")).toBeInTheDocument();
+    await expect(dialogScope.getByText(/Rang 2/)).toBeInTheDocument();
+
+    // Type a message
+    const textarea = dialogScope.getByRole("textbox");
+    await userEvent.type(textarea, "Samstag 14 Uhr?");
+    await expect(textarea).toHaveValue("Samstag 14 Uhr?");
+
+    // Submit
+    const submitButtons = dialogScope.getAllByRole("button");
+    const submitButton = submitButtons.find((b) => b.textContent?.includes("Herausfordern"));
+    await userEvent.click(submitButton!);
+
+    // Dialog should close
+    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+  },
 };
 
 function WithMessageDemo() {

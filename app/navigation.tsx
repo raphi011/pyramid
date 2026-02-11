@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Avatar } from "./components/avatar";
 import {
   Dropdown,
@@ -40,6 +41,8 @@ import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 const navItems = [{ label: "Home", url: "/" }];
 
 function LogoutButton() {
+  const t = useTranslations("nav");
+
   return (
     <form action="/api/auth/logout" method="POST" className="w-full">
       <button
@@ -47,7 +50,7 @@ function LogoutButton() {
         className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-base/6 text-zinc-950 sm:py-2 sm:text-sm/5 data-[focus]:bg-zinc-950/5 dark:text-white dark:data-[focus]:bg-white/5"
       >
         <ArrowRightStartOnRectangleIcon className="size-4" />
-        <span>Abmelden</span>
+        <span>{t("logout")}</span>
       </button>
     </form>
   );
@@ -60,6 +63,8 @@ interface Player {
 }
 
 function TeamDropdownMenu() {
+  const t = useTranslations("nav");
+
   return (
     <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
       <DropdownItem href="/teams/1">
@@ -69,7 +74,7 @@ function TeamDropdownMenu() {
       <DropdownDivider />
       <DropdownItem href="/teams/create">
         <PlusIcon />
-        <DropdownLabel>Neue Rangliste&hellip;</DropdownLabel>
+        <DropdownLabel>{t("newRanking")}</DropdownLabel>
       </DropdownItem>
     </DropdownMenu>
   );
@@ -82,6 +87,8 @@ export default function Navigation({
   children: React.ReactNode;
   currentPlayer: Player;
 }) {
+  const t = useTranslations("nav");
+
   return (
     <StackedLayout
       navbar={
@@ -120,17 +127,17 @@ export default function Navigation({
                 <DropdownDivider />
                 <DropdownItem href="/my-profile">
                   <UserIcon />
-                  <DropdownLabel>Mein Profil</DropdownLabel>
+                  <DropdownLabel>{t("myProfile")}</DropdownLabel>
                 </DropdownItem>
                 <DropdownItem href="/settings">
                   <Cog8ToothIcon />
-                  <DropdownLabel>Einstellungen</DropdownLabel>
+                  <DropdownLabel>{t("settings")}</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
 
                 <DropdownItem href="/share-feedback">
                   <LightBulbIcon />
-                  <DropdownLabel>Feedback teilen</DropdownLabel>
+                  <DropdownLabel>{t("feedback")}</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
                 <LogoutButton />

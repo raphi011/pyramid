@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { within, userEvent, expect } from "@storybook/test";
 import { MatchScoreInput, type SetScore } from "@/components/domain/match-score-input";
 
 const meta: Meta<typeof MatchScoreInput> = {
@@ -50,6 +51,24 @@ export const BestOfFive: Story = {
   render: () => (
     <ScoreDemo initial={[{ player1: "", player2: "" }]} maxSets={5} />
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Initially one set row = 2 spinbuttons
+    const initialInputs = canvas.getAllByRole("spinbutton");
+    await expect(initialInputs).toHaveLength(2);
+
+    // Enter scores in first set
+    await userEvent.type(initialInputs[0], "6");
+    await userEvent.type(initialInputs[1], "4");
+
+    // Click "Add set" button
+    await userEvent.click(canvas.getByRole("button", { name: /satz hinzufügen/i }));
+
+    // Now 2 sets = 4 spinbuttons
+    const afterAddInputs = canvas.getAllByRole("spinbutton");
+    await expect(afterAddInputs).toHaveLength(4);
+  },
 };
 
 export const PartiallyFilled: Story = {

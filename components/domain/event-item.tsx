@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   TrophyIcon,
   BoltIcon,
@@ -69,6 +70,8 @@ function EventDetail({
   type: EventType;
   context: EventContextData;
 }) {
+  const t = useTranslations("events");
+
   switch (type) {
     case "result":
       if (context.scores && context.scores.length > 0) {
@@ -103,7 +106,7 @@ function EventDetail({
       if (context.startingRank != null) {
         return (
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Startet auf Rang {context.startingRank}
+            {t("startsAtRank", { rank: context.startingRank })}
           </span>
         );
       }
@@ -114,7 +117,7 @@ function EventDetail({
         return (
           <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
             <CalendarIcon className="size-3.5" />
-            Bis {context.returnDate}
+            {t("until", { date: context.returnDate })}
           </span>
         );
       }
@@ -124,7 +127,7 @@ function EventDetail({
       if (context.challengedPlayer) {
         return (
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            gegen {context.challengedPlayer}
+            {t("against", { player: context.challengedPlayer })}
           </span>
         );
       }
@@ -135,7 +138,7 @@ function EventDetail({
         return (
           <div className="space-y-0.5">
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              gegen {context.challengedPlayer}
+              {t("against", { player: context.challengedPlayer })}
             </span>
             {context.rankBefore != null && context.rankAfter != null && (
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
