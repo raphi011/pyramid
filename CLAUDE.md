@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Tennis pyramid ranking system ("Pyramiden Rangliste") - a Next.js 14 app for managing challenge-based tennis club rankings.
+Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challenge-based club rankings. Supports multiple clubs, seasons, individual and team pyramids.
+
+## Specification Docs
+
+- `docs/design-system.md` — Full design system: colors, typography, component library, composition rules. **Read before any UI work.**
+- `docs/ui-spec.md` — Complete UI specification: pages, layouts, navigation, user flows. **Read before building any page.**
 
 ## Development Commands
 
@@ -87,6 +92,23 @@ In `app/pyramid.tsx`:
 
 // Event types: challenge, result, withdrawal, new_player, season_start, season_end
 ```
+
+## Design System & Frontend
+
+**Read `docs/design-system.md` before any frontend/UI work.** It contains the full color palette, component catalog, and composition patterns.
+
+Key rules (always enforce):
+- **Theme "Court"**: primary = `court-*` (green), accent = `trophy-*` (gold), neutrals = `slate-*` only
+- **Never use `gray-*` or `zinc-*`** — always `slate-*`
+- **Never use `border`** — use `ring-1 ring-slate-200` (no layout shift)
+- **Component library**: shadcn/ui primitives (`components/ui/`) → composites (`components/`) → domain (`components/domain/`)
+- **Pages only import from `components/domain/` and `components/`** — never from `components/ui/` directly
+- **Every list** uses `DataList` with `loading` + `empty` props — no bare `.map()`
+- **Every modal** uses `ResponsiveDialog` — never raw `Dialog` or `Sheet`
+- **Every form** uses `FormField` — never raw `Label` + `Input`
+- **Destructive actions** always use `ConfirmDialog`
+- Mobile-first: bottom sheet on mobile, centered dialog on desktop
+- `rounded-xl` for interactive elements, `rounded-2xl` for cards
 
 ## Code Conventions
 
