@@ -1,0 +1,90 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "close": "Close",
+    "or": "or",
+    "vs": "vs",
+    "admin": "Admin",
+    "share": "Share"
+  },
+  "nav": {
+    "profile": "Profile",
+    "myProfile": "My Profile",
+    "settings": "Settings",
+    "logout": "Log out",
+    "feedback": "Share feedback",
+    "newRanking": "New ranking\u2026",
+    "ranking": "Rankings",
+    "news": "News",
+    "manageClub": "Manage club",
+    "challenge": "Challenge"
+  },
+  "challenge": {
+    "title": "Challenge",
+    "rank": "Rank {rank}",
+    "messageLabel": "Message (optional)",
+    "messagePlaceholder": "e.g. Are you free on Saturday?",
+    "submit": "Challenge"
+  },
+  "match": {
+    "statusChallenged": "Open",
+    "statusDateSet": "Scheduled",
+    "statusCompleted": "Completed",
+    "statusWithdrawn": "Withdrawn",
+    "statusForfeited": "Forfeited",
+    "addSet": "Add set",
+    "setAriaLabel": "Set {set} {player}",
+    "removeSetAriaLabel": "Remove set {set}",
+    "player1Default": "Player 1",
+    "player2Default": "Player 2"
+  },
+  "ranking": {
+    "title": "Rankings",
+    "winsLosses": "{wins}W \u00b7 {losses}L",
+    "matches": "Matches",
+    "pyramid": "Pyramid",
+    "list": "List",
+    "all": "All",
+    "open": "Open",
+    "mine": "Mine",
+    "noMatches": "No matches",
+    "noMatchesDesc": "Challenge a player to get started.",
+    "noPlayers": "No players",
+    "noPlayersDesc": "No players have been added for this season yet.",
+    "stateAfter": "After: {player1} vs {player2}",
+    "seasonSubtitle": "Season {year} — {club}"
+  },
+  "events": {
+    "noNews": "No news",
+    "noNewsDesc": "You'll be notified here when something happens.",
+    "startsAtRank": "Starts at rank {rank}",
+    "until": "Until {date}",
+    "against": "against {player}"
+  },
+  "profile": {
+    "rankLabel": "Rank",
+    "rank": "Rank {rank}",
+    "winsLabel": "Wins",
+    "lossesLabel": "Losses",
+    "winRateLabel": "Win rate",
+    "edit": "Edit",
+    "challenge": "Challenge",
+    "unavailable": "Away"
+  },
+  "club": {
+    "inviteCode": "Invite code",
+    "joinTitle": "Join club",
+    "joinDesc": "Enter the invite code you received from your club.",
+    "codePlaceholder": "Enter code...",
+    "join": "Join"
+  },
+  "season": {
+    "archived": "(Archive)"
+  },
+  "notifications": {
+    "ariaLabel": "Notifications",
+    "ariaLabelWithCount": "{count} unread notifications"
+  }
+}

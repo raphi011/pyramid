@@ -1,0 +1,90 @@
+{
+  "common": {
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "close": "Schließen",
+    "or": "oder",
+    "vs": "vs",
+    "admin": "Admin",
+    "share": "Teilen"
+  },
+  "nav": {
+    "profile": "Profil",
+    "myProfile": "Mein Profil",
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "feedback": "Feedback teilen",
+    "newRanking": "Neue Rangliste\u2026",
+    "ranking": "Rangliste",
+    "news": "Neuigkeiten",
+    "manageClub": "Club verwalten",
+    "challenge": "Fordern"
+  },
+  "challenge": {
+    "title": "Herausfordern",
+    "rank": "Rang {rank}",
+    "messageLabel": "Nachricht (optional)",
+    "messagePlaceholder": "z.B. Hast du am Samstag Zeit?",
+    "submit": "Herausfordern"
+  },
+  "match": {
+    "statusChallenged": "Offen",
+    "statusDateSet": "Geplant",
+    "statusCompleted": "Beendet",
+    "statusWithdrawn": "Zurückgezogen",
+    "statusForfeited": "Aufgegeben",
+    "addSet": "Satz hinzufügen",
+    "setAriaLabel": "Satz {set} {player}",
+    "removeSetAriaLabel": "Satz {set} entfernen",
+    "player1Default": "Spieler 1",
+    "player2Default": "Spieler 2"
+  },
+  "ranking": {
+    "title": "Rangliste",
+    "winsLosses": "{wins}S \u00b7 {losses}N",
+    "matches": "Spiele",
+    "pyramid": "Pyramide",
+    "list": "Liste",
+    "all": "Alle",
+    "open": "Offen",
+    "mine": "Meine",
+    "noMatches": "Keine Spiele",
+    "noMatchesDesc": "Fordere einen Spieler heraus, um loszulegen.",
+    "noPlayers": "Keine Spieler",
+    "noPlayersDesc": "Es wurden noch keine Spieler für diese Saison hinzugefügt.",
+    "stateAfter": "Stand nach: {player1} vs {player2}",
+    "seasonSubtitle": "Saison {year} — {club}"
+  },
+  "events": {
+    "noNews": "Keine Neuigkeiten",
+    "noNewsDesc": "Sobald etwas passiert, wirst du hier benachrichtigt.",
+    "startsAtRank": "Startet auf Rang {rank}",
+    "until": "Bis {date}",
+    "against": "gegen {player}"
+  },
+  "profile": {
+    "rankLabel": "Rang",
+    "rank": "Rang {rank}",
+    "winsLabel": "Siege",
+    "lossesLabel": "Niederlagen",
+    "winRateLabel": "Siegquote",
+    "edit": "Bearbeiten",
+    "challenge": "Herausfordern",
+    "unavailable": "Abwesend"
+  },
+  "club": {
+    "inviteCode": "Einladungscode",
+    "joinTitle": "Verein beitreten",
+    "joinDesc": "Gib den Einladungscode ein, den du von deinem Verein erhalten hast.",
+    "codePlaceholder": "Code eingeben...",
+    "join": "Beitreten"
+  },
+  "season": {
+    "archived": "(Archiv)"
+  },
+  "notifications": {
+    "ariaLabel": "Benachrichtigungen",
+    "ariaLabelWithCount": "{count} ungelesene Benachrichtigungen"
+  }
+}

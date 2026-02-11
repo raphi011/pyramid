@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   TrophyIcon,
   PlusIcon,
@@ -12,21 +13,6 @@ import { AppShell } from "@/components/app-shell";
 import { ClubSwitcher } from "@/components/club-switcher";
 import { clubs, currentPlayer } from "./_mock-data";
 
-const navItems = [
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-];
-
-const sidebarItems = [
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-  { icon: <Cog6ToothIcon />, label: "Einstellungen", href: "/settings" },
-];
-
-const adminItems = [
-  { icon: <ShieldCheckIcon />, label: "Club verwalten", href: "/admin/club/1" },
-];
-
 type PageWrapperProps = {
   activeHref: string;
   isAdmin?: boolean;
@@ -35,10 +21,26 @@ type PageWrapperProps = {
 };
 
 export function PageWrapper({ activeHref, isAdmin, singleClub, children }: PageWrapperProps) {
+  const t = useTranslations("nav");
   const [active, setActive] = useState(activeHref);
   const [activeClub, setActiveClub] = useState<string | number>("c1");
 
   const displayClubs = singleClub ? [clubs[0]] : clubs;
+
+  const navItems = [
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rangliste" },
+    { icon: <BellIcon />, label: t("news"), href: "/neuigkeiten", badge: 3 },
+  ];
+
+  const sidebarItems = [
+    { icon: <BellIcon />, label: t("news"), href: "/neuigkeiten", badge: 3 },
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rangliste" },
+    { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+  ];
+
+  const adminItems = [
+    { icon: <ShieldCheckIcon />, label: t("manageClub"), href: "/admin/club/1" },
+  ];
 
   return (
     <AppShell
@@ -50,7 +52,7 @@ export function PageWrapper({ activeHref, isAdmin, singleClub, children }: PageW
       onNavigate={setActive}
       fab={{
         icon: <PlusIcon />,
-        label: "Fordern",
+        label: t("challenge"),
         onClick: () => {},
       }}
       clubSwitcher={

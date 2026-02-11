@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useTranslations } from "next-intl";
 import { TrophyIcon, BoltIcon } from "@heroicons/react/24/outline";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
@@ -18,6 +19,8 @@ import {
   standingsPlayers,
   pyramidPlayersHistorical,
   standingsPlayersHistorical,
+  bigPyramidPlayers,
+  bigStandingsPlayers,
   matches,
   seasons,
 } from "./_mock-data";
@@ -37,6 +40,13 @@ const openMatches = matches.filter(
   (m) => m.status === "challenged" || m.status === "date_set",
 );
 
+function getPosition(index: number, total: number) {
+  if (total === 1) return "only" as const;
+  if (index === 0) return "first" as const;
+  if (index === total - 1) return "last" as const;
+  return "middle" as const;
+}
+
 function MatchList({
   items,
   loading = false,
@@ -48,13 +58,15 @@ function MatchList({
   selectedMatchId?: string | null;
   onMatchClick?: (id: string) => void;
 }) {
+  const t = useTranslations("ranking");
   return (
     <DataList
       items={items}
       loading={loading}
       loadingCount={4}
       keyExtractor={(m) => m.id}
-      renderItem={(m) => (
+      className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden"
+      renderItem={(m, index) => (
         <MatchRow
           player1={m.player1}
           player2={m.player2}
@@ -63,13 +75,14 @@ function MatchList({
           scores={m.scores}
           date={m.date}
           selected={m.id === selectedMatchId}
+          position={getPosition(index, items.length)}
           onClick={() => onMatchClick?.(m.id)}
         />
       )}
       empty={{
         icon: <BoltIcon />,
-        title: "Keine Spiele",
-        description: "Fordere einen Spieler heraus, um loszulegen.",
+        title: t("noMatches"),
+        description: t("noMatchesDesc"),
       }}
     />
   );
@@ -97,12 +110,17 @@ function RanglistePage({
   loading = false,
   empty = false,
   initialSelectedMatchId,
+  customPyramid,
+  customStandings,
 }: {
   defaultRankingTab?: number;
   loading?: boolean;
   empty?: boolean;
   initialSelectedMatchId?: string | null;
+  customPyramid?: typeof pyramidPlayers;
+  customStandings?: typeof standingsPlayers;
 }) {
+  const t = useTranslations("ranking");
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(
     initialSelectedMatchId ?? null,
   );
@@ -111,22 +129,24 @@ function RanglistePage({
     setSelectedMatchId((prev) => (prev === id ? null : id));
   };
 
+  const basePyramid = customPyramid ?? pyramidPlayers;
+  const baseStandings = customStandings ?? standingsPlayers;
   const isHistorical = selectedMatchId !== null;
-  const activePyramid = isHistorical ? pyramidPlayersHistorical : pyramidPlayers;
-  const activeStandings = isHistorical ? standingsPlayersHistorical : standingsPlayers;
+  const activePyramid = isHistorical ? pyramidPlayersHistorical : basePyramid;
+  const activeStandings = isHistorical ? standingsPlayersHistorical : baseStandings;
 
   const selectedMatch = selectedMatchId
     ? matches.find((m) => m.id === selectedMatchId)
     : null;
 
   const subtitle = selectedMatch
-    ? `Stand nach: ${selectedMatch.player1.name} vs ${selectedMatch.player2.name}`
-    : "Saison 2026 — TC Musterstadt";
+    ? t("stateAfter", { player1: selectedMatch.player1.name, player2: selectedMatch.player2.name })
+    : t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" });
 
   return (
     <PageWrapper activeHref="/rangliste">
       <PageLayout
-        title="Rangliste"
+        title={t("title")}
         subtitle={subtitle}
         action={
           <SeasonSelector seasons={seasons} value="s1" onChange={() => {}} />
@@ -137,7 +157,7 @@ function RanglistePage({
             <RankingLoadingSkeleton />
             <div className="mt-6">
               <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Spiele
+                {t("matches")}
               </h2>
               <MatchList items={[]} loading />
             </div>
@@ -145,8 +165,8 @@ function RanglistePage({
         ) : empty ? (
           <EmptyState
             icon={<TrophyIcon />}
-            title="Keine Spieler"
-            description="Es wurden noch keine Spieler für diese Saison hinzugefügt."
+            title={t("noPlayers")}
+            description={t("noPlayersDesc")}
           />
         ) : (
           <>
@@ -154,7 +174,7 @@ function RanglistePage({
               defaultIndex={defaultRankingTab}
               items={[
                 {
-                  label: "Pyramide",
+                  label: t("pyramid"),
                   content: (
                     <PyramidGrid
                       players={activePyramid}
@@ -163,7 +183,7 @@ function RanglistePage({
                   ),
                 },
                 {
-                  label: "Liste",
+                  label: t("list"),
                   content: (
                     <StandingsTable
                       players={activeStandings}
@@ -176,12 +196,12 @@ function RanglistePage({
 
             <div className="mt-6">
               <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Spiele
+                {t("matches")}
               </h2>
               <Tabs
                 items={[
                   {
-                    label: "Alle",
+                    label: t("all"),
                     content: (
                       <MatchList
                         items={matches}
@@ -191,7 +211,7 @@ function RanglistePage({
                     ),
                   },
                   {
-                    label: "Offen",
+                    label: t("open"),
                     content: (
                       <MatchList
                         items={openMatches}
@@ -201,7 +221,7 @@ function RanglistePage({
                     ),
                   },
                   {
-                    label: "Meine",
+                    label: t("mine"),
                     content: (
                       <MatchList
                         items={myMatches}
@@ -238,4 +258,13 @@ export const Loading: Story = {
 
 export const Empty: Story = {
   render: () => <RanglistePage empty />,
+};
+
+export const BigPyramid: Story = {
+  render: () => (
+    <RanglistePage
+      customPyramid={bigPyramidPlayers}
+      customStandings={bigStandingsPlayers}
+    />
+  ),
 };
