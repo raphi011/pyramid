@@ -7,6 +7,8 @@ const variants = {
   pending: "bg-trophy-100 text-trophy-600 dark:bg-trophy-500/10 dark:text-trophy-400",
   rank: "bg-trophy-500 text-white",
   info: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400",
+  subtle:
+    "bg-court-50 text-court-600 ring-1 ring-inset ring-court-200 dark:bg-court-950/30 dark:text-court-400 dark:ring-court-800",
 } as const;
 
 const sizes = {

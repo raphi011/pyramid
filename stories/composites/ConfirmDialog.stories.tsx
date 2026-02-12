@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect, waitFor } from "storybook/test";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta<typeof ConfirmDialog> = {
+const meta = preview.meta({
   title: "Composites/ConfirmDialog",
   component: ConfirmDialog,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof ConfirmDialog>;
 
 function DestructiveDemo() {
   const [open, setOpen] = useState(false);
@@ -35,7 +34,7 @@ function DestructiveDemo() {
   );
 }
 
-export const Destructive: Story = {
+export const Destructive = meta.story({
   render: () => <DestructiveDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -58,7 +57,7 @@ export const Destructive: Story = {
     // Wait for Headless UI transition to complete
     await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
   },
-};
+});
 
 function WithCustomLabelsDemo() {
   const [open, setOpen] = useState(false);
@@ -80,6 +79,6 @@ function WithCustomLabelsDemo() {
   );
 }
 
-export const WithCustomLabels: Story = {
+export const WithCustomLabels = meta.story({
   render: () => <WithCustomLabelsDemo />,
-};
+});

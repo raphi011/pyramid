@@ -49,7 +49,7 @@ function ClubJoinCard(props: ClubJoinCardProps) {
                 {props.clubCode}
               </code>
               {props.onCopy && (
-                <Button variant="outline" size="sm" onClick={props.onCopy}>
+                <Button variant="outline" size="sm" onClick={props.onCopy} aria-label={tCommon("copy")}>
                   <ClipboardDocumentIcon className="size-4" />
                 </Button>
               )}
@@ -94,7 +94,7 @@ function ClubJoinCard(props: ClubJoinCardProps) {
             className="text-center text-lg font-bold tracking-widest"
           />
           {props.error && (
-            <p className="text-sm text-red-500">{props.error}</p>
+            <p className="text-sm text-red-600">{props.error}</p>
           )}
           <Button
             className="w-full"

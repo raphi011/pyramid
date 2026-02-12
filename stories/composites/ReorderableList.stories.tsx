@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
+import { within, expect } from "storybook/test";
 import { ReorderableList } from "@/components/reorderable-list";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Extended/ReorderableList",
   tags: ["autodocs"],
   parameters: { layout: "centered" },
@@ -15,10 +16,9 @@ const meta: Meta = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
 type Player = { id: string; name: string; rank: number };
 
@@ -49,11 +49,25 @@ function ReorderDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <ReorderDemo />,
-};
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-export const Empty: Story = {
+    // All 5 players render in order
+    await expect(canvas.getByText("Julia Fischer")).toBeInTheDocument();
+    await expect(canvas.getByText("Anna Schmidt")).toBeInTheDocument();
+    await expect(canvas.getByText("Tom Weber")).toBeInTheDocument();
+    await expect(canvas.getByText("Lisa Müller")).toBeInTheDocument();
+    await expect(canvas.getByText("Max Braun")).toBeInTheDocument();
+
+    // Drag handles are present (one per item)
+    const dragHandles = canvas.getAllByRole("button", { name: /ziehen/i });
+    await expect(dragHandles).toHaveLength(5);
+  },
+});
+
+export const Empty = meta.story({
   render: () => (
     <ReorderableList
       items={[]}
@@ -61,4 +75,4 @@ export const Empty: Story = {
       renderItem={() => null}
     />
   ),
-};
+});

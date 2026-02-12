@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { fn } from "storybook/test";
 import {
   TrophyIcon,
@@ -7,37 +7,36 @@ import {
 } from "@heroicons/react/24/outline";
 import { EmptyState } from "@/components/empty-state";
 
-const meta: Meta<typeof EmptyState> = {
+const meta = preview.meta({
   title: "Composites/EmptyState",
   component: EmptyState,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof EmptyState>;
 
-export const WithAction: Story = {
+export const WithAction = meta.story({
   args: {
     icon: <TrophyIcon />,
     title: "Keine Rangliste",
     description: "Es gibt noch keine aktive Saison. Erstelle eine neue Saison um loszulegen.",
     action: { label: "Saison erstellen", onClick: fn() },
   },
-};
+});
 
-export const WithoutAction: Story = {
+export const WithoutAction = meta.story({
   args: {
     icon: <CalendarDaysIcon />,
     title: "Keine Spiele",
     description: "Es sind noch keine Spiele in dieser Saison eingetragen.",
   },
-};
+});
 
-export const NotificationsEmpty: Story = {
+export const NotificationsEmpty = meta.story({
   args: {
     icon: <BellIcon />,
     title: "Keine Neuigkeiten",
     description: "Sobald etwas passiert, wirst du hier benachrichtigt.",
   },
-};
+});

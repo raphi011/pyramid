@@ -8,21 +8,21 @@
   --color-court-100: #DCFCE7;
   --color-court-200: #BBF7D0;
   --color-court-300: #86EFAC;
-  --color-court-400: #4ADE80;
-  --color-court-500: #22C55E;
-  --color-court-600: #16A34A;
-  --color-court-700: #15803D;
-  --color-court-800: #166534;
-  --color-court-900: #14532D;
+  --color-court-400: #3EB369;
+  --color-court-500: #178840;
+  --color-court-600: #146E35;
+  --color-court-700: #115A2C;
+  --color-court-800: #0E4823;
+  --color-court-900: #0B361A;
   --color-court-950: #052E16;
 
   /* ── Trophy Gold — Accent ──────────────────── */
   --color-trophy-50: #FFFBEB;
   --color-trophy-100: #FEF3C7;
   --color-trophy-200: #FDE68A;
-  --color-trophy-400: #FBBF24;
-  --color-trophy-500: #F59E0B;
-  --color-trophy-600: #D97706;
+  --color-trophy-400: #E5A820;
+  --color-trophy-500: #A8680B;
+  --color-trophy-600: #8C5709;
 
   /* ── Font ───────────────────────────────────── */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;

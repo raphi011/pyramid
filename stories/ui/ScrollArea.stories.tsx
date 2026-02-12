@@ -1,17 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const meta: Meta<typeof ScrollArea> = {
+const meta = preview.meta({
   title: "UI/Scroll Area",
   component: ScrollArea,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof ScrollArea>;
 
-export const Vertical: Story = {
+export const Vertical = meta.story({
   render: () => (
     <ScrollArea className="h-48 w-64 rounded-2xl p-4 ring-1 ring-slate-200">
       <div className="space-y-3">
@@ -26,9 +25,9 @@ export const Vertical: Story = {
       </div>
     </ScrollArea>
   ),
-};
+});
 
-export const Horizontal: Story = {
+export const Horizontal = meta.story({
   render: () => (
     <ScrollArea
       orientation="horizontal"
@@ -46,4 +45,4 @@ export const Horizontal: Story = {
       </div>
     </ScrollArea>
   ),
-};
+});

@@ -52,6 +52,7 @@ function ClubSwitcher({
       align="left"
       trigger={
         <button
+          aria-label={`${activeClub.name} – Verein wechseln`}
           className={cn(
             "flex w-full items-center gap-2 rounded-xl px-3 py-2",
             "bg-slate-100 transition-colors hover:bg-slate-200",
@@ -63,7 +64,7 @@ function ClubSwitcher({
           <span className="flex-1 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
             {activeClub.name}
           </span>
-          <ChevronDownIcon className="size-4 text-slate-400" />
+          <ChevronDownIcon className="size-4 text-slate-500" />
         </button>
       }
     >

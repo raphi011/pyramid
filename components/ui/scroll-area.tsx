@@ -13,6 +13,7 @@ function ScrollArea({
 }: ScrollAreaProps) {
   return (
     <div
+      tabIndex={0}
       className={cn(
         "relative",
         orientation === "vertical"

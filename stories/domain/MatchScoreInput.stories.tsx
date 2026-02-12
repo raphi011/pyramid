@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { MatchScoreInput, type SetScore } from "@/components/domain/match-score-input";
+import { emptyThreeSets, emptyOneSet, partiallyFilledSets, completedSets, invalidSets } from "../__fixtures__";
 
-const meta: Meta<typeof MatchScoreInput> = {
+const meta = preview.meta({
   title: "Domain/MatchScoreInput",
   component: MatchScoreInput,
   tags: ["autodocs"],
@@ -17,10 +18,9 @@ const meta: Meta<typeof MatchScoreInput> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof MatchScoreInput>;
 
 function ScoreDemo({ initial, maxSets }: { initial: SetScore[]; maxSets?: number }) {
   const [sets, setSets] = useState(initial);
@@ -35,23 +35,34 @@ function ScoreDemo({ initial, maxSets }: { initial: SetScore[]; maxSets?: number
   );
 }
 
-export const BestOfThree: Story = {
-  render: () => (
-    <ScoreDemo
-      initial={[
-        { player1: "", player2: "" },
-        { player1: "", player2: "" },
-        { player1: "", player2: "" },
-      ]}
-      maxSets={3}
-    />
-  ),
-};
+export const BestOfThree = meta.story({
+  render: () => <ScoreDemo initial={emptyThreeSets} maxSets={3} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-export const BestOfFive: Story = {
-  render: () => (
-    <ScoreDemo initial={[{ player1: "", player2: "" }]} maxSets={5} />
-  ),
+    // 3 sets × 2 inputs = 6 spinbuttons
+    const inputs = canvas.getAllByRole("spinbutton");
+    await expect(inputs).toHaveLength(6);
+
+    // Fill first set: 6-4
+    await userEvent.type(inputs[0], "6");
+    await userEvent.type(inputs[1], "4");
+
+    // Fill second set: 3-6
+    await userEvent.type(inputs[2], "3");
+    await userEvent.type(inputs[3], "6");
+
+    // Fill third set: 7-5
+    await userEvent.type(inputs[4], "7");
+    await userEvent.type(inputs[5], "5");
+
+    // No "add set" button — already at maxSets=3
+    await expect(canvas.queryByRole("button", { name: /satz hinzufügen/i })).not.toBeInTheDocument();
+  },
+});
+
+export const BestOfFive = meta.story({
+  render: () => <ScoreDemo initial={emptyOneSet} maxSets={5} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
@@ -70,26 +81,15 @@ export const BestOfFive: Story = {
     const afterAddInputs = canvas.getAllByRole("spinbutton");
     await expect(afterAddInputs).toHaveLength(4);
   },
-};
+});
 
-export const PartiallyFilled: Story = {
-  render: () => (
-    <ScoreDemo
-      initial={[
-        { player1: "6", player2: "4" },
-        { player1: "3", player2: "6" },
-        { player1: "", player2: "" },
-      ]}
-      maxSets={3}
-    />
-  ),
-};
+export const PartiallyFilled = meta.story({
+  render: () => <ScoreDemo initial={partiallyFilledSets} maxSets={3} />,
+});
 
-export const WithError: Story = {
+export const WithError = meta.story({
   render: () => {
-    const [sets, setSets] = useState<SetScore[]>([
-      { player1: "6", player2: "6" },
-    ]);
+    const [sets, setSets] = useState<SetScore[]>(invalidSets);
     return (
       <MatchScoreInput
         sets={sets}
@@ -98,20 +98,16 @@ export const WithError: Story = {
       />
     );
   },
-};
+});
 
-export const ReadOnly: Story = {
+export const ReadOnly = meta.story({
   render: () => (
     <MatchScoreInput
-      sets={[
-        { player1: "6", player2: "4" },
-        { player1: "3", player2: "6" },
-        { player1: "7", player2: "5" },
-      ]}
+      sets={completedSets}
       onChange={() => {}}
       readOnly
       player1Name="Max"
       player2Name="Anna"
     />
   ),
-};
+});

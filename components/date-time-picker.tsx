@@ -69,8 +69,8 @@ function DateTimePicker({
     <Popover
       trigger={
         <Button variant="outline" className={cn("justify-start", className)}>
-          <CalendarDaysIcon className="size-4 text-slate-400" />
-          <span className={cn(!value && "text-slate-400")}>
+          <CalendarDaysIcon className="size-4 text-slate-500" />
+          <span className={cn(!value && "text-slate-500")}>
             {value ? formatDate(value, showTime) : placeholder}
           </span>
         </Button>

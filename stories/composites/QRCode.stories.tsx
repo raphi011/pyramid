@@ -1,34 +1,33 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { QRCode } from "@/components/qr-code";
 
-const meta: Meta<typeof QRCode> = {
+const meta = preview.meta({
   title: "Extended/QRCode",
   component: QRCode,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof QRCode>;
 
-export const Default: Story = {
+export const Default = meta.story({
   args: {
     value: "ABC123",
     label: "Einladungscode: ABC123",
   },
-};
+});
 
-export const Small: Story = {
+export const Small = meta.story({
   args: {
     value: "XYZ789",
     size: "sm",
   },
-};
+});
 
-export const Large: Story = {
+export const Large = meta.story({
   args: {
     value: "https://pyramid.example.com/join/ABC123",
     size: "lg",
     label: "QR-Code scannen zum Beitreten",
   },
-};
+});

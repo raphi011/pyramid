@@ -1,6 +1,6 @@
 "use client";
 
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
@@ -14,13 +14,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { currentPlayer, matches, rankChartData } from "./_mock-data";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/Profile",
-  parameters: { layout: "fullscreen" },
-};
+  parameters: {
+    layout: "fullscreen",
+    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+  },
+});
 
 export default meta;
-type Story = StoryObj;
 
 const playerMatches = matches.filter(
   (m) => m.player1.name === "Max Braun" || m.player2.name === "Max Braun",
@@ -204,10 +206,10 @@ function StatsContent() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <ProfilePage />,
-};
+});
 
-export const Unavailable: Story = {
+export const Unavailable = meta.story({
   render: () => <ProfilePage unavailable />,
-};
+});

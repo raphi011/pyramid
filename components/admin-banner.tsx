@@ -67,7 +67,7 @@ function AdminBanner({
       {onClose && (
         <button
           onClick={() => onClose(id)}
-          className="shrink-0 rounded-lg p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+          className="shrink-0 rounded-lg p-0.5 text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
         >
           <XMarkIcon className="size-4" />
           <span className="sr-only">Schließen</span>

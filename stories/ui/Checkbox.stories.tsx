@@ -1,24 +1,25 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const meta: Meta<typeof Checkbox> = {
+const meta = preview.meta({
   title: "UI/Checkbox",
   component: Checkbox,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Checkbox>;
 
-export const Unchecked: Story = {};
+export const Unchecked = meta.story({
+  args: { label: "Option" },
+});
 
-export const Checked: Story = {
-  args: { defaultChecked: true },
-};
+export const Checked = meta.story({
+  args: { label: "Option", defaultChecked: true },
+});
 
-export const WithLabel: Story = {
+export const WithLabel = meta.story({
   args: { label: "Benachrichtigungen aktivieren" },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -34,16 +35,16 @@ export const WithLabel: Story = {
     await userEvent.click(checkbox);
     await expect(checkbox).not.toBeChecked();
   },
-};
+});
 
-export const CheckedWithLabel: Story = {
+export const CheckedWithLabel = meta.story({
   args: { label: "AGB akzeptiert", defaultChecked: true },
-};
+});
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: { label: "Nicht verfügbar", disabled: true },
-};
+});
 
-export const DisabledChecked: Story = {
+export const DisabledChecked = meta.story({
   args: { label: "Gesperrt", disabled: true, defaultChecked: true },
-};
+});

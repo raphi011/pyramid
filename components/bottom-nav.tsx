@@ -105,7 +105,7 @@ function NavButton({
       onClick={() => onNavigate?.(item.href)}
       className={cn(
         "relative flex min-w-[64px] flex-col items-center gap-0.5 px-3 py-2",
-        "text-slate-400 transition-colors duration-150",
+        "text-slate-500 transition-colors duration-150",
         active && "text-court-600 dark:text-court-400",
         "[&_svg]:size-6",
       )}
@@ -121,7 +121,7 @@ function NavButton({
       <span className="relative">
         {item.icon}
         {item.badge != null && item.badge > 0 && (
-          <span className="absolute -right-1.5 -top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+          <span className="absolute -right-1.5 -top-1 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
             {item.badge > 9 ? "9+" : item.badge}
           </span>
         )}

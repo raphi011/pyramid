@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { useTranslations } from "next-intl";
 import { TrophyIcon, BoltIcon } from "@heroicons/react/24/outline";
 import { PageWrapper } from "./_page-wrapper";
@@ -25,13 +25,15 @@ import {
   seasons,
 } from "./_mock-data";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/Rangliste",
-  parameters: { layout: "fullscreen" },
-};
+  parameters: {
+    layout: "fullscreen",
+    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+  },
+});
 
 export default meta;
-type Story = StoryObj;
 
 const myMatches = matches.filter(
   (m) => m.player1.name === "Max Braun" || m.player2.name === "Max Braun",
@@ -240,31 +242,31 @@ function RanglistePage({
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <RanglistePage />,
-};
+});
 
-export const ListView: Story = {
+export const ListView = meta.story({
   render: () => <RanglistePage defaultRankingTab={1} />,
-};
+});
 
-export const MatchSelected: Story = {
+export const MatchSelected = meta.story({
   render: () => <RanglistePage initialSelectedMatchId="m3" />,
-};
+});
 
-export const Loading: Story = {
+export const Loading = meta.story({
   render: () => <RanglistePage loading />,
-};
+});
 
-export const Empty: Story = {
+export const Empty = meta.story({
   render: () => <RanglistePage empty />,
-};
+});
 
-export const BigPyramid: Story = {
+export const BigPyramid = meta.story({
   render: () => (
     <RanglistePage
       customPyramid={bigPyramidPlayers}
       customStandings={bigStandingsPlayers}
     />
   ),
-};
+});

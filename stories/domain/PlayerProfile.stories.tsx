@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { fn } from "storybook/test";
 import { PlayerProfile } from "@/components/domain/player-profile";
 
-const meta: Meta<typeof PlayerProfile> = {
+const meta = preview.meta({
   title: "Domain/PlayerProfile",
   component: PlayerProfile,
   tags: ["autodocs"],
@@ -14,12 +14,11 @@ const meta: Meta<typeof PlayerProfile> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof PlayerProfile>;
 
-export const OwnProfile: Story = {
+export const OwnProfile = meta.story({
   args: {
     name: "Max Mustermann",
     rank: 3,
@@ -32,9 +31,9 @@ export const OwnProfile: Story = {
     isOwnProfile: true,
     onEdit: fn(),
   },
-};
+});
 
-export const OtherPlayer: Story = {
+export const OtherPlayer = meta.story({
   args: {
     name: "Anna Schmidt",
     rank: 2,
@@ -45,9 +44,9 @@ export const OtherPlayer: Story = {
     canChallenge: true,
     onChallenge: fn(),
   },
-};
+});
 
-export const Unavailable: Story = {
+export const Unavailable = meta.story({
   args: {
     name: "Erik Meier",
     rank: 7,
@@ -59,4 +58,4 @@ export const Unavailable: Story = {
     trendValue: "-3",
     unavailable: true,
   },
-};
+});

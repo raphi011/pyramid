@@ -66,7 +66,7 @@ function SortableRow<T extends ReorderableItem>({
       )}
     >
       <button
-        className="flex shrink-0 cursor-grab items-center px-2 py-3 text-slate-400 active:cursor-grabbing dark:text-slate-500"
+        className="flex shrink-0 cursor-grab items-center px-2 py-3 text-slate-500 active:cursor-grabbing dark:text-slate-500"
         {...attributes}
         {...listeners}
         aria-label="Ziehen zum Umordnen"
@@ -104,7 +104,7 @@ function ReorderableList<T extends ReorderableItem>({
 
   if (items.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-500">
         Keine Einträge
       </div>
     );

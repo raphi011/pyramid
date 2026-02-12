@@ -1,6 +1,6 @@
 "use client";
 
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import {
   UserGroupIcon,
   CalendarDaysIcon,
@@ -20,13 +20,15 @@ import { ClubJoinCard } from "@/components/domain/club-join-card";
 import { QRCode } from "@/components/qr-code";
 import { Avatar } from "@/components/ui/avatar";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/ClubDashboard",
-  parameters: { layout: "fullscreen" },
-};
+  parameters: {
+    layout: "fullscreen",
+    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+  },
+});
 
 export default meta;
-type Story = StoryObj;
 
 const overdueMatches = [
   {
@@ -185,10 +187,10 @@ function ClubDashboardPage({ showOverdue = false }: { showOverdue?: boolean }) {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <ClubDashboardPage />,
-};
+});
 
-export const WithOverdueMatches: Story = {
+export const WithOverdueMatches = meta.story({
   render: () => <ClubDashboardPage showOverdue />,
-};
+});

@@ -1,26 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { DateTimePicker } from "@/components/date-time-picker";
 
-const meta: Meta<typeof DateTimePicker> = {
+const meta = preview.meta({
   title: "Extended/DateTimePicker",
   component: DateTimePicker,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof DateTimePicker>;
 
 function DateOnlyDemo() {
   const [date, setDate] = useState<Date | undefined>(undefined);
   return <DateTimePicker value={date} onChange={setDate} />;
 }
 
-export const DateOnly: Story = {
+export const DateOnly = meta.story({
   render: () => <DateOnlyDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -34,20 +33,20 @@ export const DateOnly: Story = {
     const monthHeader = await body.findByText(/Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember/);
     await expect(monthHeader).toBeInTheDocument();
   },
-};
+});
 
 function DateTimeDemo() {
   const [date, setDate] = useState<Date | undefined>(undefined);
   return <DateTimePicker value={date} onChange={setDate} showTime />;
 }
 
-export const DateTime: Story = {
+export const DateTime = meta.story({
   render: () => <DateTimeDemo />,
-};
+});
 
-export const WithPreselected: Story = {
+export const WithPreselected = meta.story({
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     return <DateTimePicker value={date} onChange={setDate} showTime />;
   },
-};
+});

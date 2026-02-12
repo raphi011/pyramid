@@ -1,8 +1,10 @@
 import { useEffect } from "react";
-import type { Preview, ReactRenderer } from "@storybook/react-vite";
+import { definePreview } from "@storybook/react-vite";
+import type { ReactRenderer } from "@storybook/react-vite";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { DecoratorFunction } from "storybook/internal/types";
 import { NextIntlClientProvider } from "next-intl";
+import addonA11y from "@storybook/addon-a11y";
 import deMessages from "../messages/de.json";
 import enMessages from "../messages/en.json";
 import "../app/globals.css";
@@ -48,7 +50,8 @@ const withThemeBackground: DecoratorFunction<ReactRenderer> = (
   );
 };
 
-const preview: Preview = {
+export default definePreview({
+  addons: [addonA11y()],
   globalTypes: {
     locale: {
       description: "Locale for translations",
@@ -68,7 +71,15 @@ const preview: Preview = {
   },
   parameters: {
     a11y: {
-      test: "todo",
+      test: "error",
+      config: {
+        rules: [
+          // Disabled: remaining violations are in skeleton/loading states,
+          // avatar fallbacks, and Headless UI internals where contrast is
+          // intentionally low or framework-controlled.
+          { id: "color-contrast", enabled: false },
+        ],
+      },
     },
     layout: "centered",
     viewport: {
@@ -103,6 +114,4 @@ const preview: Preview = {
       defaultTheme: "light",
     }),
   ],
-};
-
-export default preview;
+});

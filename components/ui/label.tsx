@@ -23,7 +23,7 @@ const Label = forwardRef<HTMLLabelElement, LabelProps>(function Label(
     >
       {children}
       {required && (
-        <span className="ml-0.5 text-red-500" aria-hidden="true">
+        <span className="ml-0.5 text-red-600" aria-hidden="true">
           *
         </span>
       )}

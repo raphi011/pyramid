@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { RankChart } from "@/components/domain/rank-chart";
 
-const meta: Meta<typeof RankChart> = {
+const meta = preview.meta({
   title: "Extended/RankChart",
   component: RankChart,
   tags: ["autodocs"],
@@ -13,12 +13,11 @@ const meta: Meta<typeof RankChart> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof RankChart>;
 
-export const Rising: Story = {
+export const Rising = meta.story({
   args: {
     data: [
       { date: "Jan", rank: 8 },
@@ -28,9 +27,9 @@ export const Rising: Story = {
       { date: "Mai", rank: 2 },
     ],
   },
-};
+});
 
-export const Falling: Story = {
+export const Falling = meta.story({
   args: {
     data: [
       { date: "Jan", rank: 1 },
@@ -40,9 +39,9 @@ export const Falling: Story = {
       { date: "Mai", rank: 7 },
     ],
   },
-};
+});
 
-export const Stable: Story = {
+export const Stable = meta.story({
   args: {
     data: [
       { date: "Jan", rank: 3 },
@@ -52,8 +51,8 @@ export const Stable: Story = {
       { date: "Mai", rank: 3 },
     ],
   },
-};
+});
 
-export const Empty: Story = {
+export const Empty = meta.story({
   args: { data: [] },
-};
+});

@@ -1,27 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { fn, within, userEvent, expect } from "storybook/test";
 import { ClubSwitcher } from "@/components/club-switcher";
 
-const meta: Meta<typeof ClubSwitcher> = {
+const meta = preview.meta({
   title: "Extended/ClubSwitcher",
   component: ClubSwitcher,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof ClubSwitcher>;
 
-export const SingleClub: Story = {
+export const SingleClub = meta.story({
   args: {
     clubs: [{ id: "1", name: "TC Musterstadt" }],
     activeClubId: "1",
     onSwitch: fn(),
   },
-};
+});
 
 function MultiClubDemo() {
   const [active, setActive] = useState<string | number>("1");
@@ -37,7 +36,7 @@ function MultiClubDemo() {
   );
 }
 
-export const MultipleClubs: Story = {
+export const MultipleClubs = meta.story({
   render: () => <MultiClubDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -53,4 +52,4 @@ export const MultipleClubs: Story = {
     // Select a different club (click the menuitem, not text, to avoid sr-only duplicates)
     await userEvent.click(items[1]);
   },
-};
+});

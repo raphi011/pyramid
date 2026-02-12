@@ -62,7 +62,7 @@ function Dialog({ open, onClose, title, children, className }: DialogProps) {
                   </DialogTitle>
                   <button
                     onClick={onClose}
-                    className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                    className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
                   >
                     <XMarkIcon className="size-5" />
                     <span className="sr-only">Schließen</span>

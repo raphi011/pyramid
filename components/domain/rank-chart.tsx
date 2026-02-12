@@ -26,7 +26,7 @@ function RankChart({ data, className }: RankChartProps) {
     return (
       <div
         className={cn(
-          "flex h-48 items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-400 dark:bg-slate-800 dark:text-slate-500",
+          "flex h-48 items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400",
           className,
         )}
       >
@@ -50,14 +50,14 @@ function RankChart({ data, className }: RankChartProps) {
             dataKey="date"
             tick={{ fontSize: 11 }}
             stroke="currentColor"
-            className="text-slate-400"
+            className="text-slate-500"
           />
           <YAxis
             reversed
             domain={[1, maxRank]}
             tick={{ fontSize: 11 }}
             stroke="currentColor"
-            className="text-slate-400"
+            className="text-slate-500"
             allowDecimals={false}
           />
           <Tooltip

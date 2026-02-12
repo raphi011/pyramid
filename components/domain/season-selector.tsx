@@ -27,6 +27,7 @@ function SeasonSelector({
 
   return (
     <Select
+      aria-label={t("selectSeason")}
       value={value?.toString() ?? ""}
       onChange={(e) => onChange?.(e.target.value)}
       className={cn("w-48", className)}

@@ -95,7 +95,7 @@ function FormField(props: FormFieldProps) {
       )}
 
       {error && (
-        <p id={errorId} className="text-sm text-red-500" role="alert">
+        <p id={errorId} className="text-sm text-red-600" role="alert">
           {error}
         </p>
       )}

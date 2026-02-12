@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { FormField } from "@/components/form-field";
 
-const meta: Meta<typeof FormField> = {
+const meta = preview.meta({
   title: "Composites/FormField",
   component: FormField,
   tags: ["autodocs"],
@@ -14,12 +14,11 @@ const meta: Meta<typeof FormField> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof FormField>;
 
-export const Default: Story = {
+export const Default = meta.story({
   args: {
     label: "E-Mail-Adresse",
     placeholder: "name@beispiel.de",
@@ -35,34 +34,34 @@ export const Default: Story = {
     await userEvent.type(input, "test@example.com");
     await expect(input).toHaveValue("test@example.com");
   },
-};
+});
 
-export const Required: Story = {
+export const Required = meta.story({
   args: {
     label: "Name",
     required: true,
     placeholder: "Dein vollständiger Name",
   },
-};
+});
 
-export const WithError: Story = {
+export const WithError = meta.story({
   args: {
     label: "E-Mail-Adresse",
     required: true,
     placeholder: "name@beispiel.de",
     error: "Bitte gib eine gültige E-Mail-Adresse ein.",
   },
-};
+});
 
-export const WithTextarea: Story = {
+export const WithTextarea = meta.story({
   args: {
     label: "Nachricht",
     type: "textarea" as const,
     placeholder: "Schreibe eine Nachricht...",
   },
-};
+});
 
-export const WithSelect: Story = {
+export const WithSelect = meta.story({
   render: () => (
     <FormField label="Saison" type="select">
       <option value="">Saison wählen...</option>
@@ -70,12 +69,12 @@ export const WithSelect: Story = {
       <option value="2025">Saison 2025</option>
     </FormField>
   ),
-};
+});
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: {
     label: "Vereinsname",
     value: "TC Musterstadt",
     disabled: true,
   },
-};
+});

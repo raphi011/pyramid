@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { EventItem, type EventItemProps } from "@/components/domain/event-item";
+import preview from "#.storybook/preview";
+import { EventItem } from "@/components/domain/event-item";
+import { maxMustermann, annaSchmidt, tomWeber, lisaMueller, sarahHoffmann, erikMeier, sophieHoffmann } from "../__fixtures__";
+import { allEventTypes } from "../__fixtures__";
 
-const meta: Meta<typeof EventItem> = {
+const meta = preview.meta({
   title: "Domain/EventItem",
   component: EventItem,
   tags: ["autodocs"],
@@ -19,105 +21,93 @@ const meta: Meta<typeof EventItem> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof EventItem>;
 
-export const Result: Story = {
+export const Result = meta.story({
   args: {
     type: "result",
-    player1: { name: "Max Mustermann" },
-    player2: { name: "Anna Schmidt" },
+    player1: maxMustermann,
+    player2: annaSchmidt,
     winnerId: "player1",
     scores: [[6, 4], [3, 6], [7, 5]],
     rankBefore: 5,
     rankAfter: 3,
     time: "14:30",
   },
-};
+});
 
-export const Challenge: Story = {
+export const Challenge = meta.story({
   args: {
     type: "challenge",
-    challenger: { name: "Tom Weber" },
-    challengee: { name: "Anna Schmidt" },
+    challenger: tomWeber,
+    challengee: annaSchmidt,
     time: "11:45",
   },
-};
+});
 
-export const Withdrawal: Story = {
+export const Withdrawal = meta.story({
   args: {
     type: "withdrawal",
-    player: { name: "Max Mustermann" },
-    opponent: { name: "Anna Schmidt" },
+    player: maxMustermann,
+    opponent: annaSchmidt,
     reason: "Terminkonflikt",
     time: "16:20",
   },
-};
+});
 
-export const WithdrawalNoReason: Story = {
+export const WithdrawalNoReason = meta.story({
   args: {
     type: "withdrawal",
-    player: { name: "Max Mustermann" },
-    opponent: { name: "Anna Schmidt" },
+    player: maxMustermann,
+    opponent: annaSchmidt,
     time: "16:20",
   },
-};
+});
 
-export const Forfeit: Story = {
+export const Forfeit = meta.story({
   args: {
     type: "forfeit",
-    player: { name: "Lisa Müller" },
-    opponent: { name: "Tom Weber" },
+    player: lisaMueller,
+    opponent: tomWeber,
     reason: "Verletzung",
     time: "09:15",
   },
-};
+});
 
-export const NewPlayer: Story = {
+export const NewPlayer = meta.story({
   args: {
     type: "new_player",
-    player: { name: "Sarah Hoffmann" },
+    player: sarahHoffmann,
     startingRank: 12,
     time: "10:30",
   },
-};
+});
 
-export const UnavailableWithDate: Story = {
+export const UnavailableWithDate = meta.story({
   args: {
     type: "unavailable",
-    player: { name: "Erik Meier" },
+    player: erikMeier,
     returnDate: "20.03.2026",
     time: "12:00",
   },
-};
+});
 
-export const AvailableAgain: Story = {
+export const AvailableAgain = meta.story({
   args: {
     type: "unavailable",
-    player: { name: "Sophie Hoffmann" },
+    player: sophieHoffmann,
     time: "15:45",
   },
-};
+});
 
-export const AllTypes: Story = {
-  render: () => {
-    const events: EventItemProps[] = [
-      { type: "result", player1: { name: "Max M." }, player2: { name: "Anna S." }, winnerId: "player1", scores: [[6, 4], [3, 6], [7, 5]], rankBefore: 5, rankAfter: 3, time: "14:30" },
-      { type: "challenge", challenger: { name: "Tom W." }, challengee: { name: "Lisa M." }, time: "11:45" },
-      { type: "withdrawal", player: { name: "Felix W." }, opponent: { name: "Anna Schmidt" }, reason: "Terminkonflikt", time: "16:20" },
-      { type: "forfeit", player: { name: "Marie K." }, opponent: { name: "Tom Weber" }, reason: "Verletzung", time: "09:15" },
-      { type: "new_player", player: { name: "Sarah H." }, startingRank: 12, time: "10:30" },
-      { type: "unavailable", player: { name: "Erik M." }, returnDate: "20.03.2026", time: "12:00" },
-      { type: "unavailable", player: { name: "Sophie H." }, time: "15:45" },
-    ];
-    return (
-      <div className="divide-y divide-slate-200 dark:divide-slate-800">
-        {events.map((e, i) => (
-          <EventItem key={i} {...e} />
-        ))}
-      </div>
-    );
-  },
-};
+export const AllTypes = meta.story({
+  render: () => (
+    <div className="divide-y divide-slate-200 dark:divide-slate-800">
+      {allEventTypes.map((e, i) => (
+        <EventItem key={i} {...e} />
+      ))}
+    </div>
+  ),
+});

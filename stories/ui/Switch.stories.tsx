@@ -1,24 +1,25 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { Switch } from "@/components/ui/switch";
 
-const meta: Meta<typeof Switch> = {
+const meta = preview.meta({
   title: "UI/Switch",
   component: Switch,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Switch>;
 
-export const Off: Story = {};
+export const Off = meta.story({
+  args: { label: "Option" },
+});
 
-export const On: Story = {
-  args: { defaultChecked: true },
-};
+export const On = meta.story({
+  args: { label: "Option", defaultChecked: true },
+});
 
-export const WithLabel: Story = {
+export const WithLabel = meta.story({
   args: { label: "Dark Mode" },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -34,16 +35,16 @@ export const WithLabel: Story = {
     await userEvent.click(toggle);
     await expect(toggle).not.toBeChecked();
   },
-};
+});
 
-export const OnWithLabel: Story = {
+export const OnWithLabel = meta.story({
   args: { label: "Benachrichtigungen", defaultChecked: true },
-};
+});
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: { label: "Nicht verfügbar", disabled: true },
-};
+});
 
-export const DisabledOn: Story = {
+export const DisabledOn = meta.story({
   args: { label: "Gesperrt", disabled: true, defaultChecked: true },
-};
+});

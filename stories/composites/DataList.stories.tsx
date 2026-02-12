@@ -1,8 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
+import { within, expect } from "storybook/test";
 import { TrophyIcon } from "@heroicons/react/24/outline";
 import { DataList } from "@/components/data-list";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Composites/DataList",
   tags: ["autodocs"],
   parameters: { layout: "centered" },
@@ -13,10 +14,9 @@ const meta: Meta = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
 const sampleItems = [
   { id: 1, name: "Max Mustermann", rank: 1 },
@@ -25,7 +25,7 @@ const sampleItems = [
   { id: 4, name: "Lisa Müller", rank: 4 },
 ];
 
-export const WithItems: Story = {
+export const WithItems = meta.story({
   render: () => (
     <DataList
       items={sampleItems}
@@ -40,9 +40,22 @@ export const WithItems: Story = {
       )}
     />
   ),
-};
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-export const Loading: Story = {
+    // All 4 items render
+    await expect(canvas.getByText("Max Mustermann")).toBeInTheDocument();
+    await expect(canvas.getByText("Anna Schmidt")).toBeInTheDocument();
+    await expect(canvas.getByText("Tom Weber")).toBeInTheDocument();
+    await expect(canvas.getByText("Lisa Müller")).toBeInTheDocument();
+
+    // Separators between items (3 for 4 items)
+    const separators = canvas.getAllByRole("separator");
+    await expect(separators).toHaveLength(3);
+  },
+});
+
+export const Loading = meta.story({
   render: () => (
     <DataList
       items={[]}
@@ -52,9 +65,9 @@ export const Loading: Story = {
       renderItem={() => null}
     />
   ),
-};
+});
 
-export const Empty: Story = {
+export const Empty = meta.story({
   render: () => (
     <DataList
       items={[]}
@@ -68,4 +81,11 @@ export const Empty: Story = {
       }}
     />
   ),
-};
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Empty state renders with title and action button
+    await expect(canvas.getByText("Keine Spieler")).toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: "Spieler einladen" })).toBeInTheDocument();
+  },
+});

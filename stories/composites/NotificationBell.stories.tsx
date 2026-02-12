@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { fn, within, userEvent, expect } from "storybook/test";
 import { NotificationBell } from "@/components/notification-bell";
 
-const meta: Meta<typeof NotificationBell> = {
+const meta = preview.meta({
   title: "Extended/NotificationBell",
   component: NotificationBell,
   tags: ["autodocs"],
@@ -10,14 +10,13 @@ const meta: Meta<typeof NotificationBell> = {
   args: {
     onClick: fn(),
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof NotificationBell>;
 
-export const NoNotifications: Story = {};
+export const NoNotifications = meta.story({});
 
-export const WithCount: Story = {
+export const WithCount = meta.story({
   args: { count: 3 },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -29,12 +28,12 @@ export const WithCount: Story = {
     await userEvent.click(canvas.getByRole("button"));
     await expect(args.onClick).toHaveBeenCalled();
   },
-};
+});
 
-export const HighCount: Story = {
+export const HighCount = meta.story({
   args: { count: 42 },
-};
+});
 
-export const Pulsing: Story = {
+export const Pulsing = meta.story({
   args: { count: 1, pulsing: true },
-};
+});

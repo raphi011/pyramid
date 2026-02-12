@@ -1,10 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Select } from "@/components/ui/select";
 
-const meta: Meta<typeof Select> = {
+const meta = preview.meta({
   title: "UI/Select",
   component: Select,
   tags: ["autodocs"],
+  args: { "aria-label": "Auswahl" },
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (
@@ -13,12 +14,11 @@ const meta: Meta<typeof Select> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Select>;
 
-export const Default: Story = {
+export const Default = meta.story({
   args: {
     children: (
       <>
@@ -29,9 +29,9 @@ export const Default: Story = {
       </>
     ),
   },
-};
+});
 
-export const WithSelection: Story = {
+export const WithSelection = meta.story({
   args: {
     defaultValue: "2026",
     children: (
@@ -41,16 +41,16 @@ export const WithSelection: Story = {
       </>
     ),
   },
-};
+});
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: {
     disabled: true,
     children: <option>Nicht verfügbar</option>,
   },
-};
+});
 
-export const Error: Story = {
+export const Error = meta.story({
   args: {
     error: true,
     children: (
@@ -60,4 +60,4 @@ export const Error: Story = {
       </>
     ),
   },
-};
+});
