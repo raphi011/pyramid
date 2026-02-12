@@ -84,7 +84,7 @@ function AppShell({
       <main
         className={cn(
           "@container px-4 pb-24 pt-2",
-          "lg:pb-6 lg:pl-64 lg:pr-6 lg:pt-6",
+          "lg:ml-60 lg:px-6 lg:pb-6 lg:pt-6",
         )}
       >
         <div className="mx-auto max-w-2xl">
