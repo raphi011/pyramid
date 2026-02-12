@@ -14,7 +14,7 @@ const meta: Meta<typeof EventItem> = {
   },
   decorators: [
     (Story) => (
-      <div className="w-96">
+      <div className="w-[640px]">
         <Story />
       </div>
     ),
@@ -31,6 +31,7 @@ export const Result: Story = {
     description: "6:4, 3:6, 7:5",
     timestamp: "vor 2 Stunden",
     player: { name: "Max Mustermann" },
+    context: { scores: [[6, 4], [3, 6], [7, 5]] },
   },
 };
 
@@ -49,6 +50,7 @@ export const Withdrawal: Story = {
     title: "Herausforderung zurückgezogen",
     description: "Max M. → Anna S.",
     timestamp: "gestern",
+    context: { challengedPlayer: "Anna Schmidt" },
   },
 };
 
@@ -59,6 +61,7 @@ export const Forfeit: Story = {
     description: "Frist abgelaufen. Rang getauscht.",
     timestamp: "vor 2 Tagen",
     player: { name: "Lisa Müller" },
+    context: { challengedPlayer: "Tom Weber", rankBefore: 7, rankAfter: 5 },
   },
 };
 
@@ -68,6 +71,7 @@ export const RankChange: Story = {
     title: "Max M. ist auf Rang 3 aufgestiegen",
     timestamp: "vor 3 Tagen",
     player: { name: "Max Mustermann" },
+    context: { rankBefore: 5, rankAfter: 3 },
   },
 };
 
@@ -77,6 +81,7 @@ export const NewPlayer: Story = {
     title: "Sarah H. ist dem Verein beigetreten",
     timestamp: "vor 1 Woche",
     player: { name: "Sarah Hoffmann" },
+    context: { startingRank: 12 },
   },
 };
 
@@ -104,21 +109,22 @@ export const Unavailable: Story = {
     title: "Erik M. ist bis 20.03. abwesend",
     timestamp: "vor 1 Tag",
     player: { name: "Erik Meier" },
+    context: { returnDate: "20.03.2026" },
   },
 };
 
 export const AllTypes: Story = {
   render: () => {
-    const events: { type: EventType; title: string; timestamp: string }[] = [
-      { type: "result", title: "Ergebnis eingetragen", timestamp: "vor 1h" },
+    const events: { type: EventType; title: string; timestamp: string; context?: Record<string, unknown> }[] = [
+      { type: "result", title: "Ergebnis eingetragen", timestamp: "vor 1h", context: { scores: [[6, 4], [3, 6], [7, 5]] } },
       { type: "challenge", title: "Neue Herausforderung", timestamp: "vor 2h" },
-      { type: "withdrawal", title: "Rückzug", timestamp: "vor 3h" },
-      { type: "forfeit", title: "Aufgabe", timestamp: "vor 4h" },
-      { type: "rank_change", title: "Rangänderung", timestamp: "vor 5h" },
-      { type: "new_player", title: "Neuer Spieler", timestamp: "vor 6h" },
+      { type: "withdrawal", title: "Rückzug", timestamp: "vor 3h", context: { challengedPlayer: "Anna Schmidt" } },
+      { type: "forfeit", title: "Aufgabe", timestamp: "vor 4h", context: { challengedPlayer: "Tom Weber", rankBefore: 7, rankAfter: 5 } },
+      { type: "rank_change", title: "Rangänderung", timestamp: "vor 5h", context: { rankBefore: 5, rankAfter: 3 } },
+      { type: "new_player", title: "Neuer Spieler", timestamp: "vor 6h", context: { startingRank: 12 } },
       { type: "season_start", title: "Saison gestartet", timestamp: "vor 7h" },
       { type: "season_end", title: "Saison beendet", timestamp: "vor 8h" },
-      { type: "unavailable", title: "Abwesenheit", timestamp: "vor 9h" },
+      { type: "unavailable", title: "Abwesenheit", timestamp: "vor 9h", context: { returnDate: "20.03.2026" } },
     ];
     return (
       <div className="divide-y divide-slate-200 dark:divide-slate-800">
