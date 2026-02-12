@@ -61,7 +61,18 @@
     "noNewsDesc": "Sobald etwas passiert, wirst du hier benachrichtigt.",
     "startsAtRank": "Startet auf Rang {rank}",
     "until": "Bis {date}",
-    "against": "gegen {player}"
+    "rankUp": "{player} steigt von Rang {rankBefore} auf Rang {rankAfter} auf",
+    "resultTitle": "{winner} hat gegen {loser} gewonnen",
+    "challengeTitle": "{challenger} fordert {challengee} heraus",
+    "withdrawalTitle": "{player} zieht die Forderung gegen {opponent} zurück",
+    "forfeitTitle": "{player} gibt W.O. gegen {opponent}",
+    "newPlayerTitle": "{player} tritt der Rangliste bei",
+    "unavailableTitle": "{player} ist abwesend",
+    "availableTitle": "{player} ist wieder verfügbar",
+    "seasonStartTitle": "{season} hat begonnen",
+    "seasonStartDesc": "{count, plural, one {# Spieler nimmt teil} other {# Spieler nehmen teil}}",
+    "seasonEndTitle": "{season} ist beendet",
+    "seasonEndDesc": "{winner} gewinnt die Saison"
   },
   "profile": {
     "rankLabel": "Rang",
