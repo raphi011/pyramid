@@ -12,7 +12,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   test: {
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
       include: ["components/**/*.tsx"],
       exclude: [
         "**/*.stories.tsx",
