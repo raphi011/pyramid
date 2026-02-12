@@ -8,6 +8,7 @@ import {
   type SidebarItem,
   type ProfileInfo,
 } from "@/components/sidebar-nav";
+import { AdminBanner, type AdminMessage } from "@/components/admin-banner";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -23,6 +24,8 @@ type AppShellProps = {
     onClick: () => void;
     disabled?: boolean;
   };
+  messages?: AdminMessage[];
+  onDismissMessage?: (id: string) => void;
   clubSwitcher?: React.ReactNode;
   className?: string;
 };
@@ -36,6 +39,8 @@ function AppShell({
   activeHref,
   onNavigate,
   fab,
+  messages,
+  onDismissMessage,
   clubSwitcher,
   className,
 }: AppShellProps) {
@@ -82,7 +87,20 @@ function AppShell({
           "lg:pb-6 lg:pl-64 lg:pr-6 lg:pt-6",
         )}
       >
-        <div className="mx-auto max-w-2xl">{children}</div>
+        <div className="mx-auto max-w-2xl">
+          {messages && messages.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {messages.map((msg) => (
+                <AdminBanner
+                  key={msg.id}
+                  {...msg}
+                  onClose={onDismissMessage}
+                />
+              ))}
+            </div>
+          )}
+          {children}
+        </div>
       </main>
 
       {/* Mobile bottom nav */}
