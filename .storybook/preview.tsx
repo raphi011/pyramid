@@ -67,6 +67,9 @@ const preview: Preview = {
     locale: "de",
   },
   parameters: {
+    a11y: {
+      test: "todo",
+    },
     layout: "centered",
     viewport: {
       options: {
