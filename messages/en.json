@@ -61,7 +61,18 @@
     "noNewsDesc": "You'll be notified here when something happens.",
     "startsAtRank": "Starts at rank {rank}",
     "until": "Until {date}",
-    "against": "against {player}"
+    "rankUp": "{player} moved from rank {rankBefore} to rank {rankAfter}",
+    "resultTitle": "{winner} beat {loser}",
+    "challengeTitle": "{challenger} challenged {challengee}",
+    "withdrawalTitle": "{player} withdrew challenge against {opponent}",
+    "forfeitTitle": "{player} won by walkover against {opponent}",
+    "newPlayerTitle": "{player} joined the ranking",
+    "unavailableTitle": "{player} is away",
+    "availableTitle": "{player} is available again",
+    "seasonStartTitle": "{season} has started",
+    "seasonStartDesc": "{count, plural, one {# player participating} other {# players participating}}",
+    "seasonEndTitle": "{season} has ended",
+    "seasonEndDesc": "{winner} wins the season"
   },
   "profile": {
     "rankLabel": "Rank",
