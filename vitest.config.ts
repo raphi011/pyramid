@@ -37,6 +37,7 @@ export default defineConfig({
             instances: [{ browser: "chromium" }],
           },
           setupFiles: ["./.storybook/vitest.setup.ts"],
+          teardownTimeout: 20000,
         },
       },
     ],
