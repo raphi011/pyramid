@@ -14,7 +14,7 @@ const meta = preview.meta({
   argTypes: {
     status: {
       control: "select",
-      options: ["challenged", "date_set", "completed", "withdrawn", "forfeited"],
+      options: ["challenged", "date_set", "completed", "withdrawn", "forfeited", "disputed", "pending_confirmation"],
     },
     position: {
       control: "radio",
@@ -45,7 +45,7 @@ export const DateSet = meta.story({
     player1: maxMustermann,
     player2: annaSchmidt,
     status: "date_set",
-    date: "Sa, 15.03.2026",
+    date: "Sa, 15.03.2026 18:00",
   },
 });
 
@@ -89,14 +89,34 @@ export const Forfeited = meta.story({
   },
 });
 
+export const Disputed = meta.story({
+  args: {
+    player1: maxMustermann,
+    player2: annaSchmidt,
+    status: "disputed",
+    date: "03.03.2026",
+  },
+});
+
+export const PendingConfirmation = meta.story({
+  args: {
+    player1: maxMustermann,
+    player2: annaSchmidt,
+    status: "pending_confirmation",
+    date: "Sa, 01.03.2026 17:00",
+  },
+});
+
 export const AllStatuses = meta.story({
   render: () => (
     <div className="space-y-3">
       <MatchRow player1={maxMustermann} player2={annaSchmidt} status="challenged" onClick={fn()} />
-      <MatchRow player1={maxMustermann} player2={annaSchmidt} status="date_set" date="Sa, 15.03." onClick={fn()} />
+      <MatchRow player1={maxMustermann} player2={annaSchmidt} status="date_set" date="Sa, 15.03. 18:00" onClick={fn()} />
       <MatchRow player1={maxMustermann} player2={annaSchmidt} status="completed" winnerId="player1" scores={[[6,4],[7,5]]} />
       <MatchRow player1={maxMustermann} player2={annaSchmidt} status="withdrawn" />
       <MatchRow player1={maxMustermann} player2={annaSchmidt} status="forfeited" />
+      <MatchRow player1={maxMustermann} player2={annaSchmidt} status="disputed" date="03.03." onClick={fn()} />
+      <MatchRow player1={maxMustermann} player2={annaSchmidt} status="pending_confirmation" date="Sa, 01.03." onClick={fn()} />
     </div>
   ),
 });

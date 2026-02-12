@@ -11,6 +11,7 @@ Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challeng
 - `docs/design-system.md` — Full design system: colors, typography, component library, composition rules. **Read before any UI work.**
 - `docs/ui-spec.md` — Complete UI specification: pages, layouts, navigation, user flows. **Read before building any page.**
 - `docs/a11y-guide.md` — Accessibility best practices, common violations, and Storybook a11y testing gotchas. **Read before adding components or stories.**
+- `docs/database.md` — Full database schema: tables, enums, relationships, business rules, migration notes. **Read before any backend or data-layer work.**
 
 ## Development Commands
 
@@ -18,14 +19,23 @@ Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challeng
 bun install    # Install dependencies
 bun run dev    # Start dev server at http://localhost:3000
 bun run build  # Production build
-bun run lint   # ESLint
+bun run lint   # ESLint (runs `eslint .` — see note below)
 bun storybook  # Start Storybook at http://localhost:6006
 ```
+
+### Linting
+
+Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.config.mjs` (flat config).
+
+- **Config:** `eslint.config.mjs` — imports `eslint-config-next` (flat config array)
+- **Command:** `bun run lint` (runs `eslint .`)
+- **ESLint version:** 9.x — do **not** upgrade to ESLint 10; `eslint-plugin-react` is incompatible with ESLint 10 (`getFilename` API removed). Track [jsx-eslint/eslint-plugin-react#3977](https://github.com/jsx-eslint/eslint-plugin-react/issues/3977) for updates.
+- **Known pre-existing warnings:** `react-hooks/rules-of-hooks` in some Storybook stories (using `useState` in CSF `render` functions) — harmless, Storybook pattern.
 
 ## Architecture
 
 ### Tech Stack
-- Next.js 14.2 (App Router) with TypeScript
+- Next.js 16 (App Router) with TypeScript
 - Tailwind CSS + Headless UI + Framer Motion
 - Neon (serverless Postgres) for database
 - Resend for transactional emails

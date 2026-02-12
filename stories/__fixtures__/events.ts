@@ -151,6 +151,7 @@ export const feedEvents: TimelineEvent[] = [
 // ── All event types (for EventItem AllTypes) ───
 
 export const allEventTypes: EventItemProps[] = [
+  // Public events
   { type: "result", player1: { name: "Max M." }, player2: { name: "Anna S." }, winnerId: "player1", scores: [[6, 4], [3, 6], [7, 5]], rankBefore: 5, rankAfter: 3, time: "14:30" },
   { type: "challenge", challenger: { name: "Tom W." }, challengee: { name: "Lisa M." }, time: "11:45" },
   { type: "withdrawal", player: { name: "Felix W." }, opponent: { name: "Anna Schmidt" }, reason: "Terminkonflikt", time: "16:20" },
@@ -158,6 +159,18 @@ export const allEventTypes: EventItemProps[] = [
   { type: "new_player", player: { name: "Sarah H." }, startingRank: 12, time: "10:30" },
   { type: "unavailable", player: { name: "Erik M." }, returnDate: "20.03.2026", time: "12:00" },
   { type: "unavailable", player: { name: "Sophie H." }, time: "15:45" },
+  // Personal notification events
+  { type: "challenged", challenger: { name: "Tom W." }, challengee: { name: "Max M." }, personal: true, time: "16:00" },
+  { type: "challenge_accepted", challenger: { name: "Max M." }, challengee: { name: "Anna S." }, personal: true, time: "15:30" },
+  { type: "challenge_withdrawn", player: { name: "Felix W." }, opponent: { name: "Max M." }, personal: true, time: "14:45" },
+  { type: "date_proposed", player: { name: "Anna S." }, opponent: { name: "Max M." }, proposedDate: "Sa, 15.03.2026 18:00", personal: true, time: "13:20" },
+  { type: "date_accepted", player: { name: "Max M." }, opponent: { name: "Anna S." }, acceptedDate: "Sa, 15.03.2026 18:00", personal: true, time: "12:10" },
+  { type: "date_reminder", player: { name: "Max M." }, opponent: { name: "Tom W." }, daysLeft: 3, personal: true, time: "09:00" },
+  { type: "result_entered", player1: { name: "Anna S." }, player2: { name: "Max M." }, scores: [[6, 4], [7, 5]], personal: true, time: "17:00" },
+  { type: "result_confirmed", player1: { name: "Max M." }, player2: { name: "Anna S." }, scores: [[6, 4], [7, 5]], personal: true, time: "17:30" },
+  { type: "result_disputed", player1: { name: "Tom W." }, player2: { name: "Max M." }, personal: true, time: "18:00" },
+  { type: "announcement", message: "Platzsperre am 20.03. wegen Sanierung", adminName: "Admin Peter", time: "08:00" },
+  { type: "deadline_exceeded", player: { name: "Max M." }, opponent: { name: "Lisa M." }, daysOver: 3, personal: true, time: "07:00" },
 ];
 
 // ── Combined feed (notifications page) ─────────

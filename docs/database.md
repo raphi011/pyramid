@@ -1,0 +1,698 @@
+# Database Schema
+
+Canonical reference for the Pyramid app database schema.
+
+**Read before any backend, API, or data-layer work.**
+
+---
+
+## Tech Stack
+
+- **Neon** (serverless Postgres)
+- All timestamps are `TIMESTAMPTZ` (UTC)
+- IDs are `SERIAL PRIMARY KEY` (auto-incrementing integers)
+- Soft deletes are avoided — records are preserved with attribution for historical integrity
+
+---
+
+## ER Diagram
+
+```mermaid
+erDiagram
+    clubs ||--o{ club_members : "has members"
+    clubs ||--o{ seasons : "has seasons"
+    player ||--o{ club_members : "belongs to clubs"
+    player ||--o{ team_players : "assigned to teams"
+    player ||--o{ sessions : "has sessions"
+    player ||--o{ magic_links : "has magic links"
+    player ||--o{ event_reads : "tracks reads"
+    player ||--o{ notification_preferences : "configures"
+    player ||--o{ match_comments : "writes"
+    player ||--o{ date_proposals : "proposes"
+    seasons ||--o{ season_matches : "has matches"
+    seasons ||--o{ season_standings : "has snapshots"
+    seasons ||--o{ teams : "has teams"
+    seasons ||--o{ events : "generates"
+
+    season_matches ||--o{ match_comments : "has comments"
+    season_matches ||--o{ date_proposals : "has proposals"
+    season_matches ||--o{ season_standings : "triggers snapshots"
+
+    teams ||--o{ team_players : "has members"
+    teams ||--o{ season_matches : "participates in"
+    clubs ||--o{ event_reads : "read tracking"
+    clubs ||--o{ events : "scopes events"
+    player ||--o{ events : "acts in"
+    %% events also has target_player_id FK → player (mermaid can't show two relations between same entities)
+    season_matches ||--o{ events : "generates events"
+
+    clubs {
+        int id PK
+        text name
+        text invite_code UK
+        text url
+        text phone_number
+        text address
+        text city
+        text zip
+        text country
+        bytea logo_data
+        bool is_disabled
+        timestamptz created
+    }
+
+    player {
+        int id PK
+        text name
+        text phone_number
+        text email_address UK
+        bytea photo_data
+        text bio
+        text language
+        text theme
+        bool is_app_admin
+        timestamptz created
+        timestamptz unavailable_from
+        timestamptz unavailable_until
+        text unavailable_reason
+    }
+
+    club_members {
+        int player_id PK,FK
+        int club_id PK,FK
+        text role
+        timestamptz created
+    }
+
+    seasons {
+        int id PK
+        int club_id FK
+        text name
+        int min_team_size
+        int max_team_size
+        int best_of
+        int match_deadline_days
+        int reminder_after_days
+        bool requires_result_confirmation
+        text status
+        timestamptz started_at
+        timestamptz ended_at
+        timestamptz created
+    }
+
+    teams {
+        int id PK
+        int season_id FK
+        text name
+        bool opted_out
+        timestamptz created
+    }
+
+    team_players {
+        int team_id PK,FK
+        int player_id PK,FK
+        timestamptz created
+    }
+
+    season_matches {
+        int id PK
+        int season_id FK
+        int team1_id FK
+        int team2_id FK
+        int winner_team_id FK
+        int result_entered_by FK
+        timestamptz result_entered_at
+        int confirmed_by FK
+        int_array team1_score
+        int_array team2_score
+        text status
+        text challenge_text
+        text disputed_reason
+        timestamptz game_at
+        timestamptz created
+    }
+
+    match_comments {
+        int id PK
+        int match_id FK
+        int player_id FK
+        text comment
+        timestamptz created
+        timestamptz edited_at
+    }
+
+    date_proposals {
+        int id PK
+        int match_id FK
+        int proposed_by FK
+        timestamptz proposed_datetime
+        text status
+        timestamptz created
+    }
+
+    season_standings {
+        int id PK
+        int season_id FK
+        int match_id FK
+        int_array results
+        text comment
+        timestamptz created
+    }
+
+    events {
+        int id PK
+        int club_id FK
+        int season_id FK
+        int match_id FK
+        int player_id FK
+        int target_player_id FK
+        text event_type
+        jsonb metadata
+        timestamptz created
+    }
+
+    event_reads {
+        int player_id PK,FK
+        int club_id PK,FK
+        timestamptz last_read_at
+    }
+
+    notification_preferences {
+        int player_id PK,FK
+        bool email_enabled
+        bool challenge_emails
+        bool result_emails
+        bool reminder_emails
+        timestamptz updated_at
+    }
+
+    magic_links {
+        int id PK
+        int player_id FK,UK
+        text token UK
+        timestamptz expires_at
+        timestamptz created_at
+    }
+
+    sessions {
+        int id PK
+        int player_id FK
+        text token UK
+        timestamptz expires_at
+        timestamptz created_at
+    }
+```
+
+---
+
+## Tables
+
+### Core Domain
+
+#### `clubs`
+
+Club definitions. Each club has an invite code for player self-registration.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `name` | `TEXT` | `NOT NULL` | |
+| `invite_code` | `TEXT` | `UNIQUE NOT NULL` | 6-char alphanumeric, used for join flow + QR codes |
+| `url` | `TEXT` | `NOT NULL DEFAULT ''` | Club website |
+| `phone_number` | `TEXT` | `NOT NULL DEFAULT ''` | Contact phone number |
+| `address` | `TEXT` | `NOT NULL DEFAULT ''` | Street and house number (e.g. "Musterstraße 12") |
+| `city` | `TEXT` | `NOT NULL DEFAULT ''` | |
+| `zip` | `TEXT` | `NOT NULL DEFAULT ''` | Postal / zip code |
+| `country` | `TEXT` | `NOT NULL DEFAULT ''` | |
+| `logo_data` | `BYTEA` | | Club logo stored as binary. Served via `/api/clubs/[id]/logo` with `Cache-Control` headers. Returns 404 if NULL — client falls back to initial-based avatar. |
+| `is_disabled` | `BOOL` | `NOT NULL DEFAULT false` | App admin can disable a club |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+#### `player`
+
+Player accounts. Global across all clubs.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `name` | `TEXT` | `NOT NULL` | May be empty string on first invite (set during onboarding) |
+| `phone_number` | `TEXT` | `NOT NULL DEFAULT ''` | |
+| `email_address` | `TEXT` | `NOT NULL UNIQUE` | Login identifier |
+| `photo_data` | `BYTEA` | | Profile photo stored as binary (base64 in transit) |
+| `bio` | `TEXT` | `NOT NULL DEFAULT ''` | Free-text "about me" |
+| `language` | `TEXT` | `NOT NULL DEFAULT 'en'` | `'en'` or `'de'` — per-user i18n preference |
+| `theme` | `TEXT` | `NOT NULL DEFAULT 'auto'` | `'dark'`, `'light'`, or `'auto'` — per-user display preference |
+| `is_app_admin` | `BOOL` | `NOT NULL DEFAULT false` | Super admin flag for `/admin/app` |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+| `unavailable_from` | `TIMESTAMPTZ` | | |
+| `unavailable_until` | `TIMESTAMPTZ` | | |
+| `unavailable_reason` | `TEXT` | `NOT NULL DEFAULT ''` | Private — never exposed to other players |
+
+**Avatar Serving:** `photo_data` is served via `/api/players/[id]/avatar` with `Content-Type: image/*` and `Cache-Control: public, max-age=86400`. Returns 404 if NULL — client falls back to initial-based avatar. The UI receives avatar URLs as strings, never raw binary. Same pattern applies to `clubs.logo_data` via `/api/clubs/[id]/logo`.
+
+#### `club_members`
+
+Player-to-club membership with role.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `player_id` | `INT` | `PK, FK → player(id)` | |
+| `club_id` | `INT` | `PK, FK → clubs(id)` | |
+| `role` | `TEXT` | `NOT NULL DEFAULT 'player'` | `'player'` or `'admin'` |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+Admin role is per-club (not per-season). A club admin manages all seasons in that club.
+
+---
+
+### Seasons & Participation
+
+#### `seasons`
+
+Season configuration per club. Multiple seasons can be active simultaneously (e.g. singles + doubles).
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `club_id` | `INT` | `NOT NULL, FK → clubs(id)` | |
+| `name` | `TEXT` | `NOT NULL` | |
+| `min_team_size` | `INT` | `NOT NULL DEFAULT 1` | Minimum players per team |
+| `max_team_size` | `INT` | `NOT NULL DEFAULT 1` | Maximum players per team. 1 = individual, 2 = doubles, etc. |
+| `best_of` | `INT` | `NOT NULL DEFAULT 3` | Best of N games (1, 3, 5, 7...) |
+| `match_deadline_days` | `INT` | `NOT NULL DEFAULT 14` | Days before match is flagged overdue |
+| `reminder_after_days` | `INT` | `NOT NULL DEFAULT 7` | Days before reminder email if no date agreed |
+| `requires_result_confirmation` | `BOOL` | `NOT NULL DEFAULT false` | When true, entering a result sets status to `pending_confirmation` instead of `completed`. The opponent must confirm before standings update. |
+| `status` | `TEXT` | `NOT NULL DEFAULT 'draft'` | See enum below |
+| `started_at` | `TIMESTAMPTZ` | | Set when admin starts the season |
+| `ended_at` | `TIMESTAMPTZ` | | Set when admin ends the season |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+---
+
+### Teams
+
+#### `teams`
+
+Every season uses teams. For individual seasons (`min/max_team_size = 1`), each player gets a 1-person team auto-created on enrollment. For multi-player seasons (doubles etc.), admin creates teams and assigns players.
+
+Enrollment is tracked through teams: having a team in a season = participating. No team = not enrolled.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `season_id` | `INT` | `NOT NULL, FK → seasons(id)` | |
+| `name` | `TEXT` | `NOT NULL DEFAULT ''` | Only used for multi-player teams |
+| `opted_out` | `BOOL` | `NOT NULL DEFAULT false` | Team opted out of the season |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+Matches and standings always reference teams. This uniform model avoids polymorphic FKs.
+
+#### `team_players`
+
+Player assignment to teams. Team size enforced by `seasons.min_team_size` / `max_team_size`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `team_id` | `INT` | `PK, FK → teams(id)` | |
+| `player_id` | `INT` | `PK, FK → player(id)` | |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+---
+
+### Match Lifecycle
+
+#### `season_matches`
+
+Challenge and match records. Tracks the full lifecycle from challenge to result.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `season_id` | `INT` | `NOT NULL, FK → seasons(id)` | |
+| `team1_id` | `INT` | `NOT NULL, FK → teams(id)` | Challenger team |
+| `team2_id` | `INT` | `NOT NULL, FK → teams(id)` | Challengee team |
+| `winner_team_id` | `INT` | `FK → teams(id)` | `NULL` until completed/forfeited |
+| `result_entered_by` | `INT` | `FK → player(id)` | Which player submitted the score |
+| `result_entered_at` | `TIMESTAMPTZ` | | When the result was submitted |
+| `confirmed_by` | `INT` | `FK → player(id)` | Which player confirmed the result |
+| `team1_score` | `INT[]` | | Array of game scores for team 1 |
+| `team2_score` | `INT[]` | | Array of game scores for team 2 |
+| `status` | `TEXT` | `NOT NULL` | See enum below |
+| `challenge_text` | `TEXT` | `NOT NULL DEFAULT ''` | Optional message with the challenge |
+| `disputed_reason` | `TEXT` | `NOT NULL DEFAULT ''` | Reason if result was disputed |
+| `game_at` | `TIMESTAMPTZ` | | Agreed match date/time |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | When the challenge was issued |
+
+#### `match_comments`
+
+Comments on a match. Used for coordination between players.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `match_id` | `INT` | `NOT NULL, FK → season_matches(id)` | |
+| `player_id` | `INT` | `NOT NULL, FK → player(id)` | |
+| `comment` | `TEXT` | `NOT NULL` | |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+| `edited_at` | `TIMESTAMPTZ` | | NULL if never edited |
+
+#### `date_proposals`
+
+Structured date proposals for match scheduling. Either player can propose dates; the other accepts or declines.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `match_id` | `INT` | `NOT NULL, FK → season_matches(id)` | |
+| `proposed_by` | `INT` | `NOT NULL, FK → player(id)` | |
+| `proposed_datetime` | `TIMESTAMPTZ` | `NOT NULL` | Proposed date and time |
+| `status` | `TEXT` | `NOT NULL DEFAULT 'pending'` | `'pending'`, `'accepted'`, `'declined'`, `'dismissed'` |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+When a proposal is accepted: `season_matches.game_at` is set, match `status` → `'date_set'`, and all other pending proposals for that match are set to `'dismissed'`.
+
+---
+
+### Rankings
+
+#### `season_standings`
+
+Ranking snapshots. A new row is inserted after every ranking change (match result, admin override, etc.). The latest row per season is the current standings.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `season_id` | `INT` | `FK → seasons(id)` | |
+| `match_id` | `INT` | `FK → season_matches(id)` | The match that triggered this snapshot (NULL for manual changes) |
+| `results` | `INT[]` | `NOT NULL` | Ordered array of team IDs by rank (index 0 = rank 1) |
+| `comment` | `TEXT` | `NOT NULL DEFAULT ''` | Admin note for manual changes |
+| `created` | `TIMESTAMPTZ` | `NOT NULL` | |
+
+The snapshot pattern allows computing rank progression charts and movement indicators by comparing consecutive snapshots.
+
+---
+
+### Events & Notifications
+
+Events and notifications are unified into a single immutable `events` table. Events are never updated — match progression creates follow-up events. Read tracking uses a per-player watermark timestamp.
+
+#### `events`
+
+Immutable activity feed entries. Covers both public feed items (visible to all club members) and personal notifications (targeted to a specific player).
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `club_id` | `INT` | `NOT NULL, FK → clubs(id)` | For club filtering |
+| `season_id` | `INT` | `FK → seasons(id)` | |
+| `match_id` | `INT` | `FK → season_matches(id)` | Links to relevant match |
+| `player_id` | `INT` | `FK → player(id)` | Primary actor |
+| `target_player_id` | `INT` | `FK → player(id)` | NULL = public (shown to all club members), set = personal notification |
+| `event_type` | `TEXT` | `NOT NULL` | See enum below |
+| `metadata` | `JSONB` | | Event-specific data for display without JOINs |
+| `created` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | |
+
+**Immutability:** Events are append-only. Match progression creates new events:
+1. `challenge` → "A challenged B"
+2. `date_accepted` → "Match A vs B on Jan 15"
+3. `result_entered` → "A entered the result"
+4. `result` → "A beat B 6-4, 7-5" (final, with rank change)
+
+**Visibility:**
+- `target_player_id = NULL` → public feed event, visible to all club members
+- `target_player_id = 42` → personal notification, only visible to player 42
+
+**Metadata examples** (only non-entity data — names resolved via JOINs):
+```jsonb
+-- result event
+{"score": "6-4, 3-6, 7-5", "old_rank": 5, "new_rank": 3}
+
+-- new_player event
+{"starting_rank": 12}
+
+-- unavailable event
+{"return_date": "2026-03-20"}
+```
+
+#### `event_reads`
+
+Watermark-based read tracking. Stores the timestamp of the last time a player viewed their events per club. Events with `created > last_read_at` are unread.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `player_id` | `INT` | `PK, FK → player(id)` | |
+| `club_id` | `INT` | `PK, FK → clubs(id)` | Per-club read position |
+| `last_read_at` | `TIMESTAMPTZ` | `NOT NULL` | Updated when player views events |
+
+**Unread count for bell icon:**
+```sql
+SELECT COUNT(*) FROM events
+WHERE (target_player_id = $1 OR (target_player_id IS NULL AND club_id = $2))
+  AND created > COALESCE(
+    (SELECT last_read_at FROM event_reads WHERE player_id = $1 AND club_id = $2),
+    '-infinity'
+  );
+```
+
+#### `notification_preferences`
+
+Per-player email notification settings. Controls which events trigger emails.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `player_id` | `INT` | `PK, FK → player(id)` | |
+| `email_enabled` | `BOOL` | `NOT NULL DEFAULT true` | Master toggle |
+| `challenge_emails` | `BOOL` | `NOT NULL DEFAULT true` | Challenges + withdrawals + forfeits |
+| `result_emails` | `BOOL` | `NOT NULL DEFAULT true` | Results entered + disputed |
+| `reminder_emails` | `BOOL` | `NOT NULL DEFAULT true` | Deadline + date reminders |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | |
+
+If `email_enabled = false`, no emails are sent regardless of other toggles.
+
+---
+
+### Auth
+
+#### `magic_links`
+
+One-time passwordless login tokens. UNIQUE on `player_id` ensures only one active link per user (new link invalidates old via UPSERT).
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `player_id` | `INT` | `NOT NULL UNIQUE, FK → player(id) ON DELETE CASCADE` | |
+| `token` | `TEXT` | `NOT NULL UNIQUE` | |
+| `expires_at` | `TIMESTAMPTZ` | `NOT NULL` | 15-minute expiry |
+| `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | |
+
+**Index:** `idx_magic_links_token ON magic_links(token)`
+
+#### `sessions`
+
+Database-backed sessions for revocability. Cookie-based (`session_token`, httpOnly, secure in prod).
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `SERIAL` | `PRIMARY KEY` | |
+| `player_id` | `INT` | `NOT NULL, FK → player(id) ON DELETE CASCADE` | |
+| `token` | `TEXT` | `NOT NULL UNIQUE` | |
+| `expires_at` | `TIMESTAMPTZ` | `NOT NULL` | 7-day expiry |
+| `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | |
+
+**Index:** `idx_sessions_token ON sessions(token)`
+
+---
+
+## Enums
+
+These are enforced at the application layer (not as Postgres `ENUM` types) for flexibility. Use `CHECK` constraints or app-level validation.
+
+### `seasons.status`
+
+| Value | Description |
+|-------|-------------|
+| `draft` | Created but not started. Admin can edit players and settings. **Only visible to club admins** — the player-facing season selector never shows draft seasons. |
+| `active` | Season is live. Challenges can be issued |
+| `ended` | Season is archived. Read-only standings, no new challenges |
+
+### `season_matches.status`
+
+| Value | Description |
+|-------|-------------|
+| `challenged` | Challenge issued, awaiting date agreement |
+| `date_set` | Match date agreed upon |
+| `completed` | Result entered and confirmed |
+| `withdrawn` | Challenger cancelled — no effect on rankings |
+| `forfeited` | Player forfeited — counts as a loss |
+| `pending_confirmation` | Result entered, awaiting opponent confirmation. Appears as `date_set` to uninvolved players. Only admins and the involved teams see the pending confirmation label. |
+| `disputed` | Result disputed — flagged to admin. Appears as `challenged` (open) to uninvolved players. Only admins and the involved teams see the disputed label and reason. |
+
+### `date_proposals.status`
+
+| Value | Description |
+|-------|-------------|
+| `pending` | Proposed, awaiting response |
+| `accepted` | Accepted — becomes the match date |
+| `declined` | Explicitly declined |
+| `dismissed` | Auto-dismissed when another proposal was accepted |
+
+### `club_members.role`
+
+| Value | Description |
+|-------|-------------|
+| `player` | Regular club member |
+| `admin` | Club admin — manages seasons, members, sends announcements (via events) |
+
+### `events.event_type`
+
+| Value | Visibility | Description |
+|-------|------------|-------------|
+| `challenge` | public | New challenge issued |
+| `challenged` | personal | Someone challenged you |
+| `challenge_accepted` | personal | Your challenge was accepted |
+| `withdrawal` | public | Challenge withdrawn |
+| `challenge_withdrawn` | personal | A challenge against you was withdrawn |
+| `forfeit` | public | Player forfeited |
+| `date_proposed` | personal | Date proposal received |
+| `date_accepted` | personal | Date proposal accepted |
+| `date_reminder` | personal | No date agreed (deadline approaching) |
+| `result_entered` | personal | Opponent entered a result |
+| `result_confirmed` | personal | Result was confirmed |
+| `result` | public | Match completed with final result |
+| `result_disputed` | personal | Result was disputed |
+| ~~`rank_change`~~ | — | **Removed** — rank changes are a side-effect of results; the `result` event already carries `old_rank`/`new_rank` in metadata |
+| ~~`rank_changed`~~ | — | **Removed** — same reason |
+| `new_player` | public | Player joined the club |
+| `season_start` | public | Season started |
+| ~~`season_started`~~ | — | **Removed** — redundant; the public `season_start` event already appears in every club member's feed |
+| `season_end` | public | Season ended |
+| ~~`season_ended`~~ | — | **Removed** — redundant; the public `season_end` event already appears in every club member's feed |
+| `unavailable` | public | Player set unavailable status |
+| `announcement` | personal | Admin broadcast message |
+| `deadline_exceeded` | personal | Match deadline exceeded |
+| ~~`invited_to_club`~~ | — | **Email-only** — no feed entry (feed is club-scoped, invite happens before membership) |
+
+---
+
+## Key Relationships
+
+### Cardinality
+
+| Relationship | Type | Notes |
+|-------------|------|-------|
+| `clubs` → `club_members` | 1:N | A club has many members |
+| `player` → `club_members` | 1:N | A player can be in multiple clubs |
+| `clubs` → `seasons` | 1:N | Multiple seasons per club (can be simultaneous) |
+| `seasons` → `teams` | 1:N | Every season has teams (1-person for individual) |
+| `teams` → `team_players` | 1:N | Size enforced by `seasons.min/max_team_size` |
+| `seasons` → `season_matches` | 1:N | Matches belong to a season |
+| `season_matches` → `match_comments` | 1:N | Comments on a match |
+| `season_matches` → `date_proposals` | 1:N | Date proposals for scheduling |
+| `season_matches` → `season_standings` | 1:N | Match triggers standings snapshot |
+| `clubs` → `events` | 1:N | Events scoped to a club |
+| `player` → `event_reads` | 1:N | Read watermark per club |
+| `player` → `notification_preferences` | 1:1 | One settings row per player |
+| `player` → `magic_links` | 1:1 | One active link at a time (UNIQUE) |
+| `player` → `sessions` | 1:N | Multiple active sessions allowed |
+
+### Foreign Key Cascade Rules
+
+| FK | ON DELETE | Rationale |
+|----|-----------|-----------|
+| `magic_links.player_id` | `CASCADE` | Cleanup auth tokens when player deleted |
+| `sessions.player_id` | `CASCADE` | Cleanup sessions when player deleted |
+| All other FKs | `RESTRICT` (default) | Preserve data integrity — match history retained |
+
+---
+
+## Business Rules (Data-Level)
+
+### One Open Challenge Per Team Per Season
+
+A team can only have one open challenge at a time in a given season (as challenger OR challengee). Enforced at the application layer:
+
+```sql
+-- Check before creating a challenge
+SELECT COUNT(*) FROM season_matches
+WHERE season_id = $1
+  AND status IN ('challenged', 'date_set')
+  AND (team1_id = $2 OR team2_id = $2);
+-- Must return 0 for both teams
+```
+
+### Pyramid Position Rules
+
+Valid challenge targets are determined by the challenger's rank position:
+- Left neighbor in the same row
+- Right neighbor in the row above
+- Rank 3 can challenge ranks 1 and 2 (special case)
+- Formula: `maxRank = challengerRank + 1 - floor((1 + sqrt(8 * challengerRank - 7)) / 2)`
+
+### Winner Auto-Determination
+
+Winner is the player who wins the majority of games in a "best of N" format:
+- Best of 3 → need 2 game wins
+- Best of 5 → need 3 game wins
+- Validation: submitted scores must produce a clear winner
+
+### Rankings Update on Match Completion
+
+When a match completes:
+1. If the **challenger wins** → challenger takes the challengee's rank position, everyone between shifts down by 1
+2. If the **challengee wins** → no ranking change
+3. A new `season_standings` snapshot is inserted
+4. Events are generated (public feed + personal notifications)
+
+### Team Constraints
+
+- Every season uses teams. `min/max_team_size = 1` for individual, `2` for doubles, etc.
+- Each team must have between `min_team_size` and `max_team_size` players
+- For `max_team_size = 1` seasons, teams are auto-created when a player is enrolled
+- Opted-out teams are excluded from standings and cannot be challenged
+- Standings `results[]` and match references always use team IDs
+
+### Data Retention
+
+- Player records are never fully deleted — `name` is preserved on match records for historical display
+- Leaving a club removes `club_members` row but preserves all match history
+- "Delete account" removes PII but keeps attributed match records
+
+### Season Lifecycle
+
+```
+draft → active → ended
+```
+
+- `draft`: Admin configures settings, edits player list, sets initial standings
+- `active`: Challenges can be issued, matches played
+- `ended`: Read-only, no new challenges — archival
+
+### Derived Values
+
+The following values are computed at read time and never stored:
+
+- **`wins` / `losses`**: Counted per-season from `season_matches` where team participated and status = `completed` or `forfeited`. Acceptable to compute on read for expected scale (< 100 players/season, < 500 matches/season).
+- **`movement`** (`"up"` / `"down"` / `"none"`): Derived by comparing the two most recent `season_standings` snapshots for a season.
+- **`winRate`**: Computed as `wins / (wins + losses)`. Returns 0 when no matches played.
+
+### Invite Code Uniqueness
+
+`clubs.invite_code` is globally unique. 6-character alphanumeric code generated on club creation. Can be regenerated by admin (old code invalidated immediately).
+
+---
+
+## Indexes
+
+Beyond primary keys and unique constraints, the following indexes are needed for query performance:
+
+| Table | Index | Columns | Purpose |
+|-------|-------|---------|---------|
+| `magic_links` | `idx_magic_links_token` | `(token)` | Token lookup during auth verify |
+| `sessions` | `idx_sessions_token` | `(token)` | Session lookup on every request |
+| `events` | `idx_events_club_feed` | `(club_id, created DESC)` | Feed pagination per club |
+| `events` | `idx_events_personal` | `(target_player_id, created DESC)` | Personal notification list |
+| `events` | `idx_events_global_feed` | `(created DESC)` | "All clubs" feed pagination |
+| `season_matches` | `idx_matches_season_status` | `(season_id, status)` | Open challenges per season |
+| `season_matches` | `idx_matches_team` | `(team1_id), (team2_id)` | Team's match history |
+| `season_standings` | `idx_standings_latest` | `(season_id, created DESC)` | Current standings lookup |
+

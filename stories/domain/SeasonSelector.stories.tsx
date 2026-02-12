@@ -1,6 +1,7 @@
 import preview from "#.storybook/preview";
 import { fn, within, userEvent, expect } from "storybook/test";
 import { SeasonSelector } from "@/components/domain/season-selector";
+import { seasonsWithDraft } from "../__fixtures__";
 
 const meta = preview.meta({
   title: "Domain/SeasonSelector",
@@ -49,5 +50,12 @@ export const WithArchived = meta.story({
     // Select an archived season
     await userEvent.selectOptions(select, "2025");
     await expect(args.onChange).toHaveBeenCalledWith("2025");
+  },
+});
+
+export const WithDraftSeason = meta.story({
+  args: {
+    seasons: seasonsWithDraft,
+    value: "s1",
   },
 });
