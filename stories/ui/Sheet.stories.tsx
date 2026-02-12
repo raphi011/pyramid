@@ -1,12 +1,16 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const meta: Meta<typeof Sheet> = {
   title: "UI/Sheet",
   component: Sheet,
-  parameters: { layout: "centered" },
+  tags: ["autodocs"],
+  parameters: {
+    layout: "centered",
+    viewport: { defaultViewport: "iPhoneSE" },
+  },
 };
 
 export default meta;

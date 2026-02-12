@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ReorderableList } from "@/components/reorderable-list";
 
 const meta: Meta = {
   title: "Extended/ReorderableList",
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   TrophyIcon,
   PlusIcon,
@@ -12,9 +12,10 @@ import { BottomNav } from "@/components/bottom-nav";
 const meta: Meta<typeof BottomNav> = {
   title: "Composites/BottomNav",
   component: BottomNav,
+  tags: ["autodocs"],
   parameters: {
     layout: "fullscreen",
-    viewport: { defaultViewport: "mobile" },
+    viewport: { defaultViewport: "iPhoneSE" },
   },
 };
 

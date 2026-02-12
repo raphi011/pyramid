@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 const meta: Meta<typeof Tooltip> = {
   title: "UI/Tooltip",
   component: Tooltip,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 

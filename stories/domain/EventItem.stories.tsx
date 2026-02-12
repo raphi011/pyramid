@@ -1,10 +1,17 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { EventItem, type EventType } from "@/components/domain/event-item";
 
 const meta: Meta<typeof EventItem> = {
   title: "Domain/EventItem",
   component: EventItem,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  argTypes: {
+    type: {
+      control: "select",
+      options: ["result", "challenge", "withdrawal", "forfeit", "rank_change", "new_player", "season_start", "season_end", "unavailable"],
+    },
+  },
   decorators: [
     (Story) => (
       <div className="w-96">

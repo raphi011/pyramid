@@ -1,10 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn, within, userEvent, expect } from "storybook/test";
 import { SeasonSelector } from "@/components/domain/season-selector";
 
 const meta: Meta<typeof SeasonSelector> = {
   title: "Domain/SeasonSelector",
   component: SeasonSelector,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  args: {
+    onChange: fn(),
+  },
 };
 
 export default meta;
@@ -35,5 +40,15 @@ export const WithArchived: Story = {
       { id: "2024", name: "Saison 2024", archived: true },
     ],
     value: "2026",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+
+    const select = canvas.getByRole("combobox");
+    await expect(select).toHaveValue("2026");
+
+    // Select an archived season
+    await userEvent.selectOptions(select, "2025");
+    await expect(args.onChange).toHaveBeenCalledWith("2025");
   },
 };

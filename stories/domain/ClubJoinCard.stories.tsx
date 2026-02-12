@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { ClubJoinCard } from "@/components/domain/club-join-card";
 
 const meta: Meta = {
   title: "Domain/ClubJoinCard",
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (
@@ -24,8 +26,8 @@ export const AdminView: Story = {
     <ClubJoinCard
       mode="admin"
       clubCode="ABC123"
-      onCopy={() => {}}
-      onShare={() => {}}
+      onCopy={fn()}
+      onShare={fn()}
     />
   ),
 };
@@ -38,7 +40,7 @@ export const PlayerView: Story = {
         mode="player"
         code={code}
         onCodeChange={setCode}
-        onJoin={() => {}}
+        onJoin={fn()}
       />
     );
   },
@@ -52,7 +54,7 @@ export const PlayerWithError: Story = {
         mode="player"
         code={code}
         onCodeChange={setCode}
-        onJoin={() => {}}
+        onJoin={fn()}
         error="Ungültiger Einladungscode."
       />
     );

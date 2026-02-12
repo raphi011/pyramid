@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import { Tabs } from "@/components/ui/tabs";
 
 const meta: Meta<typeof Tabs> = {
   title: "UI/Tabs",
   component: Tabs,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (
@@ -37,6 +39,18 @@ export const TwoTabs: Story = {
         ),
       },
     ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // First tab content visible
+    await expect(canvas.getByText("Pyramiden-Ansicht der aktuellen Rangliste.")).toBeInTheDocument();
+
+    // Click second tab
+    await userEvent.click(canvas.getByRole("tab", { name: "Tabelle" }));
+
+    // Second tab content visible
+    await expect(canvas.getByText("Tabellarische Ansicht mit Statistiken.")).toBeInTheDocument();
   },
 };
 

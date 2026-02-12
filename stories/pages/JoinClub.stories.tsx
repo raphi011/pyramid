@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QrCodeIcon } from "@heroicons/react/24/outline";
 import { ClubJoinCard } from "@/components/domain/club-join-card";
 import { Card, CardContent } from "@/components/card";

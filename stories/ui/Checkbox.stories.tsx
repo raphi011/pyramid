@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const meta: Meta<typeof Checkbox> = {
   title: "UI/Checkbox",
   component: Checkbox,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 
@@ -18,6 +20,20 @@ export const Checked: Story = {
 
 export const WithLabel: Story = {
   args: { label: "Benachrichtigungen aktivieren" },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const checkbox = canvas.getByRole("checkbox");
+    await expect(checkbox).not.toBeChecked();
+
+    // Check via label click
+    await userEvent.click(canvas.getByText("Benachrichtigungen aktivieren"));
+    await expect(checkbox).toBeChecked();
+
+    // Uncheck
+    await userEvent.click(checkbox);
+    await expect(checkbox).not.toBeChecked();
+  },
 };
 
 export const CheckedWithLabel: Story = {

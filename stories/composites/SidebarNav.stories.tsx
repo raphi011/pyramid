@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   TrophyIcon,
   PlusIcon,
@@ -14,6 +14,7 @@ import { SidebarNav } from "@/components/sidebar-nav";
 const meta: Meta<typeof SidebarNav> = {
   title: "Composites/SidebarNav",
   component: SidebarNav,
+  tags: ["autodocs"],
   parameters: { layout: "fullscreen" },
 };
 

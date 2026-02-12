@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { TrophyIcon } from "@heroicons/react/24/outline";
 import { DataList } from "@/components/data-list";
 
 const meta: Meta = {
   title: "Composites/DataList",
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { EventTimeline } from "@/components/domain/event-timeline";
 
 const meta: Meta<typeof EventTimeline> = {
   title: "Domain/EventTimeline",
   component: EventTimeline,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

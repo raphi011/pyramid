@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
-import { within, userEvent, expect } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import { MatchScoreInput, type SetScore } from "@/components/domain/match-score-input";
 
 const meta: Meta<typeof MatchScoreInput> = {
   title: "Domain/MatchScoreInput",
   component: MatchScoreInput,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

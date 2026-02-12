@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   PlusIcon,
   ArrowRightIcon,
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
   component: Button,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   argTypes: {
     variant: {

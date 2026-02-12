@@ -1,10 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { PyramidGrid } from "@/components/domain/pyramid-grid";
 
 const meta: Meta<typeof PyramidGrid> = {
   title: "Domain/PyramidGrid",
   component: PyramidGrid,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  args: {
+    onPlayerClick: fn(),
+  },
 };
 
 export default meta;
@@ -26,7 +31,6 @@ const tenPlayers = [
 export const TenPlayers: Story = {
   args: {
     players: tenPlayers,
-    onPlayerClick: () => {},
   },
 };
 
@@ -40,7 +44,6 @@ export const WithHighlights: Story = {
       { id: 5, name: "Max Braun", rank: 5, wins: 4, losses: 4 },
       { id: 6, name: "Sarah Hoffmann", rank: 6, wins: 3, losses: 5, variant: "unavailable" as const },
     ],
-    onPlayerClick: () => {},
   },
 };
 

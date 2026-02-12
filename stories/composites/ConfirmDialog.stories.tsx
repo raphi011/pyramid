@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
-import { within, userEvent, expect } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect, waitFor } from "storybook/test";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 
 const meta: Meta<typeof ConfirmDialog> = {
   title: "Composites/ConfirmDialog",
   component: ConfirmDialog,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 
@@ -54,8 +55,8 @@ export const Destructive: Story = {
     // Click cancel to close
     await userEvent.click(dialogScope.getByRole("button", { name: /abbrechen/i }));
 
-    // Dialog should be gone
-    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+    // Wait for Headless UI transition to complete
+    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
   },
 };
 

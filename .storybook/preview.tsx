@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import type { Preview, ReactRenderer } from "@storybook/react";
+import type { Preview, ReactRenderer } from "@storybook/react-vite";
 import { withThemeByClassName } from "@storybook/addon-themes";
-import type { DecoratorFunction } from "@storybook/types";
+import type { DecoratorFunction } from "storybook/internal/types";
 import { NextIntlClientProvider } from "next-intl";
 import deMessages from "../messages/de.json";
 import enMessages from "../messages/en.json";
@@ -69,10 +69,18 @@ const preview: Preview = {
   parameters: {
     layout: "centered",
     viewport: {
-      viewports: {
-        mobile: {
-          name: "Mobile",
-          styles: { width: "375px", height: "812px" },
+      options: {
+        iPhoneSE: {
+          name: "iPhone SE",
+          styles: { width: "375px", height: "667px" },
+        },
+        iPhone14: {
+          name: "iPhone 14",
+          styles: { width: "393px", height: "852px" },
+        },
+        tablet: {
+          name: "iPad",
+          styles: { width: "768px", height: "1024px" },
         },
         desktop: {
           name: "Desktop",

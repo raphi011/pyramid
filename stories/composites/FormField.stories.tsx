@@ -1,10 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { within, userEvent, expect } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import { FormField } from "@/components/form-field";
 
 const meta: Meta<typeof FormField> = {
   title: "Composites/FormField",
   component: FormField,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

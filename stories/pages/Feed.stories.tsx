@@ -1,6 +1,6 @@
 "use client";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
 import { EventTimeline } from "@/components/domain/event-timeline";

@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Badge } from "@/components/ui/badge";
 
 const meta: Meta<typeof Badge> = {
   title: "UI/Badge",
   component: Badge,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   argTypes: {
     variant: {

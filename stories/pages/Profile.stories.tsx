@@ -1,6 +1,6 @@
 "use client";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { BoltIcon } from "@heroicons/react/24/outline";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";

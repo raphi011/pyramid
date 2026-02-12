@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const meta: Meta<typeof ScrollArea> = {
   title: "UI/Scroll Area",
   component: ScrollArea,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 

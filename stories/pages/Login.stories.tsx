@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,21 @@ function LoginPage({ error }: { error?: string }) {
 
 export const Default: Story = {
   render: () => <LoginPage />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Button should be disabled when empty
+    const button = canvas.getByRole("button", { name: /anmelden/i });
+    await expect(button).toBeDisabled();
+
+    // Type email into the only text input
+    const input = canvas.getByRole("textbox");
+    await userEvent.type(input, "max@verein.de");
+    await expect(input).toHaveValue("max@verein.de");
+
+    // Button should now be enabled
+    await expect(button).toBeEnabled();
+  },
 };
 
 export const WithError: Story = {

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/card";
@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/card";
 const meta: Meta<typeof PageLayout> = {
   title: "Composites/PageLayout",
   component: PageLayout,
+  tags: ["autodocs"],
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (

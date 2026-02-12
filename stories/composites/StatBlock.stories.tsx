@@ -1,10 +1,17 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StatBlock } from "@/components/stat-block";
 
 const meta: Meta<typeof StatBlock> = {
   title: "Composites/StatBlock",
   component: StatBlock,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  argTypes: {
+    trend: {
+      control: "select",
+      options: [undefined, "up", "down", "neutral"],
+    },
+  },
 };
 
 export default meta;

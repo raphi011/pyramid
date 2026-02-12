@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   TrophyIcon,
   PlusIcon,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 const meta: Meta<typeof AppShell> = {
   title: "Composites/AppShell",
   component: AppShell,
+  tags: ["autodocs"],
   parameters: { layout: "fullscreen" },
 };
 

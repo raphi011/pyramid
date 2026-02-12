@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn, within, userEvent, expect } from "storybook/test";
 import { ClubSwitcher } from "@/components/club-switcher";
 
 const meta: Meta<typeof ClubSwitcher> = {
   title: "Extended/ClubSwitcher",
   component: ClubSwitcher,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 
@@ -17,7 +19,7 @@ export const SingleClub: Story = {
   args: {
     clubs: [{ id: "1", name: "TC Musterstadt" }],
     activeClubId: "1",
-    onSwitch: () => {},
+    onSwitch: fn(),
   },
 };
 
@@ -37,4 +39,18 @@ function MultiClubDemo() {
 
 export const MultipleClubs: Story = {
   render: () => <MultiClubDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    // Open the switcher
+    await userEvent.click(canvas.getByRole("button"));
+
+    // Other clubs should appear in the dropdown
+    const items = await body.findAllByRole("menuitem");
+    await expect(items.length).toBe(3);
+
+    // Select a different club (click the menuitem, not text, to avoid sr-only duplicates)
+    await userEvent.click(items[1]);
+  },
 };

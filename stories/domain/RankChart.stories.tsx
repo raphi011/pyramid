@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { RankChart } from "@/components/domain/rank-chart";
 
 const meta: Meta<typeof RankChart> = {
   title: "Extended/RankChart",
   component: RankChart,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

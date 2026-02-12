@@ -1,10 +1,21 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { PlayerCard } from "@/components/domain/player-card";
 
 const meta: Meta<typeof PlayerCard> = {
   title: "Domain/PlayerCard",
   component: PlayerCard,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  args: {
+    onClick: fn(),
+  },
+  argTypes: {
+    variant: {
+      control: "select",
+      options: [undefined, "current", "challengeable", "challenged", "unavailable"],
+    },
+  },
 };
 
 export default meta;
@@ -16,7 +27,6 @@ export const Default: Story = {
     rank: 3,
     wins: 5,
     losses: 2,
-    onClick: () => {},
   },
 };
 
@@ -27,7 +37,6 @@ export const Current: Story = {
     wins: 5,
     losses: 2,
     variant: "current",
-    onClick: () => {},
   },
 };
 
@@ -38,7 +47,6 @@ export const Challengeable: Story = {
     wins: 8,
     losses: 1,
     variant: "challengeable",
-    onClick: () => {},
   },
 };
 
@@ -68,7 +76,6 @@ export const Compact: Story = {
     rank: 3,
     variant: "current",
     compact: true,
-    onClick: () => {},
   },
 };
 
@@ -78,7 +85,6 @@ export const RankOne: Story = {
     rank: 1,
     wins: 12,
     losses: 0,
-    onClick: () => {},
   },
 };
 
@@ -87,7 +93,7 @@ export const AllVariants: Story = {
     <div className="space-y-3 w-72">
       <PlayerCard name="Max Mustermann" rank={1} wins={12} losses={0} />
       <PlayerCard name="Max Mustermann" rank={3} wins={5} losses={2} variant="current" />
-      <PlayerCard name="Anna Schmidt" rank={2} wins={8} losses={1} variant="challengeable" onClick={() => {}} />
+      <PlayerCard name="Anna Schmidt" rank={2} wins={8} losses={1} variant="challengeable" onClick={fn()} />
       <PlayerCard name="Tom Weber" rank={4} wins={3} losses={4} variant="challenged" />
       <PlayerCard name="Lisa Müller" rank={6} wins={2} losses={3} variant="unavailable" />
     </div>

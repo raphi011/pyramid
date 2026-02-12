@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import { Switch } from "@/components/ui/switch";
 
 const meta: Meta<typeof Switch> = {
   title: "UI/Switch",
   component: Switch,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 
@@ -18,6 +20,20 @@ export const On: Story = {
 
 export const WithLabel: Story = {
   args: { label: "Dark Mode" },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const toggle = canvas.getByRole("switch");
+    await expect(toggle).not.toBeChecked();
+
+    // Toggle on
+    await userEvent.click(toggle);
+    await expect(toggle).toBeChecked();
+
+    // Toggle off
+    await userEvent.click(toggle);
+    await expect(toggle).not.toBeChecked();
+  },
 };
 
 export const OnWithLabel: Story = {

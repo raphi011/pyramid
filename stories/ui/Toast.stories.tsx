@@ -1,10 +1,21 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect, fn } from "storybook/test";
 import { Toast } from "@/components/ui/toast";
 
 const meta: Meta<typeof Toast> = {
   title: "UI/Toast",
   component: Toast,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  args: {
+    onClose: fn(),
+  },
+  argTypes: {
+    variant: {
+      control: "select",
+      options: ["success", "error", "info"],
+    },
+  },
   decorators: [
     (Story) => (
       <div className="w-80">
@@ -22,7 +33,17 @@ export const Success: Story = {
     variant: "success",
     title: "Forderung gesendet",
     description: "Max Mustermann wurde herausgefordert.",
-    onClose: () => {},
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+
+    // Verify toast content renders
+    await expect(canvas.getByText("Forderung gesendet")).toBeInTheDocument();
+    await expect(canvas.getByText("Max Mustermann wurde herausgefordert.")).toBeInTheDocument();
+
+    // Click close button
+    await userEvent.click(canvas.getByRole("button"));
+    await expect(args.onClose).toHaveBeenCalled();
   },
 };
 
@@ -31,7 +52,6 @@ export const Error: Story = {
     variant: "error",
     title: "Fehler",
     description: "Die Aktion konnte nicht ausgeführt werden.",
-    onClose: () => {},
   },
 };
 
@@ -40,7 +60,6 @@ export const Info: Story = {
     variant: "info",
     title: "Neue Saison",
     description: "Saison 2026 wurde gestartet.",
-    onClose: () => {},
   },
 };
 
@@ -48,17 +67,24 @@ export const WithAction: Story = {
   args: {
     variant: "success",
     title: "Ergebnis eingetragen",
-    onClose: () => {},
-    action: { label: "Rückgängig", onClick: () => {} },
+    action: { label: "Rückgängig", onClick: fn() },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Verify action button is visible
+    const actionBtn = canvas.getByRole("button", { name: /rückgängig/i });
+    await expect(actionBtn).toBeInTheDocument();
+    await userEvent.click(actionBtn);
   },
 };
 
 export const AllVariants: Story = {
   render: () => (
     <div className="space-y-3">
-      <Toast variant="success" title="Erfolg" description="Alles hat geklappt." onClose={() => {}} />
-      <Toast variant="error" title="Fehler" description="Etwas ist schiefgelaufen." onClose={() => {}} />
-      <Toast variant="info" title="Info" description="Neue Aktualisierung verfügbar." onClose={() => {}} />
+      <Toast variant="success" title="Erfolg" description="Alles hat geklappt." onClose={fn()} />
+      <Toast variant="error" title="Fehler" description="Etwas ist schiefgelaufen." onClose={fn()} />
+      <Toast variant="info" title="Info" description="Neue Aktualisierung verfügbar." onClose={fn()} />
     </div>
   ),
 };

@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { PlayerProfile } from "@/components/domain/player-profile";
 
 const meta: Meta<typeof PlayerProfile> = {
   title: "Domain/PlayerProfile",
   component: PlayerProfile,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (
@@ -28,7 +30,7 @@ export const OwnProfile: Story = {
     trend: "up",
     trendValue: "+2",
     isOwnProfile: true,
-    onEdit: () => {},
+    onEdit: fn(),
   },
 };
 
@@ -41,7 +43,7 @@ export const OtherPlayer: Story = {
     totalMatches: 9,
     winRate: "89%",
     canChallenge: true,
-    onChallenge: () => {},
+    onChallenge: fn(),
   },
 };
 

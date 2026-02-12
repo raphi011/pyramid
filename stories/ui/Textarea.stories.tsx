@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Textarea } from "@/components/ui/textarea";
 
 const meta: Meta<typeof Textarea> = {
   title: "UI/Textarea",
   component: Textarea,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

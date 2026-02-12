@@ -1,0 +1,74 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design System/Principles" />
+
+# Design System: "Court"
+
+Sporty, energetic, mobile-first pyramid ranking app. Bold greens evoking the court, warm accents for rankings and achievements. High contrast, tactile interactions, card-based layouts.
+
+## Color Philosophy
+
+| Role | Token | Usage |
+|------|-------|-------|
+| Primary | `court-*` (green) | CTAs, active states, brand identity |
+| Accent | `trophy-*` (gold) | Rankings, achievements, challenges |
+| Neutrals | `slate-*` only | Text, backgrounds, borders |
+| Error | `red-*` | Losses, destructive actions, form errors |
+
+**Never use `gray-*` or `zinc-*`** — always `slate-*` for neutrals.
+
+## Typography
+
+**Font**: Inter — excellent mobile legibility, variable weight support.
+
+| Role | Class | Weight | Notes |
+|------|-------|--------|-------|
+| Display | `text-2xl` | Bold | Page titles |
+| Heading | `text-xl` | Semibold | Section titles |
+| Subheading | `text-base` | Semibold | Card titles |
+| Body | `text-sm` | Regular | Default text |
+| Caption | `text-xs` | Medium | Timestamps |
+| Score | `text-lg` | Bold + `tabular-nums` | Match scores |
+
+## Spacing & Radius
+
+- **Base unit**: 4px (Tailwind default)
+- **Touch targets**: minimum 44x44px on all interactive elements
+- **Buttons/Inputs**: `rounded-xl` (12px)
+- **Cards**: `rounded-2xl` (16px)
+- **Badges/Avatars**: `rounded-full`
+- **Section gap**: `gap-6` or `space-y-6`
+
+## Borders, Not Shadows
+
+Use `ring-1 ring-slate-200` instead of `border` — rings don't affect layout sizing, preventing 1px shifts on hover/focus.
+
+| Level | Usage | Class |
+|-------|-------|-------|
+| None | Default cards | `ring-1 ring-slate-200 dark:ring-slate-800` |
+| Low | Raised cards | `shadow-sm` |
+| Medium | Dropdowns | `shadow-md` |
+| High | Modals | `shadow-xl` |
+
+## Dark Mode
+
+Light-first with manual toggle. Key mappings:
+
+| Element | Light | Dark |
+|---------|-------|------|
+| Page bg | `slate-50` | `slate-950` |
+| Card bg | `white` | `slate-900` |
+| Card border | `ring-slate-200` | `ring-slate-800` |
+| Heading text | `slate-900` | `white` |
+| Body text | `slate-600` | `slate-400` |
+
+## Motion
+
+Sporty = snappy, not sluggish.
+
+| Type | Duration | Easing |
+|------|----------|--------|
+| Hover/focus | 150ms | `ease-out` |
+| Page transitions | 200ms | `ease-in-out` |
+| Modal enter | 250ms | `ease-out` |
+| Rank change | 300ms | `spring` (Framer Motion) |

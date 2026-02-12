@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";

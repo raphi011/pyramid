@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import {
   TrophyIcon,
   CalendarDaysIcon,
@@ -9,6 +10,7 @@ import { EmptyState } from "@/components/empty-state";
 const meta: Meta<typeof EmptyState> = {
   title: "Composites/EmptyState",
   component: EmptyState,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 
@@ -20,7 +22,7 @@ export const WithAction: Story = {
     icon: <TrophyIcon />,
     title: "Keine Rangliste",
     description: "Es gibt noch keine aktive Saison. Erstelle eine neue Saison um loszulegen.",
-    action: { label: "Saison erstellen", onClick: () => {} },
+    action: { label: "Saison erstellen", onClick: fn() },
   },
 };
 

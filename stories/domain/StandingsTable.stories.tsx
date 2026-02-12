@@ -1,10 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { StandingsTable } from "@/components/domain/standings-table";
 
 const meta: Meta<typeof StandingsTable> = {
   title: "Domain/StandingsTable",
   component: StandingsTable,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
+  args: {
+    onPlayerClick: fn(),
+  },
   decorators: [
     (Story) => (
       <div className="w-96">
@@ -29,7 +34,6 @@ const players = [
 export const Default: Story = {
   args: {
     players,
-    onPlayerClick: () => {},
   },
 };
 
@@ -39,6 +43,5 @@ export const WithChallengeableRows: Story = {
       ...p,
       challengeable: p.rank === 1 || p.rank === 2,
     })),
-    onPlayerClick: () => {},
   },
 };

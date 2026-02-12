@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect } from "storybook/test";
 import {
   PencilIcon,
   TrashIcon,
@@ -15,6 +16,7 @@ import {
 const meta: Meta<typeof DropdownMenu> = {
   title: "UI/Dropdown Menu",
   component: DropdownMenu,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 
@@ -40,6 +42,18 @@ export const Simple: Story = {
       </DropdownMenuItem>
     </DropdownMenu>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    // Click the trigger button
+    await userEvent.click(canvas.getByRole("button"));
+
+    // Menu items should appear (portaled to body)
+    await expect(await body.findByText("Bearbeiten")).toBeInTheDocument();
+    await expect(body.getByText("Abmelden")).toBeInTheDocument();
+    await expect(body.getByText("Löschen")).toBeInTheDocument();
+  },
 };
 
 export const WithoutIcons: Story = {

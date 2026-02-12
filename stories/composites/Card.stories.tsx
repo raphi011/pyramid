@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   Card,
   CardHeader,
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 const meta: Meta<typeof Card> = {
   title: "Composites/Card",
   component: Card,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (

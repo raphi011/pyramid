@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CharacterInput } from "@/components/ui/character-input";
 
 const meta: Meta<typeof CharacterInput> = {
   title: "Extended/CharacterInput",
   component: CharacterInput,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
 };
 

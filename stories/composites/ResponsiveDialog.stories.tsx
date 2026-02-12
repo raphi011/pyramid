@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
-import { within, userEvent, expect } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect, waitFor } from "storybook/test";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
@@ -10,7 +10,11 @@ import { FormField } from "@/components/form-field";
 const meta: Meta<typeof ResponsiveDialog> = {
   title: "Composites/ResponsiveDialog",
   component: ResponsiveDialog,
-  parameters: { layout: "centered" },
+  tags: ["autodocs"],
+  parameters: {
+    layout: "centered",
+    viewport: { defaultViewport: "iPhoneSE" },
+  },
 };
 
 export default meta;
@@ -53,9 +57,13 @@ export const Default: Story = {
     const dialogScope = within(dialog);
     await expect(dialogScope.getByText("Spieler einladen")).toBeInTheDocument();
 
-    // Close
-    await userEvent.click(dialogScope.getByRole("button", { name: /schließen/i }));
-    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+    // Close via the visible "Schließen" button (not the sr-only X button)
+    const buttons = dialogScope.getAllByRole("button", { name: /schließen/i });
+    const visibleClose = buttons.find((b) => b.textContent?.trim() === "Schließen");
+    await userEvent.click(visibleClose!);
+
+    // Wait for Headless UI transition to complete
+    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
   },
 };
 

@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test": "vitest --project storybook",
+    "test:ci": "vitest --project storybook --run",
+    "test:coverage": "vitest --project storybook --run --coverage",
+    "chromatic": "chromatic --exit-zero-on-changes"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -28,14 +32,11 @@
     "recharts": "^3.7.0"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "8",
-    "@storybook/addon-themes": "8",
-    "@storybook/blocks": "8",
-    "@storybook/manager-api": "8",
-    "@storybook/react": "8",
-    "@storybook/react-vite": "8",
-    "@storybook/test": "^8.6.15",
-    "@storybook/theming": "8",
+    "@storybook/addon-a11y": "10.2.8",
+    "@storybook/addon-docs": "10.2.8",
+    "@storybook/addon-themes": "10.2.8",
+    "@storybook/addon-vitest": "10.2.8",
+    "@storybook/react-vite": "10.2.8",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.2.3",
@@ -43,11 +44,16 @@
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
+    "chromatic": "^15.1.0",
     "eslint": "^10.0.0",
     "eslint-config-next": "^16.1.6",
+    "playwright": "^1.58.2",
     "postcss": "^8.5.6",
-    "storybook": "8",
+    "storybook": "10.2.8",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
-import { within, userEvent, expect } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within, userEvent, expect, waitFor } from "storybook/test";
 import { ChallengeSheet } from "@/components/domain/challenge-sheet";
 import { Button } from "@/components/ui/button";
 
 const meta: Meta<typeof ChallengeSheet> = {
   title: "Domain/ChallengeSheet",
   component: ChallengeSheet,
-  parameters: { layout: "centered" },
+  tags: ["autodocs"],
+  parameters: {
+    layout: "centered",
+    viewport: { defaultViewport: "iPhoneSE" },
+  },
 };
 
 export default meta;
@@ -46,8 +50,9 @@ export const Default: Story = {
     const dialog = await body.findByRole("dialog");
     const dialogScope = within(dialog);
 
-    // Verify player info
-    await expect(dialogScope.getByText("Anna Schmidt")).toBeInTheDocument();
+    // Verify player info (use getAllByText to handle sr-only duplicates from Avatar)
+    const nameElements = dialogScope.getAllByText("Anna Schmidt");
+    await expect(nameElements.length).toBeGreaterThanOrEqual(1);
     await expect(dialogScope.getByText(/Rang 2/)).toBeInTheDocument();
 
     // Type a message
@@ -60,8 +65,8 @@ export const Default: Story = {
     const submitButton = submitButtons.find((b) => b.textContent?.includes("Herausfordern"));
     await userEvent.click(submitButton!);
 
-    // Dialog should close
-    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+    // Wait for transition to complete
+    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
   },
 };
 

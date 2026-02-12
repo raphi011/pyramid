@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Avatar } from "@/components/ui/avatar";
 
 const meta: Meta<typeof Avatar> = {
   title: "UI/Avatar",
   component: Avatar,
+  tags: ["autodocs"],
   parameters: { layout: "centered" },
   argTypes: {
     size: { control: "select", options: ["sm", "md", "lg", "xl"] },
