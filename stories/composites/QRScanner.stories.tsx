@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { fn } from "storybook/test";
 import { QRScanner } from "@/components/qr-scanner";
 
-const meta: Meta<typeof QRScanner> = {
+const meta = preview.meta({
   title: "Extended/QRScanner",
   component: QRScanner,
   tags: ["autodocs"],
@@ -13,33 +13,32 @@ const meta: Meta<typeof QRScanner> = {
       options: ["idle", "scanning", "denied", "success"],
     },
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof QRScanner>;
 
-export const Idle: Story = {
+export const Idle = meta.story({
   args: {
     status: "idle",
     onStart: fn(),
   },
-};
+});
 
-export const Scanning: Story = {
+export const Scanning = meta.story({
   args: {
     status: "scanning",
   },
-};
+});
 
-export const Denied: Story = {
+export const Denied = meta.story({
   args: {
     status: "denied",
   },
-};
+});
 
-export const Success: Story = {
+export const Success = meta.story({
   args: {
     status: "success",
     onResult: "ABC123",
   },
-};
+});

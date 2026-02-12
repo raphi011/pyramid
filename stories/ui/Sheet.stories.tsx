@@ -1,9 +1,9 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta<typeof Sheet> = {
+const meta = preview.meta({
   title: "UI/Sheet",
   component: Sheet,
   tags: ["autodocs"],
@@ -11,10 +11,9 @@ const meta: Meta<typeof Sheet> = {
     layout: "centered",
     viewport: { defaultViewport: "iPhoneSE" },
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Sheet>;
 
 function SheetDemo() {
   const [open, setOpen] = useState(false);
@@ -39,6 +38,6 @@ function SheetDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <SheetDemo />,
-};
+});

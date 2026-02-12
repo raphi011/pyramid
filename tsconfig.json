@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "#.storybook/*": [
+        "./.storybook/*"
       ]
     },
     "target": "ES2017"

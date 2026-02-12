@@ -1,25 +1,24 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const meta: Meta<typeof Skeleton> = {
+const meta = preview.meta({
   title: "UI/Skeleton",
   component: Skeleton,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Skeleton>;
 
-export const TextLine: Story = {
+export const TextLine = meta.story({
   args: { className: "h-4 w-48" },
-};
+});
 
-export const Circle: Story = {
+export const Circle = meta.story({
   args: { className: "size-10 rounded-full" },
-};
+});
 
-export const Card: Story = {
+export const Card = meta.story({
   render: () => (
     <div className="w-72 space-y-3 rounded-2xl p-4 ring-1 ring-slate-200">
       <div className="flex items-center gap-3">
@@ -33,9 +32,9 @@ export const Card: Story = {
       <Skeleton className="h-4 w-3/4" />
     </div>
   ),
-};
+});
 
-export const ListItems: Story = {
+export const ListItems = meta.story({
   render: () => (
     <div className="w-72 space-y-4">
       {Array.from({ length: 4 }).map((_, i) => (
@@ -49,4 +48,4 @@ export const ListItems: Story = {
       ))}
     </div>
   ),
-};
+});

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import {
   TrophyIcon,
   PlusIcon,
@@ -11,15 +11,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { SidebarNav } from "@/components/sidebar-nav";
 
-const meta: Meta<typeof SidebarNav> = {
+const meta = preview.meta({
   title: "Composites/SidebarNav",
   component: SidebarNav,
   tags: ["autodocs"],
   parameters: { layout: "fullscreen" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof SidebarNav>;
 
 const sidebarItems = [
   { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
@@ -54,11 +53,11 @@ function SidebarDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <SidebarDemo />,
-};
+});
 
-export const WithAdmin: Story = {
+export const WithAdmin = meta.story({
   render: () => (
     <div className="h-[600px]">
       <SidebarNav
@@ -73,4 +72,4 @@ export const WithAdmin: Story = {
       />
     </div>
   ),
-};
+});

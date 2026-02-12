@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { EventTimeline, type TimelineEvent } from "@/components/domain/event-timeline";
+import preview from "#.storybook/preview";
+import { within, expect } from "storybook/test";
+import { EventTimeline } from "@/components/domain/event-timeline";
+import { sampleTimelineEvents, seasonStartEvent, seasonEndEvent } from "../__fixtures__";
 
-const meta: Meta<typeof EventTimeline> = {
+const meta = preview.meta({
   title: "Domain/EventTimeline",
   component: EventTimeline,
   tags: ["autodocs"],
@@ -13,79 +15,45 @@ const meta: Meta<typeof EventTimeline> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof EventTimeline>;
 
-const sampleEvents: TimelineEvent[] = [
-  {
-    id: 1,
-    type: "result",
-    player1: { name: "Max Mustermann" },
-    player2: { name: "Anna Schmidt" },
-    winnerId: "player1",
-    scores: [[6, 4], [7, 5]],
-    rankBefore: 5,
-    rankAfter: 3,
-    time: "14:30",
-    group: "Heute",
-    groupDate: "12.02.2026",
-  },
-  {
-    id: 2,
-    type: "challenge",
-    challenger: { name: "Tom Weber" },
-    challengee: { name: "Lisa Müller" },
-    time: "11:45",
-    group: "Heute",
-    groupDate: "12.02.2026",
-  },
-  {
-    id: 3,
-    type: "new_player",
-    player: { name: "Sarah Hoffmann" },
-    startingRank: 12,
-    time: "10:30",
-    group: "Gestern",
-    groupDate: "11.02.2026",
-  },
-];
+export const Default = meta.story({
+  args: { events: sampleTimelineEvents },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-export const Default: Story = {
-  args: { events: sampleEvents },
-};
+    // Date separators render for groups
+    const separators = canvas.getAllByRole("separator");
+    await expect(separators.length).toBeGreaterThan(0);
 
-export const Loading: Story = {
+    // Event content is visible (player names from fixtures)
+    await expect(canvas.getAllByText(/Max Mustermann/).length).toBeGreaterThan(0);
+    await expect(canvas.getAllByText(/Tom Weber/).length).toBeGreaterThan(0);
+  },
+});
+
+export const Loading = meta.story({
   args: { events: [], loading: true },
-};
+});
 
-export const Empty: Story = {
+export const Empty = meta.story({
   args: { events: [] },
-};
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-export const WithSeasonEvents: Story = {
+    // Empty state heading renders
+    await expect(canvas.getByText(/keine neuigkeiten/i)).toBeInTheDocument();
+  },
+});
+
+export const WithSeasonEvents = meta.story({
   args: {
     events: [
-      ...sampleEvents,
-      {
-        id: 5,
-        type: "season_start",
-        seasonName: "Sommer 2026",
-        playerCount: 24,
-        time: "08:00",
-        group: "Letzte Woche",
-        groupDate: "05.02.2026",
-      },
-      {
-        id: 6,
-        type: "season_end",
-        seasonName: "Winter 2025/26",
-        winnerName: "Julia Fischer",
-        time: "17:00",
-        group: "Vor 2 Wochen",
-        groupDate: "29.01.2026",
-      },
+      ...sampleTimelineEvents,
+      seasonStartEvent,
+      seasonEndEvent,
     ],
   },
-};
+});

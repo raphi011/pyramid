@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { CharacterInput } from "@/components/ui/character-input";
 
-const meta: Meta<typeof CharacterInput> = {
+const meta = preview.meta({
   title: "Extended/CharacterInput",
   component: CharacterInput,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof CharacterInput>;
 
 function Demo({ length, initial = "" }: { length?: number; initial?: string }) {
   const [value, setValue] = useState(initial);
@@ -24,29 +23,29 @@ function Demo({ length, initial = "" }: { length?: number; initial?: string }) {
   );
 }
 
-export const Empty: Story = {
+export const Empty = meta.story({
   render: () => <Demo />,
-};
+});
 
-export const PartialFill: Story = {
+export const PartialFill = meta.story({
   render: () => <Demo initial="AB" />,
-};
+});
 
-export const Full: Story = {
+export const Full = meta.story({
   render: () => <Demo initial="ABC123" />,
-};
+});
 
-export const WithError: Story = {
+export const WithError = meta.story({
   render: () => {
     const [value, setValue] = useState("XYZ99");
     return <CharacterInput value={value} onChange={setValue} error />;
   },
-};
+});
 
-export const FourCharacters: Story = {
+export const FourCharacters = meta.story({
   render: () => <Demo length={4} />,
-};
+});
 
-export const EightCharacters: Story = {
+export const EightCharacters = meta.story({
   render: () => <Demo length={8} />,
-};
+});

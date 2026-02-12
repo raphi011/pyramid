@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import {
   PlusIcon,
   ArrowRightIcon,
@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta<typeof Button> = {
+const meta = preview.meta({
   title: "UI/Button",
   component: Button,
   tags: ["autodocs"],
@@ -20,44 +20,43 @@ const meta: Meta<typeof Button> = {
     loading: { control: "boolean" },
     disabled: { control: "boolean" },
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Button>;
 
-export const Primary: Story = {
+export const Primary = meta.story({
   args: { children: "Primary Button" },
-};
+});
 
-export const Outline: Story = {
+export const Outline = meta.story({
   args: { variant: "outline", children: "Outline" },
-};
+});
 
-export const Destructive: Story = {
+export const Destructive = meta.story({
   args: { variant: "destructive", children: "Löschen" },
-};
+});
 
-export const Ghost: Story = {
+export const Ghost = meta.story({
   args: { variant: "ghost", children: "Ghost" },
-};
+});
 
-export const Small: Story = {
+export const Small = meta.story({
   args: { size: "sm", children: "Small" },
-};
+});
 
-export const Large: Story = {
+export const Large = meta.story({
   args: { size: "lg", children: "Large" },
-};
+});
 
-export const Loading: Story = {
+export const Loading = meta.story({
   args: { loading: true, children: "Laden..." },
-};
+});
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: { disabled: true, children: "Disabled" },
-};
+});
 
-export const WithIconLeft: Story = {
+export const WithIconLeft = meta.story({
   args: {
     children: (
       <>
@@ -66,9 +65,9 @@ export const WithIconLeft: Story = {
       </>
     ),
   },
-};
+});
 
-export const WithIconRight: Story = {
+export const WithIconRight = meta.story({
   args: {
     children: (
       <>
@@ -77,9 +76,9 @@ export const WithIconRight: Story = {
       </>
     ),
   },
-};
+});
 
-export const DestructiveWithIcon: Story = {
+export const DestructiveWithIcon = meta.story({
   args: {
     variant: "destructive",
     children: (
@@ -89,9 +88,9 @@ export const DestructiveWithIcon: Story = {
       </>
     ),
   },
-};
+});
 
-export const AllVariants: Story = {
+export const AllVariants = meta.story({
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <Button>Primary</Button>
@@ -100,9 +99,9 @@ export const AllVariants: Story = {
       <Button variant="ghost">Ghost</Button>
     </div>
   ),
-};
+});
 
-export const AllSizes: Story = {
+export const AllSizes = meta.story({
   render: () => (
     <div className="flex items-center gap-3">
       <Button size="sm">Small</Button>
@@ -110,4 +109,4 @@ export const AllSizes: Story = {
       <Button size="lg">Large</Button>
     </div>
   ),
-};
+});

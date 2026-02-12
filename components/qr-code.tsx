@@ -26,6 +26,8 @@ function QRCode({ value, size = "md", label, className }: QRCodeProps) {
           level="M"
           bgColor="transparent"
           fgColor="#0F172A"
+          role="img"
+          aria-label={label ?? "QR-Code"}
         />
       </div>
       {label && (

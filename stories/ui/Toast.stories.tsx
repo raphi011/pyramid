@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect, fn } from "storybook/test";
 import { Toast } from "@/components/ui/toast";
 
-const meta: Meta<typeof Toast> = {
+const meta = preview.meta({
   title: "UI/Toast",
   component: Toast,
   tags: ["autodocs"],
@@ -23,12 +23,11 @@ const meta: Meta<typeof Toast> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Toast>;
 
-export const Success: Story = {
+export const Success = meta.story({
   args: {
     variant: "success",
     title: "Forderung gesendet",
@@ -45,25 +44,25 @@ export const Success: Story = {
     await userEvent.click(canvas.getByRole("button"));
     await expect(args.onClose).toHaveBeenCalled();
   },
-};
+});
 
-export const Error: Story = {
+export const Error = meta.story({
   args: {
     variant: "error",
     title: "Fehler",
     description: "Die Aktion konnte nicht ausgeführt werden.",
   },
-};
+});
 
-export const Info: Story = {
+export const Info = meta.story({
   args: {
     variant: "info",
     title: "Neue Saison",
     description: "Saison 2026 wurde gestartet.",
   },
-};
+});
 
-export const WithAction: Story = {
+export const WithAction = meta.story({
   args: {
     variant: "success",
     title: "Ergebnis eingetragen",
@@ -77,9 +76,9 @@ export const WithAction: Story = {
     await expect(actionBtn).toBeInTheDocument();
     await userEvent.click(actionBtn);
   },
-};
+});
 
-export const AllVariants: Story = {
+export const AllVariants = meta.story({
   render: () => (
     <div className="space-y-3">
       <Toast variant="success" title="Erfolg" description="Alles hat geklappt." onClose={fn()} />
@@ -87,4 +86,4 @@ export const AllVariants: Story = {
       <Toast variant="info" title="Info" description="Neue Aktualisierung verfügbar." onClose={fn()} />
     </div>
   ),
-};
+});

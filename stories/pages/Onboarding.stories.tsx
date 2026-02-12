@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/Onboarding",
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
 function OnboardingPage({ nameError }: { nameError?: string }) {
   const [name, setName] = useState("");
@@ -68,10 +67,10 @@ function OnboardingPage({ nameError }: { nameError?: string }) {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <OnboardingPage />,
-};
+});
 
-export const WithValidation: Story = {
+export const WithValidation = meta.story({
   render: () => <OnboardingPage nameError="Name ist erforderlich" />,
-};
+});

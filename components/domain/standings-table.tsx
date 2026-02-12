@@ -51,7 +51,7 @@ function StandingsTable({
             )}
           >
             {/* Rank */}
-            <span className="w-7 text-center text-sm font-bold tabular-nums text-slate-400 dark:text-slate-500">
+            <span className="w-7 text-center text-sm font-bold tabular-nums text-slate-500 dark:text-slate-400">
               {player.rank}
             </span>
 
@@ -61,7 +61,7 @@ function StandingsTable({
                 <ArrowUpIcon className="size-4 text-court-500" />
               )}
               {player.movement === "down" && (
-                <ArrowDownIcon className="size-4 text-red-500" />
+                <ArrowDownIcon className="size-4 text-red-600" />
               )}
               {player.movement === "none" && (
                 <MinusIcon className="size-4 text-slate-300 dark:text-slate-600" />

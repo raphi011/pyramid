@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { QrCodeIcon } from "@heroicons/react/24/outline";
 import { ClubJoinCard } from "@/components/domain/club-join-card";
 import { Card, CardContent } from "@/components/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/JoinClub",
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
 function JoinClubCodeEntry() {
   const [code, setCode] = useState("");
@@ -76,10 +75,10 @@ function JoinClubConfirmation() {
   );
 }
 
-export const CodeEntry: Story = {
+export const CodeEntry = meta.story({
   render: () => <JoinClubCodeEntry />,
-};
+});
 
-export const Confirmation: Story = {
+export const Confirmation = meta.story({
   render: () => <JoinClubConfirmation />,
-};
+});

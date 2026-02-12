@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Avatar } from "@/components/ui/avatar";
 
-const meta: Meta<typeof Avatar> = {
+const meta = preview.meta({
   title: "UI/Avatar",
   component: Avatar,
   tags: ["autodocs"],
@@ -13,47 +13,46 @@ const meta: Meta<typeof Avatar> = {
       options: [undefined, "available", "challenged", "unavailable"],
     },
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Avatar>;
 
-export const Initials: Story = {
+export const Initials = meta.story({
   args: { name: "Max Mustermann" },
-};
+});
 
-export const WithImage: Story = {
+export const WithImage = meta.story({
   args: {
     name: "Anna Schmidt",
     src: "https://i.pravatar.cc/80?u=anna",
   },
-};
+});
 
-export const Small: Story = {
+export const Small = meta.story({
   args: { name: "Tim Berg", size: "sm" },
-};
+});
 
-export const Large: Story = {
+export const Large = meta.story({
   args: { name: "Tim Berg", size: "lg" },
-};
+});
 
-export const ExtraLarge: Story = {
+export const ExtraLarge = meta.story({
   args: { name: "Tim Berg", size: "xl" },
-};
+});
 
-export const Available: Story = {
+export const Available = meta.story({
   args: { name: "Max Mustermann", status: "available" },
-};
+});
 
-export const Challenged: Story = {
+export const Challenged = meta.story({
   args: { name: "Max Mustermann", status: "challenged" },
-};
+});
 
-export const Unavailable: Story = {
+export const Unavailable = meta.story({
   args: { name: "Max Mustermann", status: "unavailable" },
-};
+});
 
-export const AllSizes: Story = {
+export const AllSizes = meta.story({
   render: () => (
     <div className="flex items-end gap-3">
       <Avatar name="SM" size="sm" />
@@ -62,9 +61,9 @@ export const AllSizes: Story = {
       <Avatar name="XL" size="xl" />
     </div>
   ),
-};
+});
 
-export const AllStatuses: Story = {
+export const AllStatuses = meta.story({
   render: () => (
     <div className="flex items-center gap-3">
       <Avatar name="Verfügbar" status="available" />
@@ -73,4 +72,4 @@ export const AllStatuses: Story = {
       <Avatar name="Kein Status" />
     </div>
   ),
-};
+});

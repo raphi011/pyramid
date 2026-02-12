@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/Login",
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
 function LoginPage({ error }: { error?: string }) {
   const [email, setEmail] = useState("");
@@ -69,7 +68,7 @@ function LoginPage({ error }: { error?: string }) {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <LoginPage />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -86,8 +85,8 @@ export const Default: Story = {
     // Button should now be enabled
     await expect(button).toBeEnabled();
   },
-};
+});
 
-export const WithError: Story = {
+export const WithError = meta.story({
   render: () => <LoginPage error="Diese E-Mail ist nicht registriert" />,
-};
+});

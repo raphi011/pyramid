@@ -73,23 +73,25 @@ function Calendar({ value, onChange, className }: CalendarProps) {
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={prevMonth}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          aria-label="Vorheriger Monat"
+          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
-          <ChevronLeftIcon className="size-5" />
+          <ChevronLeftIcon className="size-5" aria-hidden="true" />
         </button>
         <span className="text-sm font-semibold text-slate-900 dark:text-white">
           {MONTHS[month]} {year}
         </span>
         <button
           onClick={nextMonth}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          aria-label="Nächster Monat"
+          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
-          <ChevronRightIcon className="size-5" />
+          <ChevronRightIcon className="size-5" aria-hidden="true" />
         </button>
       </div>
 
       {/* Day names */}
-      <div className="mb-1 grid grid-cols-7 text-center text-xs font-medium text-slate-400">
+      <div className="mb-1 grid grid-cols-7 text-center text-xs font-medium text-slate-500">
         {DAYS.map((d) => (
           <div key={d} className="py-1">
             {d}

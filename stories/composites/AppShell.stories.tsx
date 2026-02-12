@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import {
   TrophyIcon,
   PlusIcon,
@@ -15,15 +15,14 @@ import { PageLayout } from "@/components/page-layout";
 import { Card, CardContent } from "@/components/card";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta<typeof AppShell> = {
+const meta = preview.meta({
   title: "Composites/AppShell",
   component: AppShell,
   tags: ["autodocs"],
   parameters: { layout: "fullscreen" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof AppShell>;
 
 const navItems = [
   { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
@@ -84,9 +83,9 @@ function AppShellDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <AppShellDemo />,
-};
+});
 
 function AppShellWithMessages() {
   const [messages, setMessages] = useState<AdminMessage[]>([
@@ -138,11 +137,11 @@ function AppShellWithMessages() {
   );
 }
 
-export const WithMessages: Story = {
+export const WithMessages = meta.story({
   render: () => <AppShellWithMessages />,
-};
+});
 
-export const WithAdmin: Story = {
+export const WithAdmin = meta.story({
   render: () => (
     <AppShell
       navItems={navItems}
@@ -171,4 +170,4 @@ export const WithAdmin: Story = {
       </PageLayout>
     </AppShell>
   ),
-};
+});

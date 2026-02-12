@@ -7,7 +7,8 @@
     "or": "oder",
     "vs": "vs",
     "admin": "Admin",
-    "share": "Teilen"
+    "share": "Teilen",
+    "copy": "Kopieren"
   },
   "nav": {
     "profile": "Profil",
@@ -92,7 +93,8 @@
     "join": "Beitreten"
   },
   "season": {
-    "archived": "(Archiv)"
+    "archived": "(Archiv)",
+    "selectSeason": "Saison auswählen"
   },
   "notifications": {
     "ariaLabel": "Benachrichtigungen",

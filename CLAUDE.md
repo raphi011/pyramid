@@ -10,6 +10,7 @@ Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challeng
 
 - `docs/design-system.md` — Full design system: colors, typography, component library, composition rules. **Read before any UI work.**
 - `docs/ui-spec.md` — Complete UI specification: pages, layouts, navigation, user flows. **Read before building any page.**
+- `docs/a11y-guide.md` — Accessibility best practices, common violations, and Storybook a11y testing gotchas. **Read before adding components or stories.**
 
 ## Development Commands
 

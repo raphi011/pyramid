@@ -1,10 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Input } from "@/components/ui/input";
 
-const meta: Meta<typeof Input> = {
+const meta = preview.meta({
   title: "UI/Input",
   component: Input,
   tags: ["autodocs"],
+  args: { "aria-label": "Eingabe" },
   parameters: { layout: "centered" },
   decorators: [
     (Story) => (
@@ -13,38 +14,37 @@ const meta: Meta<typeof Input> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Input>;
 
-export const Default: Story = {
+export const Default = meta.story({
   args: { placeholder: "E-Mail-Adresse" },
-};
+});
 
-export const WithValue: Story = {
+export const WithValue = meta.story({
   args: { defaultValue: "spieler@example.com" },
-};
+});
 
-export const Error: Story = {
+export const Error = meta.story({
   args: {
     error: true,
     defaultValue: "ungültig",
     "aria-invalid": true,
   },
-};
+});
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: {
     disabled: true,
     defaultValue: "Nicht bearbeitbar",
   },
-};
+});
 
-export const Password: Story = {
+export const Password = meta.story({
   args: { type: "password", placeholder: "Passwort" },
-};
+});
 
-export const Number: Story = {
+export const Number = meta.story({
   args: { type: "number", placeholder: "0", className: "w-20" },
-};
+});

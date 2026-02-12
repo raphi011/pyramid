@@ -163,12 +163,12 @@ function EventDetail({ event }: { event: EventItemProps }) {
                   className={
                     wonSet
                       ? "font-bold text-court-600 dark:text-court-400"
-                      : "font-bold text-red-500 dark:text-red-400"
+                      : "font-bold text-red-600 dark:text-red-400"
                   }
                 >
                   {winnerScore}
                 </span>
-                <span className="text-slate-400">:</span>
+                <span className="text-slate-500">:</span>
                 <span className="font-medium text-slate-500 dark:text-slate-400">
                   {loserScore}
                 </span>
@@ -262,7 +262,7 @@ function EventItem(props: EventItemProps) {
           src={avatarPlayer.avatarSrc}
           size="sm"
         />
-        <p className="mt-1 text-center text-[11px] tabular-nums text-slate-400 dark:text-slate-500 md:hidden">
+        <p className="mt-1 text-center text-[11px] tabular-nums text-slate-500 dark:text-slate-400 md:hidden">
           {time}
         </p>
       </div>
@@ -276,7 +276,7 @@ function EventItem(props: EventItemProps) {
             )}
             <HighlightedText text={title} name={highlightName} />
           </p>
-          <span className="ml-4 hidden shrink-0 text-xs text-slate-400 dark:text-slate-500 md:block">
+          <span className="ml-4 hidden shrink-0 text-xs text-slate-500 dark:text-slate-400 md:block">
             {time}
           </span>
         </div>

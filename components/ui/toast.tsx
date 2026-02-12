@@ -22,7 +22,7 @@ type ToastProps = {
 
 const icons: Record<ToastVariant, React.ReactNode> = {
   success: <CheckCircleIcon className="size-5 text-court-500" />,
-  error: <ExclamationCircleIcon className="size-5 text-red-500" />,
+  error: <ExclamationCircleIcon className="size-5 text-red-600" />,
   info: <InformationCircleIcon className="size-5 text-sky-500" />,
 };
 
@@ -77,7 +77,7 @@ function Toast({
             setVisible(false);
             onClose();
           }}
-          className="shrink-0 rounded-lg p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+          className="shrink-0 rounded-lg p-0.5 text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
         >
           <XMarkIcon className="size-4" />
           <span className="sr-only">Schließen</span>

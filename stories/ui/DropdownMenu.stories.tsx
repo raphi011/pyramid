@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import {
   PencilIcon,
@@ -13,21 +13,20 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-const meta: Meta<typeof DropdownMenu> = {
+const meta = preview.meta({
   title: "UI/Dropdown Menu",
   component: DropdownMenu,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof DropdownMenu>;
 
-export const Simple: Story = {
+export const Simple = meta.story({
   render: () => (
     <DropdownMenu
       trigger={
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" aria-label="Menü öffnen">
           <EllipsisVerticalIcon className="size-4" />
         </Button>
       }
@@ -54,9 +53,9 @@ export const Simple: Story = {
     await expect(body.getByText("Abmelden")).toBeInTheDocument();
     await expect(body.getByText("Löschen")).toBeInTheDocument();
   },
-};
+});
 
-export const WithoutIcons: Story = {
+export const WithoutIcons = meta.story({
   render: () => (
     <DropdownMenu
       trigger={<Button variant="outline">Menü</Button>}
@@ -67,4 +66,4 @@ export const WithoutIcons: Story = {
       <DropdownMenuItem destructive>Abmelden</DropdownMenuItem>
     </DropdownMenu>
   ),
-};
+});

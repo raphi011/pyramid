@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { fn, within, userEvent, expect } from "storybook/test";
 import { SeasonSelector } from "@/components/domain/season-selector";
 
-const meta: Meta<typeof SeasonSelector> = {
+const meta = preview.meta({
   title: "Domain/SeasonSelector",
   component: SeasonSelector,
   tags: ["autodocs"],
@@ -10,19 +10,18 @@ const meta: Meta<typeof SeasonSelector> = {
   args: {
     onChange: fn(),
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof SeasonSelector>;
 
-export const SingleSeason: Story = {
+export const SingleSeason = meta.story({
   args: {
     seasons: [{ id: "2026", name: "Saison 2026" }],
     value: "2026",
   },
-};
+});
 
-export const MultipleActive: Story = {
+export const MultipleActive = meta.story({
   args: {
     seasons: [
       { id: "2026-singles", name: "Einzel 2026" },
@@ -30,9 +29,9 @@ export const MultipleActive: Story = {
     ],
     value: "2026-singles",
   },
-};
+});
 
-export const WithArchived: Story = {
+export const WithArchived = meta.story({
   args: {
     seasons: [
       { id: "2026", name: "Saison 2026" },
@@ -51,4 +50,4 @@ export const WithArchived: Story = {
     await userEvent.selectOptions(select, "2025");
     await expect(args.onChange).toHaveBeenCalledWith("2025");
   },
-};
+});

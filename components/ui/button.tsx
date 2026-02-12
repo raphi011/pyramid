@@ -25,9 +25,9 @@ const variants = {
     "hover:bg-slate-50 dark:hover:bg-slate-800",
   ],
   destructive: [
-    "bg-red-500 text-white shadow-sm",
-    "hover:bg-red-600",
-    "active:bg-red-700 active:shadow-none",
+    "bg-red-600 text-white shadow-sm",
+    "hover:bg-red-700",
+    "active:bg-red-800 active:shadow-none",
   ],
   ghost: [
     "bg-transparent",

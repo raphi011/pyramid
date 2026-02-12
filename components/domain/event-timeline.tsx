@@ -54,15 +54,15 @@ type EventTimelineProps = {
 function DateSeparator({ label, date }: { label: string; date?: string }) {
   const labelContent = date ? (
     <Tooltip content={date}>
-      <button
-        type="button"
-        className="cursor-default text-xs font-medium text-slate-400 dark:text-slate-500"
+      <span
+        role="text"
+        className="cursor-default text-xs font-medium text-slate-500 dark:text-slate-400"
       >
         {label}
-      </button>
+      </span>
     </Tooltip>
   ) : (
-    <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
       {label}
     </span>
   );
@@ -91,7 +91,7 @@ function SeasonBanner({ event }: { event: SeasonEvent }) {
 
   return (
     <div className="relative my-2 rounded-2xl border-y border-dashed border-slate-200 bg-slate-50 px-3 py-8 text-center dark:border-slate-700 dark:bg-slate-800/50">
-      <span className="absolute right-3 top-3 text-xs text-slate-400 dark:text-slate-500">
+      <span className="absolute right-3 top-3 text-xs text-slate-500 dark:text-slate-400">
         {event.time}
       </span>
       <p className="text-sm font-semibold text-slate-900 dark:text-white">

@@ -1,19 +1,18 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const meta: Meta<typeof Dialog> = {
+const meta = preview.meta({
   title: "UI/Dialog",
   component: Dialog,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Dialog>;
 
 function SimpleDialogDemo() {
   const [open, setOpen] = useState(false);
@@ -35,9 +34,9 @@ function SimpleDialogDemo() {
   );
 }
 
-export const Simple: Story = {
+export const Simple = meta.story({
   render: () => <SimpleDialogDemo />,
-};
+});
 
 function FormDialogDemo() {
   const [open, setOpen] = useState(false);
@@ -66,6 +65,6 @@ function FormDialogDemo() {
   );
 }
 
-export const WithForm: Story = {
+export const WithForm = meta.story({
   render: () => <FormDialogDemo />,
-};
+});

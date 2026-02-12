@@ -2,6 +2,9 @@
   "name": "pyramid",
   "version": "0.1.0",
   "private": true,
+  "imports": {
+    "#.storybook/*": "./.storybook/*"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

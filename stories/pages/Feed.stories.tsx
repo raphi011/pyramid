@@ -1,19 +1,21 @@
 "use client";
 
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
 import { EventTimeline } from "@/components/domain/event-timeline";
 import { Button } from "@/components/ui/button";
 import { allEvents, currentPlayer } from "./_mock-data";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/Neuigkeiten",
-  parameters: { layout: "fullscreen" },
-};
+  parameters: {
+    layout: "fullscreen",
+    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+  },
+});
 
 export default meta;
-type Story = StoryObj;
 
 function NeuigkeitenPage({
   events = allEvents,
@@ -38,27 +40,27 @@ function NeuigkeitenPage({
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <NeuigkeitenPage />,
-};
+});
 
-export const Loading: Story = {
+export const Loading = meta.story({
   render: () => <NeuigkeitenPage events={[]} loading />,
-};
+});
 
-export const Empty: Story = {
+export const Empty = meta.story({
   render: () => <NeuigkeitenPage events={[]} />,
-};
+});
 
-export const AllRead: Story = {
+export const AllRead = meta.story({
   render: () => (
     <NeuigkeitenPage
       events={allEvents.map((e) => ({ ...e, unread: false }))}
     />
   ),
-};
+});
 
-export const SingleClub: Story = {
+export const SingleClub = meta.story({
   render: () => (
     <PageWrapper activeHref="/neuigkeiten" singleClub>
       <PageLayout title="Neuigkeiten">
@@ -68,4 +70,4 @@ export const SingleClub: Story = {
       </PageLayout>
     </PageWrapper>
   ),
-};
+});

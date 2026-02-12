@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Badge } from "@/components/ui/badge";
 
 function ColorSwatch({
@@ -97,15 +97,14 @@ function ColorTokens() {
   );
 }
 
-const meta: Meta<typeof ColorTokens> = {
+const meta = preview.meta({
   title: "Design System/Color Tokens",
   component: ColorTokens,
   parameters: {
     layout: "padded",
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof ColorTokens>;
 
-export const Default: Story = {};
+export const Default = meta.story({});

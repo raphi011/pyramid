@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import {
   Card,
   CardHeader,
@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const meta: Meta<typeof Card> = {
+const meta = preview.meta({
   title: "Composites/Card",
   component: Card,
   tags: ["autodocs"],
@@ -22,12 +22,11 @@ const meta: Meta<typeof Card> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Card>;
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => (
     <Card>
       <CardHeader>
@@ -40,9 +39,9 @@ export const Default: Story = {
       </CardContent>
     </Card>
   ),
-};
+});
 
-export const Interactive: Story = {
+export const Interactive = meta.story({
   render: () => (
     <Card interactive>
       <CardHeader>
@@ -58,9 +57,9 @@ export const Interactive: Story = {
       </CardContent>
     </Card>
   ),
-};
+});
 
-export const Highlighted: Story = {
+export const Highlighted = meta.story({
   render: () => (
     <Card highlighted>
       <CardHeader>
@@ -73,9 +72,9 @@ export const Highlighted: Story = {
       </CardContent>
     </Card>
   ),
-};
+});
 
-export const WithAllSubcomponents: Story = {
+export const WithAllSubcomponents = meta.story({
   render: () => (
     <Card>
       <CardHeader>
@@ -98,4 +97,4 @@ export const WithAllSubcomponents: Story = {
       </CardFooter>
     </Card>
   ),
-};
+});

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect, waitFor } from "storybook/test";
 import { ChallengeSheet } from "@/components/domain/challenge-sheet";
 import { Button } from "@/components/ui/button";
+import { annaSchmidt, tomWeber } from "../__fixtures__";
 
-const meta: Meta<typeof ChallengeSheet> = {
+const meta = preview.meta({
   title: "Domain/ChallengeSheet",
   component: ChallengeSheet,
   tags: ["autodocs"],
@@ -14,10 +15,9 @@ const meta: Meta<typeof ChallengeSheet> = {
     layout: "centered",
     viewport: { defaultViewport: "iPhoneSE" },
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof ChallengeSheet>;
 
 function ChallengeDemo() {
   const [open, setOpen] = useState(false);
@@ -29,7 +29,7 @@ function ChallengeDemo() {
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={() => setOpen(false)}
-        player={{ name: "Anna Schmidt", rank: 2 }}
+        player={{ ...annaSchmidt, rank: 2 }}
         message={message}
         onMessageChange={setMessage}
       />
@@ -37,7 +37,7 @@ function ChallengeDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <ChallengeDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -68,7 +68,7 @@ export const Default: Story = {
     // Wait for transition to complete
     await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
   },
-};
+});
 
 function WithMessageDemo() {
   const [open, setOpen] = useState(false);
@@ -80,7 +80,7 @@ function WithMessageDemo() {
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={() => setOpen(false)}
-        player={{ name: "Tom Weber", rank: 4 }}
+        player={{ ...tomWeber, rank: 4 }}
         message={message}
         onMessageChange={setMessage}
       />
@@ -88,6 +88,6 @@ function WithMessageDemo() {
   );
 }
 
-export const WithMessage: Story = {
+export const WithMessage = meta.story({
   render: () => <WithMessageDemo />,
-};
+});

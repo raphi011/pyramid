@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/card";
 
-const meta: Meta<typeof PageLayout> = {
+const meta = preview.meta({
   title: "Composites/PageLayout",
   component: PageLayout,
   tags: ["autodocs"],
@@ -15,12 +15,11 @@ const meta: Meta<typeof PageLayout> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof PageLayout>;
 
-export const WithAction: Story = {
+export const WithAction = meta.story({
   render: () => (
     <PageLayout
       title="Rangliste"
@@ -34,9 +33,9 @@ export const WithAction: Story = {
       </Card>
     </PageLayout>
   ),
-};
+});
 
-export const WithoutAction: Story = {
+export const WithoutAction = meta.story({
   render: () => (
     <PageLayout title="Neuigkeiten">
       <Card>
@@ -46,9 +45,9 @@ export const WithoutAction: Story = {
       </Card>
     </PageLayout>
   ),
-};
+});
 
-export const WithSubtitle: Story = {
+export const WithSubtitle = meta.story({
   render: () => (
     <PageLayout
       title="Mein Profil"
@@ -61,4 +60,4 @@ export const WithSubtitle: Story = {
       </Card>
     </PageLayout>
   ),
-};
+});

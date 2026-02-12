@@ -1,17 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Separator } from "@/components/ui/separator";
 
-const meta: Meta<typeof Separator> = {
+const meta = preview.meta({
   title: "UI/Separator",
   component: Separator,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Separator>;
 
-export const Horizontal: Story = {
+export const Horizontal = meta.story({
   decorators: [
     (Story) => (
       <div className="w-80">
@@ -23,9 +22,9 @@ export const Horizontal: Story = {
       </div>
     ),
   ],
-};
+});
 
-export const Vertical: Story = {
+export const Vertical = meta.story({
   args: { orientation: "vertical" },
   decorators: [
     (Story) => (
@@ -36,4 +35,4 @@ export const Vertical: Story = {
       </div>
     ),
   ],
-};
+});

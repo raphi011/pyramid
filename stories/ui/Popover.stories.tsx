@@ -1,18 +1,17 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Popover } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta<typeof Popover> = {
+const meta = preview.meta({
   title: "UI/Popover",
   component: Popover,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Popover>;
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => (
     <Popover trigger={<Button variant="outline">Info</Button>}>
       <div className="w-56">
@@ -25,4 +24,4 @@ export const Default: Story = {
       </div>
     </Popover>
   ),
-};
+});

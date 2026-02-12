@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
 import { Tabs } from "@/components/ui/tabs";
 
-const meta: Meta<typeof Tabs> = {
+const meta = preview.meta({
   title: "UI/Tabs",
   component: Tabs,
   tags: ["autodocs"],
@@ -14,12 +14,11 @@ const meta: Meta<typeof Tabs> = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Tabs>;
 
-export const TwoTabs: Story = {
+export const TwoTabs = meta.story({
   args: {
     items: [
       {
@@ -52,9 +51,9 @@ export const TwoTabs: Story = {
     // Second tab content visible
     await expect(canvas.getByText("Tabellarische Ansicht mit Statistiken.")).toBeInTheDocument();
   },
-};
+});
 
-export const FourTabs: Story = {
+export const FourTabs = meta.story({
   args: {
     items: [
       { label: "Alle", content: <p className="text-sm text-slate-600">Alle Spiele</p> },
@@ -63,4 +62,4 @@ export const FourTabs: Story = {
       { label: "Beendet", content: <p className="text-sm text-slate-600">Abgeschlossene Spiele</p> },
     ],
   },
-};
+});

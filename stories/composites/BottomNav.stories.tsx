@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import {
   TrophyIcon,
   PlusIcon,
@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { BottomNav } from "@/components/bottom-nav";
 
-const meta: Meta<typeof BottomNav> = {
+const meta = preview.meta({
   title: "Composites/BottomNav",
   component: BottomNav,
   tags: ["autodocs"],
@@ -17,10 +17,9 @@ const meta: Meta<typeof BottomNav> = {
     layout: "fullscreen",
     viewport: { defaultViewport: "iPhoneSE" },
   },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof BottomNav>;
 
 const navItems = [
   { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
@@ -48,11 +47,11 @@ function BottomNavDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <BottomNavDemo />,
-};
+});
 
-export const WithBadge: Story = {
+export const WithBadge = meta.story({
   render: () => {
     const itemsWithBadge = [
       { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
@@ -72,9 +71,9 @@ export const WithBadge: Story = {
       </div>
     );
   },
-};
+});
 
-export const FABDisabled: Story = {
+export const FABDisabled = meta.story({
   render: () => (
     <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
       <BottomNav
@@ -89,4 +88,4 @@ export const FABDisabled: Story = {
       />
     </div>
   ),
-};
+});

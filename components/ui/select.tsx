@@ -31,7 +31,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
         {children}
       </select>
       <ChevronDownIcon
-        className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+        className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-500"
         aria-hidden="true"
       />
     </div>

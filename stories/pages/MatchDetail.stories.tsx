@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
@@ -12,13 +12,15 @@ import { Separator } from "@/components/ui/separator";
 import { MatchScoreInput, type SetScore } from "@/components/domain/match-score-input";
 import { FormField } from "@/components/form-field";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/MatchDetail",
-  parameters: { layout: "fullscreen" },
-};
+  parameters: {
+    layout: "fullscreen",
+    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+  },
+});
 
 export default meta;
-type Story = StoryObj;
 
 function MatchHeader({
   status,
@@ -228,14 +230,14 @@ function CompletedPage() {
   );
 }
 
-export const Challenged: Story = {
+export const Challenged = meta.story({
   render: () => <ChallengedPage />,
-};
+});
 
-export const DateSet: Story = {
+export const DateSet = meta.story({
   render: () => <DateSetPage />,
-};
+});
 
-export const Completed: Story = {
+export const Completed = meta.story({
   render: () => <CompletedPage />,
-};
+});

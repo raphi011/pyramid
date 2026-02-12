@@ -1,16 +1,15 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { Calendar } from "@/components/ui/calendar";
 
-const meta: Meta<typeof Calendar> = {
+const meta = preview.meta({
   title: "UI/Calendar",
   component: Calendar,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj<typeof Calendar>;
 
 function CalendarDemo() {
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -26,13 +25,13 @@ function CalendarDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <CalendarDemo />,
-};
+});
 
-export const WithPreselected: Story = {
+export const WithPreselected = meta.story({
   render: () => {
     const today = new Date();
     return <Calendar value={today} />;
   },
-};
+});

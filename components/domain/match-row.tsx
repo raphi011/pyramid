@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type MatchStatus =
@@ -25,14 +25,6 @@ type MatchRowProps = {
   position?: MatchRowPosition;
   onClick?: () => void;
   className?: string;
-};
-
-const statusVariants: Record<MatchStatus, BadgeVariant> = {
-  challenged: "pending",
-  date_set: "info",
-  completed: "win",
-  withdrawn: "info",
-  forfeited: "loss",
 };
 
 const statusKeys: Record<MatchStatus, string> = {
@@ -120,10 +112,17 @@ function MatchRow({
         </div>
       )}
 
-      {/* Status badge */}
-      <Badge variant={statusVariants[status]} size="sm">
-        {t(statusKeys[status])}
-      </Badge>
+      {/* Status indicator */}
+      {(status === "challenged" || status === "date_set") && (
+        <Badge variant="subtle" size="sm">
+          {t(statusKeys[status])}
+        </Badge>
+      )}
+      {(status === "withdrawn" || status === "forfeited") && (
+        <span className="text-xs italic text-slate-500">
+          {t(statusKeys[status])}
+        </span>
+      )}
     </button>
   );
 }

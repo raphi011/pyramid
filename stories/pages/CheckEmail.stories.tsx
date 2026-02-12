@@ -1,15 +1,14 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import preview from "#.storybook/preview";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { Card, CardContent } from "@/components/card";
 import { Button } from "@/components/ui/button";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Pages/CheckEmail",
   parameters: { layout: "centered" },
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
 function CheckEmailPage() {
   return (
@@ -46,6 +45,6 @@ function CheckEmailPage() {
   );
 }
 
-export const Default: Story = {
+export const Default = meta.story({
   render: () => <CheckEmailPage />,
-};
+});

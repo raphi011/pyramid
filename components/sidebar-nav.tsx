@@ -93,7 +93,7 @@ function SidebarNav({
         {adminItems && adminItems.length > 0 && (
           <>
             <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
-            <p className="px-3 pb-1 pt-2 text-xs font-medium tracking-wide text-slate-400">
+            <p className="px-3 pb-1 pt-2 text-xs font-medium tracking-wide text-slate-500">
               {tCommon("admin")}
             </p>
             {adminItems.map((item) => (
@@ -155,7 +155,7 @@ function SidebarButton({
       {item.icon}
       <span className="flex-1 text-left">{item.label}</span>
       {item.badge != null && item.badge > 0 && (
-        <span className="flex size-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+        <span className="flex size-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
           {item.badge > 9 ? "9+" : item.badge}
         </span>
       )}

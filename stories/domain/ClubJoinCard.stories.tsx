@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import preview from "#.storybook/preview";
+import { fn, within, userEvent, expect } from "storybook/test";
 import { ClubJoinCard } from "@/components/domain/club-join-card";
 
-const meta: Meta = {
+const meta = preview.meta({
   title: "Domain/ClubJoinCard",
   tags: ["autodocs"],
   parameters: { layout: "centered" },
@@ -16,12 +16,11 @@ const meta: Meta = {
       </div>
     ),
   ],
-};
+});
 
 export default meta;
-type Story = StoryObj;
 
-export const AdminView: Story = {
+export const AdminView = meta.story({
   render: () => (
     <ClubJoinCard
       mode="admin"
@@ -30,9 +29,9 @@ export const AdminView: Story = {
       onShare={fn()}
     />
   ),
-};
+});
 
-export const PlayerView: Story = {
+export const PlayerView = meta.story({
   render: () => {
     const [code, setCode] = useState("");
     return (
@@ -44,9 +43,23 @@ export const PlayerView: Story = {
       />
     );
   },
-};
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-export const PlayerWithError: Story = {
+    // Join button should be disabled initially (empty code)
+    const joinButton = canvas.getByRole("button", { name: /beitreten/i });
+    await expect(joinButton).toBeDisabled();
+
+    // Type a 6-char code
+    const input = canvas.getByPlaceholderText(/code eingeben/i);
+    await userEvent.type(input, "ABC123");
+
+    // Join button should now be enabled
+    await expect(joinButton).toBeEnabled();
+  },
+});
+
+export const PlayerWithError = meta.story({
   render: () => {
     const [code, setCode] = useState("XYZ999");
     return (
@@ -59,4 +72,4 @@ export const PlayerWithError: Story = {
       />
     );
   },
-};
+});
