@@ -233,7 +233,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Preconditions**: Player is authenticated, has completed onboarding, has 0 clubs (or navigates manually from settings).
 
 **Steps**:
-1. User navigates to `/join` → System shows invite code input (6-char, spaced), "Join Club" button, and "Scan QR code" option.
+1. User navigates to `/join` → System shows invite code input (6-char, spaced) and "Join Club" button.
 2. User enters 6-character code and clicks "Join Club" → System validates code against `clubs.invite_code`.
 3. Code valid → System shows confirmation dialog: club name, "Join" / "Cancel" buttons.
 4. User clicks "Join" → System creates `club_members` row (role = `player`).
@@ -256,20 +256,21 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P1
 
-**Preconditions**: Player is authenticated, on `/join` page, device has camera.
+**Preconditions**: Club admin has shared a QR code that encodes the join URL (e.g. `https://app.example.com/join?code=ABC123`).
 
 **Steps**:
-1. User taps "Scan QR code" → System requests camera permission and opens scanner.
-2. User scans QR code containing the club invite code → System extracts code and validates.
-3. Same flow as US-AUTH-06 step 3 onwards.
+1. User scans QR code with any camera app (iOS Camera, Android Camera, third-party scanner).
+2. Camera app opens the URL → Browser navigates to `/join?code=ABC123`.
+3. If user is authenticated → `/join` page auto-submits the code (→ US-AUTH-06 step 2 onwards).
+4. If user is not authenticated → `/join` page shows the guest email flow, then redirects back to `/join?code=...` after login.
 
 **Postconditions**: Same as US-AUTH-06.
 
 **Edge cases**:
-- Camera permission denied → Error "Camera access required to scan QR codes".
-- QR code doesn't contain a valid invite code → Error "Invalid QR code".
+- QR code contains an expired/regenerated invite code → "Code not found" error on `/join`.
+- User has no account → Guest email flow sends magic link with `returnTo=/join?code=...`.
 
-**Cross-refs**: → US-AUTH-06
+**Cross-refs**: → US-AUTH-06, → US-ADMIN-01, → US-ADMIN-13
 
 ---
 
