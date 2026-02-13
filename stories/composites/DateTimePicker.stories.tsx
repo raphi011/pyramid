@@ -44,9 +44,11 @@ export const DateTime = meta.story({
   render: () => <DateTimeDemo />,
 });
 
+function WithPreselectedDemo() {
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  return <DateTimePicker value={date} onChange={setDate} showTime />;
+}
+
 export const WithPreselected = meta.story({
-  render: () => {
-    const [date, setDate] = useState<Date | undefined>(new Date());
-    return <DateTimePicker value={date} onChange={setDate} showTime />;
-  },
+  render: () => <WithPreselectedDemo />,
 });

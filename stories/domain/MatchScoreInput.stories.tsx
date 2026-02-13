@@ -87,17 +87,19 @@ export const PartiallyFilled = meta.story({
   render: () => <ScoreDemo initial={partiallyFilledSets} maxSets={3} />,
 });
 
+function WithErrorDemo() {
+  const [sets, setSets] = useState<SetScore[]>(invalidSets);
+  return (
+    <MatchScoreInput
+      sets={sets}
+      onChange={setSets}
+      error="Ungültiges Ergebnis: Kein Gewinner erkennbar."
+    />
+  );
+}
+
 export const WithError = meta.story({
-  render: () => {
-    const [sets, setSets] = useState<SetScore[]>(invalidSets);
-    return (
-      <MatchScoreInput
-        sets={sets}
-        onChange={setSets}
-        error="Ungültiges Ergebnis: Kein Gewinner erkennbar."
-      />
-    );
-  },
+  render: () => <WithErrorDemo />,
 });
 
 export const ReadOnly = meta.story({

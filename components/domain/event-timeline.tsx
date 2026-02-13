@@ -148,14 +148,20 @@ function EventTimeline({
     );
   }
 
-  let lastGroup: string | undefined;
+  const groupStarts = new Set<number>();
+  {
+    let prev: string | undefined;
+    for (let i = 0; i < events.length; i++) {
+      const g = events[i].group;
+      if (g !== undefined && g !== prev) groupStarts.add(i);
+      prev = g;
+    }
+  }
 
   return (
     <div className={cn(className)}>
-      {events.map((event) => {
-        const showGroupHeader =
-          event.group !== undefined && event.group !== lastGroup;
-        lastGroup = event.group;
+      {events.map((event, i) => {
+        const showGroupHeader = groupStarts.has(i);
 
         const isSeason = isSeasonEvent(event);
 

@@ -12,12 +12,15 @@ type ResponsiveDialogProps = {
   className?: string;
 };
 
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
 function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+  );
 
   useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mql.matches);
+    const mql = window.matchMedia(DESKTOP_QUERY);
 
     function handleChange(e: MediaQueryListEvent) {
       setIsDesktop(e.matches);

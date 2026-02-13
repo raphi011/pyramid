@@ -43,6 +43,31 @@ const config: StorybookConfig = {
     config.plugins = config.plugins || [];
     config.plugins.push(tailwindcss());
     config.plugins.push(react());
+
+    config.build = {
+      ...config.build,
+      chunkSizeWarningLimit: 1300,
+      rollupOptions: {
+        ...config.build?.rollupOptions,
+        output: {
+          ...(config.build?.rollupOptions?.output as object),
+          manualChunks(id: string) {
+            if (id.includes("node_modules/react-dom")) return "react-vendor";
+            if (id.includes("node_modules/react/")) return "react-vendor";
+            if (id.includes("node_modules/scheduler")) return "react-vendor";
+            if (id.includes("node_modules/@storybook/"))
+              return "storybook-vendor";
+            if (id.includes("node_modules/@headlessui/")) return "headlessui";
+            if (
+              id.includes("node_modules/next-intl") ||
+              id.includes("node_modules/intl-messageformat")
+            )
+              return "i18n";
+          },
+        },
+      },
+    };
+
     return config;
   },
 };
