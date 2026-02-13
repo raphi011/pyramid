@@ -56,7 +56,11 @@
     "setAriaLabel": "Set {set} {player}",
     "removeSetAriaLabel": "Remove set {set}",
     "player1Default": "Player 1",
-    "player2Default": "Player 2"
+    "player2Default": "Player 2",
+    "timeJustNow": "just now",
+    "timeMinutes": "{minutes}m ago",
+    "timeHours": "{hours}h ago",
+    "timeDays": "{days}d ago"
   },
   "matches": {
     "title": "Matches",

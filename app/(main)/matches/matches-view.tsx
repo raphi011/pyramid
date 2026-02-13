@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
-import { Tabs } from "@/components/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import { DataList } from "@/components/data-list";
 import { MatchCard } from "@/components/domain/match-card";
 import { SeasonSelector } from "@/components/domain/season-selector";

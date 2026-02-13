@@ -54,19 +54,22 @@ function getStatusConfig(
 
 // ── Relative time ──────────────────────────────────────
 
-function relativeTime(date: Date): string {
+function relativeTime(
+  date: Date,
+  t: (key: string, values?: Record<string, number>) => string,
+): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return t("timeJustNow");
 
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return t("timeMinutes", { minutes });
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("timeHours", { hours });
 
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t("timeDays", { days });
 }
 
 // ── Score formatting ───────────────────────────────────
@@ -131,7 +134,7 @@ function MatchCard({
           {t(key)}
         </Badge>
         <span className="text-[10px] text-slate-400">
-          {relativeTime(created)}
+          {relativeTime(created, t)}
         </span>
       </div>
     </button>

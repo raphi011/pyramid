@@ -79,7 +79,10 @@ export function AppShellWrapper({
         {children}
       </AppShell>
       {fabToast && (
-        <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm text-white shadow-lg dark:bg-slate-100 dark:text-slate-900">
+        <div
+          role="alert"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm text-white shadow-lg dark:bg-slate-100 dark:text-slate-900"
+        >
           {fabToast}
         </div>
       )}

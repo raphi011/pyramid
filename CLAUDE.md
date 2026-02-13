@@ -136,11 +136,11 @@ Key rules (always enforce):
 - **Never use `gray-*` or `zinc-*`** — always `slate-*`
 - **Never use `border`** — use `ring-1 ring-slate-200` (no layout shift)
 - **Component library**: shadcn/ui primitives (`components/ui/`) → composites (`components/`) → domain (`components/domain/`)
-- **Pages only import from `components/domain/` and `components/`** — never from `components/ui/` directly
-- **Every list** uses `DataList` with `loading` + `empty` props — no bare `.map()`
-- **Every modal** uses `ResponsiveDialog` — never raw `Dialog` or `Sheet`
-- **Every form** uses `FormField` — never raw `Label` + `Input`
-- **Destructive actions** always use `ConfirmDialog`
+- **Use composites where they exist** — pages and domain components may import leaf primitives (`Button`, `Badge`, `Avatar`, etc.) directly from `components/ui/`, but must use composites when a composite wraps that primitive with added behavior:
+  - **Every list** uses `DataList` with `loading` + `empty` props — no bare `.map()`
+  - **Every modal** uses `ResponsiveDialog` — never raw `Dialog` or `Sheet`
+  - **Every form** uses `FormField` — never raw `Label` + `Input`
+  - **Destructive actions** always use `ConfirmDialog`
 - Mobile-first: bottom sheet on mobile, centered dialog on desktop
 - `rounded-xl` for interactive elements, `rounded-2xl` for cards
 

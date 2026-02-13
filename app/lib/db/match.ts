@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type postgres from "postgres";
 
 type Sql = postgres.Sql | postgres.TransactionSql;
@@ -83,7 +84,7 @@ function toMatch(row: Record<string, unknown>): Match {
 
 // ── Queries ────────────────────────────────────────────
 
-export async function getTeamsWithOpenChallenge(
+async function queryTeamsWithOpenChallenge(
   sql: Sql,
   seasonId: number,
 ): Promise<Set<number>> {
@@ -101,6 +102,9 @@ export async function getTeamsWithOpenChallenge(
   }
   return ids;
 }
+
+// Cached version deduplicates within a single server request (layout + page)
+export const getTeamsWithOpenChallenge = cache(queryTeamsWithOpenChallenge);
 
 export async function getUnavailableTeamIds(
   sql: Sql,

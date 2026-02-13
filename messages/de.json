@@ -56,7 +56,11 @@
     "setAriaLabel": "Satz {set} {player}",
     "removeSetAriaLabel": "Satz {set} entfernen",
     "player1Default": "Spieler 1",
-    "player2Default": "Spieler 2"
+    "player2Default": "Spieler 2",
+    "timeJustNow": "gerade eben",
+    "timeMinutes": "vor {minutes}m",
+    "timeHours": "vor {hours}h",
+    "timeDays": "vor {days}T"
   },
   "matches": {
     "title": "Spiele",

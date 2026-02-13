@@ -91,10 +91,11 @@ export default async function RankingsPage({
         : unavailableTeams.has(p.teamId)
           ? ("unavailable" as const)
           : currentPlayerRank !== null &&
+              currentTeamId !== null &&
               canChallenge(currentPlayerRank, p.rank) &&
               !openChallengeTeams.has(p.teamId) &&
-              !openChallengeTeams.has(currentTeamId!) &&
-              !unavailableTeams.has(currentTeamId!)
+              !openChallengeTeams.has(currentTeamId) &&
+              !unavailableTeams.has(currentTeamId)
             ? ("challengeable" as const)
             : openChallengeTeams.has(p.teamId)
               ? ("challenged" as const)
@@ -115,12 +116,13 @@ export default async function RankingsPage({
     const movement = computeMovement(p.teamId, currentResults, previousResults);
     const challengeable =
       currentPlayerRank !== null &&
+      currentTeamId !== null &&
       canChallenge(currentPlayerRank, p.rank) &&
       p.teamId !== currentTeamId &&
       !openChallengeTeams.has(p.teamId) &&
-      !openChallengeTeams.has(currentTeamId!) &&
+      !openChallengeTeams.has(currentTeamId) &&
       !unavailableTeams.has(p.teamId) &&
-      !unavailableTeams.has(currentTeamId!);
+      !unavailableTeams.has(currentTeamId);
 
     return {
       id: p.teamId,
