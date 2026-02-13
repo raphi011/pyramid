@@ -514,7 +514,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Steps**:
 1. User taps a notification → System navigates based on event type:
    - `challenged` / `challenge_accepted` / `challenge_withdrawn` / `date_proposed` / `date_accepted` / `date_reminder` / `result_entered` / `result_confirmed` / `result_disputed` / `forfeit` / `deadline_exceeded` → `/matches/[match_id]`
-   - `announcement` → Admin announcement detail or stays on notifications.
+   - `announcement` (club-scoped) → stays on notifications (no detail page).
+   - `announcement` (season-scoped) → `/rankings?season=[season_id]` or stays on notifications.
 
 **Postconditions**: User is on the relevant detail page.
 
@@ -1583,7 +1584,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
    - Quick stats: player count, season count, open challenges count.
    - Active seasons: list of `status = 'active'` seasons with player/team count, open challenges, overdue warnings.
    - Overdue matches: matches where `created + match_deadline_days < NOW()` and `status IN ('challenged', 'date_set')`.
-   - Actions: "Manage members", "Create new season", "Send announcement", "Club settings".
+   - Actions: "Manage members", "Create new season", "Send announcement" (club-wide), "Club settings".
+   - Each active season card also has a "Send announcement" action (season-scoped).
    - Invite link section: join code, Copy/Share/QR buttons, "Regenerate code" option.
 
 **Postconditions**: Dashboard rendered with live data.
@@ -1849,23 +1851,32 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Club Admin | **Priority**: P1
 
-**Preconditions**: Admin is on announcements page.
+**Preconditions**: Admin is on the club dashboard or a season management page.
 
 **Steps**:
-1. Admin navigates to `/admin/club/[id]/announcements` → System shows announcement form and past announcements.
-2. Admin types message, optionally checks "Send as email".
-3. Admin taps "Send" → System creates personal `announcement` events for all club members (one `events` row per member with `target_player_id` set).
-4. If "Send as email" checked → System sends email to all members (respecting `notification_preferences.email_enabled`).
+1. **Club announcement**: Admin navigates to `/admin/club/[id]/announcements` → System shows announcement form (scope: "All members") and past announcements.
+2. **Season announcement**: Admin navigates to `/admin/club/[id]/season/[id]` and taps "Send announcement" → System shows announcement form (scope: season participants only).
+3. Admin types message, optionally checks "Send as email".
+4. Admin selects scope (if accessed from club level):
+   - "All members" → targets all `club_members`.
+   - A specific season → targets only players enrolled in that season.
+5. Admin taps "Send" → System creates personal `announcement` events (one `events` row per target player with `target_player_id` set).
+   - Club-scoped: `season_id = NULL`, targets all club members.
+   - Season-scoped: `season_id` set, targets only season participants.
+6. If "Send as email" checked → System sends email to all targets (respecting `notification_preferences.email_enabled`).
 
 **Postconditions**:
-- `announcement` events created (one per member).
+- `announcement` events created (one per target player).
+- `events.season_id` set for season-scoped announcements, NULL for club-scoped.
 - Emails sent (if opted in and checkbox checked).
 
 **Edge cases**:
 - Empty message → Submit button disabled.
 - Large club (100+ members) → Bulk insert for events, batched email sends.
+- Season has 0 enrolled players → Warning "No players enrolled in this season".
+- Season-scoped announcement also visible in the club-wide feed (filtered by season context).
 
-**Cross-refs**: → US-FEED-07
+**Cross-refs**: → US-FEED-07, → US-FEED-02
 
 ---
 
