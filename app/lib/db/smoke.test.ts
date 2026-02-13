@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from "vitest";
-import { withTestDb } from "./helpers";
+import { withTestDb } from "./test-helpers";
 
 const db = withTestDb();
 

@@ -45,12 +45,11 @@ export default defineConfig({
         test: {
           name: "db",
           include: [
-            "app/lib/db/__tests__/**/*.test.ts",
-            "app/lib/__tests__/**/*.test.ts",
+            "app/lib/**/*.test.ts",
           ],
           environment: "node",
           pool: "forks",
-          setupFiles: ["./app/lib/db/__tests__/setup.ts"],
+          setupFiles: ["./app/lib/db/test-setup.ts"],
         },
       },
     ],

@@ -1,6 +1,6 @@
 import { beforeAll, afterAll } from "vitest";
 import postgres from "postgres";
-import { DATABASE_URL } from "./helpers";
+import { DATABASE_URL } from "./test-helpers";
 
 const sql = postgres(DATABASE_URL);
 

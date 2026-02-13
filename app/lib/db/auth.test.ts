@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from "vitest";
-import { withTestDb } from "./helpers";
+import { withTestDb } from "./test-helpers";
 import {
   getPlayerByEmail,
   getPlayerById,
@@ -9,7 +9,7 @@ import {
   createSession,
   getSessionByToken,
   deleteSessionByToken,
-} from "../auth";
+} from "./auth";
 
 const db = withTestDb();
 
