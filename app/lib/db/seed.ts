@@ -128,3 +128,32 @@ export async function seedStandings(
   `;
   return row.id as number;
 }
+
+// ── Event ────────────────────────────────────────────
+
+export async function seedEvent(
+  tx: Tx,
+  clubId: number,
+  {
+    seasonId,
+    matchId,
+    playerId,
+    targetPlayerId,
+    eventType = "challenge",
+    metadata = {},
+  }: {
+    seasonId?: number;
+    matchId?: number;
+    playerId?: number;
+    targetPlayerId?: number;
+    eventType?: string;
+    metadata?: Record<string, unknown>;
+  } = {},
+): Promise<number> {
+  const [row] = await tx`
+    INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+    VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, NOW())
+    RETURNING id
+  `;
+  return row.id as number;
+}
