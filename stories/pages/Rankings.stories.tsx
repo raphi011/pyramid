@@ -26,7 +26,7 @@ import {
 } from "./_mock-data";
 
 const meta = preview.meta({
-  title: "Pages/Rangliste",
+  title: "Pages/Rankings",
   parameters: {
     layout: "fullscreen",
     a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
@@ -107,7 +107,7 @@ function RankingLoadingSkeleton() {
   );
 }
 
-function RanglistePage({
+function RankingsPage({
   defaultRankingTab = 0,
   loading = false,
   empty = false,
@@ -146,7 +146,7 @@ function RanglistePage({
     : t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" });
 
   return (
-    <PageWrapper activeHref="/rangliste">
+    <PageWrapper activeHref="/rankings">
       <PageLayout
         title={t("title")}
         subtitle={subtitle}
@@ -243,28 +243,28 @@ function RanglistePage({
 }
 
 export const Default = meta.story({
-  render: () => <RanglistePage />,
+  render: () => <RankingsPage />,
 });
 
 export const ListView = meta.story({
-  render: () => <RanglistePage defaultRankingTab={1} />,
+  render: () => <RankingsPage defaultRankingTab={1} />,
 });
 
 export const MatchSelected = meta.story({
-  render: () => <RanglistePage initialSelectedMatchId="m3" />,
+  render: () => <RankingsPage initialSelectedMatchId="m3" />,
 });
 
 export const Loading = meta.story({
-  render: () => <RanglistePage loading />,
+  render: () => <RankingsPage loading />,
 });
 
 export const Empty = meta.story({
-  render: () => <RanglistePage empty />,
+  render: () => <RankingsPage empty />,
 });
 
 export const BigPyramid = meta.story({
   render: () => (
-    <RanglistePage
+    <RankingsPage
       customPyramid={bigPyramidPlayers}
       customStandings={bigStandingsPlayers}
     />

@@ -31,13 +31,13 @@ export function AppShellWrapper({
   const [activeClubId, setActiveClubId] = useState<number>(clubs[0].id);
 
   const navItems = [
-    { icon: <TrophyIcon />, label: t("ranking"), href: "/rangliste" },
-    { icon: <BellIcon />, label: t("news"), href: "/neuigkeiten" },
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed" },
   ];
 
   const sidebarItems = [
-    { icon: <BellIcon />, label: t("news"), href: "/neuigkeiten" },
-    { icon: <TrophyIcon />, label: t("ranking"), href: "/rangliste" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed" },
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
     { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
   ];
 

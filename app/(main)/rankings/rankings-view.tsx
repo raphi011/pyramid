@@ -36,7 +36,7 @@ export function RankingsView({
       <SeasonSelector
         seasons={seasons}
         value={currentSeasonId ?? undefined}
-        onChange={(id) => router.push(`/rangliste?season=${id}`)}
+        onChange={(id) => router.push(`/rankings?season=${id}`)}
       />
     ) : null;
 

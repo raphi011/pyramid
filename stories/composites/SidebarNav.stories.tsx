@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import preview from "#.storybook/preview";
+import { useTranslations } from "next-intl";
 import {
   TrophyIcon,
   PlusIcon,
@@ -20,18 +21,24 @@ const meta = preview.meta({
 
 export default meta;
 
-const sidebarItems = [
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-  { icon: <Cog6ToothIcon />, label: "Einstellungen", href: "/settings" },
-];
-
-const adminItems = [
-  { icon: <ShieldCheckIcon />, label: "Club verwalten", href: "/admin/club/1" },
-];
+function useSidebarItems() {
+  const t = useTranslations("nav");
+  return {
+    sidebarItems: [
+      { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+      { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+    ],
+    adminItems: [
+      { icon: <ShieldCheckIcon />, label: t("manageClub"), href: "/admin/club/1" },
+    ],
+    fabLabel: t("challenge"),
+  };
+}
 
 function SidebarDemo() {
-  const [active, setActive] = useState("/rangliste");
+  const { sidebarItems, fabLabel } = useSidebarItems();
+  const [active, setActive] = useState("/rankings");
   return (
     <div className="h-[600px]">
       <SidebarNav
@@ -40,7 +47,7 @@ function SidebarDemo() {
         onNavigate={setActive}
         fab={{
           icon: <PlusIcon />,
-          label: "Fordern",
+          label: fabLabel,
           onClick: () => {},
         }}
         clubSwitcher={
@@ -57,8 +64,9 @@ export const Default = meta.story({
   render: () => <SidebarDemo />,
 });
 
-export const WithAdmin = meta.story({
-  render: () => (
+function SidebarWithAdmin() {
+  const { sidebarItems, adminItems } = useSidebarItems();
+  return (
     <div className="h-[600px]">
       <SidebarNav
         items={sidebarItems}
@@ -71,5 +79,9 @@ export const WithAdmin = meta.story({
         }
       />
     </div>
-  ),
+  );
+}
+
+export const WithAdmin = meta.story({
+  render: () => <SidebarWithAdmin />,
 });

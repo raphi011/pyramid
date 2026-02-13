@@ -186,7 +186,7 @@ Key animations:
 
 ### Mobile (default)
 
-- **Bottom navigation bar**: 4 items (Rangliste, Spiele, Neuigkeiten, Profil)
+- **Bottom navigation bar**: 4 items (Rankings, Matches, Feed, Profile)
 - Full-width cards, `px-4` page padding
 - Bottom sheet for dialogs (not centered modal)
 - Scroll-based views, no pagination
@@ -224,10 +224,10 @@ Mobile:                          Desktop (lg+):
 
 | Icon | Label | Route | Description |
 |------|-------|-------|-------------|
-| Trophy | Rangliste | `/` | Pyramid view |
-| Swords | Spiele | `/matches` | Match list |
-| Bell | Neuigkeiten | `/events` | Event timeline |
-| User | Profil | `/profile` | Player profile |
+| Trophy | Rankings | `/rankings` | Pyramid view |
+| Swords | Matches | `/matches` | Match list |
+| Bell | Feed | `/feed` | Event timeline |
+| User | Profile | `/profile` | Player profile |
 
 ---
 
@@ -376,7 +376,7 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 
 **PageLayout** — Wraps every page.
 ```tsx
-<PageLayout title="Rangliste" subtitle="Saison 2026" action={<Button>...</Button>}>
+<PageLayout title="Rankings" subtitle="Season 2026" action={<Button>...</Button>}>
   {children}
 </PageLayout>
 ```
@@ -391,8 +391,8 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 **BottomNav** — Fixed mobile navigation.
 ```tsx
 <BottomNav items={[
-  { icon: TrophyIcon, label: "Rangliste", href: "/" },
-  { icon: SwordsIcon, label: "Spiele", href: "/matches" },
+  { icon: TrophyIcon, label: "Rankings", href: "/rankings" },
+  { icon: SwordsIcon, label: "Matches", href: "/matches" },
   ...
 ]} />
 ```
@@ -402,7 +402,7 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 <DataList
   items={matches}
   loading={isLoading}
-  empty={<EmptyState icon={SwordsIcon} title="Keine Spiele" />}
+  empty={<EmptyState icon={SwordsIcon} title="No matches" />}
   renderItem={(match) => <MatchRow match={match} />}
 />
 ```
@@ -411,9 +411,9 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 ```tsx
 <EmptyState
   icon={TrophyIcon}
-  title="Noch keine Rangliste"
-  description="Der Admin muss die Saison starten."
-  action={<Button>Saison erstellen</Button>}
+  title="No rankings yet"
+  description="The admin needs to start the season."
+  action={<Button>Create season</Button>}
 />
 ```
 

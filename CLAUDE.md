@@ -146,8 +146,9 @@ Key rules (always enforce):
 
 ## Code Conventions
 
+- **English everywhere in code**: all identifiers (variables, functions, types), route paths, table/column names, comments, documentation, and file names must be in English
+- **User-facing text** (UI labels, headings, button text) is German, served through `next-intl` — translation keys and locale files are the only place German text belongs
 - "use client" directive on interactive components
-- German UI text (e.g., "Fordern" = Challenge, "Abmelden" = Logout)
 - Accessibility: 44x44px touch targets, aria-hidden, sr-only
 - TypeScript errors currently ignored in build (`next.config.mjs`)
 - **Colocated tests**: test files live next to the module they test (e.g. `auth.ts` + `auth.test.ts`), not in `__tests__/` directories

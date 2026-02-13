@@ -82,7 +82,7 @@ function ChallengedPage() {
   const [comment, setComment] = useState("");
 
   return (
-    <PageWrapper activeHref="/rangliste">
+    <PageWrapper activeHref="/rankings">
       <PageLayout title="Spiel Details">
         <MatchHeader status="challenged" date="Offen seit 03.02.2026" />
 
@@ -163,7 +163,7 @@ function ChallengedPage() {
 
 function DateSetPage() {
   return (
-    <PageWrapper activeHref="/rangliste">
+    <PageWrapper activeHref="/rankings">
       <PageLayout title="Spiel Details">
         <MatchHeader status="date_set" date="15.02.2026, 10:00" />
 
@@ -204,7 +204,7 @@ function CompletedPage() {
   ];
 
   return (
-    <PageWrapper activeHref="/rangliste">
+    <PageWrapper activeHref="/rankings">
       <PageLayout title="Spiel Details">
         <MatchHeader status="completed" date="10.02.2026" />
 
