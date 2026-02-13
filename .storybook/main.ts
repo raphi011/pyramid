@@ -4,19 +4,29 @@ import path, { dirname } from "node:path";
 import type { StorybookConfig } from "@storybook/react-vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import remarkGfm from "remark-gfm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const config: StorybookConfig = {
   stories: [
-    "../stories/**/*.mdx",
+    "../docs/**/*.mdx",
     "../stories/**/*.stories.@(ts|tsx)",
     "../components/**/*.stories.@(ts|tsx)",
   ],
   addons: [
     "@storybook/addon-themes",
-    "@storybook/addon-docs",
+    {
+      name: "@storybook/addon-docs",
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        },
+      },
+    },
     "@storybook/addon-a11y",
     "@storybook/addon-vitest"
   ],

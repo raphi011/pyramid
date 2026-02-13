@@ -1,0 +1,116 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Component Architecture" />
+
+# Component Architecture
+
+The component library is organized in three layers. Each layer has strict import rules to maintain separation of concerns.
+
+## Three Layers
+
+```
+┌─────────────────────────────────────────────────┐
+│  Layer 3: Domain Components                     │
+│  PlayerCard, MatchRow, PyramidGrid,             │
+│  ChallengeSheet, EventItem, StandingsTable      │
+│  — sport-specific, composed from Layer 1+2      │
+├─────────────────────────────────────────────────┤
+│  Layer 2: Composite Components                  │
+│  Card, EmptyState, DataList, FormField,         │
+│  BottomNav, PageLayout, AppShell, StatBlock     │
+│  — reusable patterns, app-agnostic              │
+├─────────────────────────────────────────────────┤
+│  Layer 1: Primitives (shadcn/ui)                │
+│  Button, Input, Badge, Avatar, Dialog,          │
+│  Sheet, Select, Skeleton, Toast, Tabs           │
+│  — atomic, themed to Court palette              │
+└─────────────────────────────────────────────────┘
+```
+
+## Import Rules
+
+| From → To | Allowed |
+|-----------|---------|
+| Pages → Domain (`components/domain/`) | Yes |
+| Pages → Composites (`components/`) | Yes |
+| Pages → Primitives (`components/ui/`) | **No** |
+| Domain → Composites | Yes |
+| Domain → Primitives | Yes |
+| Composites → Primitives | Yes |
+| Primitives → anything | **No** (leaf nodes) |
+
+## Composition Patterns
+
+### Every list uses DataList
+
+```tsx
+// Good
+<DataList
+  items={matches}
+  loading={isLoading}
+  empty={{ icon: <BoltIcon />, title: "Keine Spiele" }}
+  renderItem={(match) => <MatchRow match={match} />}
+/>
+
+// Bad — no loading/empty handling
+{matches.map(m => <MatchRow key={m.id} match={m} />)}
+```
+
+### Every modal uses ResponsiveDialog
+
+Shows as a bottom sheet on mobile, centered dialog on desktop.
+
+```tsx
+// Good
+<ResponsiveDialog open={open} onClose={() => setOpen(false)} title="Fordern">
+  {children}
+</ResponsiveDialog>
+
+// Bad — raw Dialog or Sheet
+<Dialog open={open}>...</Dialog>
+```
+
+### Every form uses FormField
+
+```tsx
+// Good
+<FormField label="E-Mail" error={errors.email}>
+  <Input type="email" />
+</FormField>
+
+// Bad — loose Label + Input
+<Label>E-Mail</Label>
+<Input type="email" />
+```
+
+### Destructive actions use ConfirmDialog
+
+```tsx
+<ConfirmDialog
+  title="Spieler entfernen?"
+  description="Diese Aktion kann nicht rückgängig gemacht werden."
+  confirmLabel="Entfernen"
+  onConfirm={handleDelete}
+/>
+```
+
+## File Structure
+
+```
+components/
+├── ui/                  # Layer 1: shadcn primitives
+│   ├── button.tsx
+│   ├── input.tsx
+│   ├── badge.tsx
+│   └── ...
+├── card.tsx             # Layer 2: composites
+├── form-field.tsx
+├── data-list.tsx
+├── responsive-dialog.tsx
+├── app-shell.tsx
+└── domain/              # Layer 3: domain-specific
+    ├── pyramid-grid.tsx
+    ├── player-card.tsx
+    ├── match-row.tsx
+    └── ...
+```

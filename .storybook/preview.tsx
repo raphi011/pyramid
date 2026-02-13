@@ -5,6 +5,7 @@ import { withThemeByClassName } from "@storybook/addon-themes";
 import type { DecoratorFunction } from "storybook/internal/types";
 import { NextIntlClientProvider } from "next-intl";
 import addonA11y from "@storybook/addon-a11y";
+import addonDocs from "@storybook/addon-docs";
 import deMessages from "../messages/de.json";
 import enMessages from "../messages/en.json";
 import "../app/globals.css";
@@ -51,7 +52,7 @@ const withThemeBackground: DecoratorFunction<ReactRenderer> = (
 };
 
 export default definePreview({
-  addons: [addonA11y()],
+  addons: [addonDocs(), addonA11y()],
   globalTypes: {
     locale: {
       description: "Locale for translations",

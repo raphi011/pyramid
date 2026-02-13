@@ -10,7 +10,9 @@ type MatchStatus =
   | "date_set"
   | "completed"
   | "withdrawn"
-  | "forfeited";
+  | "forfeited"
+  | "disputed"
+  | "pending_confirmation";
 
 type MatchRowPosition = "first" | "middle" | "last" | "only";
 
@@ -33,6 +35,8 @@ const statusKeys: Record<MatchStatus, string> = {
   completed: "statusCompleted",
   withdrawn: "statusWithdrawn",
   forfeited: "statusForfeited",
+  disputed: "statusDisputed",
+  pending_confirmation: "statusPendingConfirmation",
 };
 
 const positionRounding: Record<MatchRowPosition, string> = {
@@ -113,7 +117,7 @@ function MatchRow({
       )}
 
       {/* Status indicator */}
-      {(status === "challenged" || status === "date_set") && (
+      {(status === "challenged" || status === "date_set" || status === "disputed" || status === "pending_confirmation") && (
         <Badge variant="subtle" size="sm">
           {t(statusKeys[status])}
         </Badge>

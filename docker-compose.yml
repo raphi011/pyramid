@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: pyramid_dev
+      POSTGRES_USER: pyramid
+      POSTGRES_PASSWORD: pyramid
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pyramid -d pyramid_dev"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

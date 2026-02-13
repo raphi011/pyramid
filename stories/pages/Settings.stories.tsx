@@ -23,6 +23,7 @@ export default meta;
 
 function SettingsPage() {
   const [darkMode, setDarkMode] = useState(false);
+  const [emailEnabled, setEmailEnabled] = useState(true);
   const [emailResults, setEmailResults] = useState(true);
   const [emailChallenges, setEmailChallenges] = useState(true);
   const [emailReminders, setEmailReminders] = useState(false);
@@ -58,20 +59,30 @@ function SettingsPage() {
           <CardContent>
             <div className="space-y-4">
               <Switch
-                label="Ergebnisse per E-Mail"
-                checked={emailResults}
-                onChange={setEmailResults}
+                label="E-Mail-Benachrichtigungen"
+                checked={emailEnabled}
+                onChange={setEmailEnabled}
               />
-              <Switch
-                label="Forderungen per E-Mail"
-                checked={emailChallenges}
-                onChange={setEmailChallenges}
-              />
-              <Switch
-                label="Erinnerungen per E-Mail"
-                checked={emailReminders}
-                onChange={setEmailReminders}
-              />
+              <div className="space-y-4 pl-4">
+                <Switch
+                  label="Ergebnisse per E-Mail"
+                  checked={emailResults}
+                  onChange={setEmailResults}
+                  disabled={!emailEnabled}
+                />
+                <Switch
+                  label="Forderungen per E-Mail"
+                  checked={emailChallenges}
+                  onChange={setEmailChallenges}
+                  disabled={!emailEnabled}
+                />
+                <Switch
+                  label="Erinnerungen per E-Mail"
+                  checked={emailReminders}
+                  onChange={setEmailReminders}
+                  disabled={!emailEnabled}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

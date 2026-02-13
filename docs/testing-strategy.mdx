@@ -1,0 +1,375 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Testing Strategy" />
+
+# Testing Strategy
+
+Four-layer testing approach: **Unit tests** for pure domain logic, **DB integration tests** for repository functions, **Storybook interaction tests** for UI behavior, and **Playwright e2e tests** for full-stack flows.
+
+---
+
+## Unit Tests (Domain Logic)
+
+Pure functions that encode business rules — no DB, no server, no React. These are the fastest tests in the suite.
+
+**What they test:**
+- Pyramid challenge rules (`canChallenge()`, valid targets by rank)
+- Winner auto-determination (best-of-N scoring)
+- Rankings update logic (position swaps after match result)
+- Invite code generation / validation
+- Date/availability range checks
+
+**How they work:**
+- Plain Vitest tests in Node.js (same "db" project config, but no DB needed)
+- Tests live alongside the modules they test (e.g. `app/lib/pyramid.test.ts`)
+- **Table-driven tests** for combinatorial logic — define inputs and expected outputs as arrays of cases
+
+**Commands:**
+
+```bash
+bun run test:db               # Runs both unit and DB integration tests
+```
+
+**Example (table-driven):**
+
+```ts
+// app/lib/__tests__/pyramid.test.ts
+// canChallenge will be a pure function in app/lib/pyramid.ts (extracted from app/pyramid.tsx)
+import { canChallenge } from "../pyramid";
+
+describe("canChallenge", () => {
+  const cases = [
+    { challenger: 4, challengee: 1, expected: false, reason: "too far up" },
+    { challenger: 4, challengee: 3, expected: true, reason: "left in same row" },
+    { challenger: 4, challengee: 2, expected: true, reason: "right in row above" },
+    { challenger: 3, challengee: 1, expected: true, reason: "rank 3 special case" },
+    { challenger: 3, challengee: 2, expected: true, reason: "rank 3 special case" },
+    { challenger: 6, challengee: 3, expected: true, reason: "right in row above" },
+    { challenger: 6, challengee: 5, expected: true, reason: "left in same row" },
+    { challenger: 6, challengee: 1, expected: false, reason: "too far up" },
+    { challenger: 1, challengee: 2, expected: false, reason: "rank 1 cannot challenge down" },
+  ];
+
+  it.each(cases)(
+    "rank $challenger vs $challengee → $expected ($reason)",
+    ({ challenger, challengee, expected }) => {
+      expect(canChallenge(challenger, challengee)).toBe(expected);
+    },
+  );
+});
+```
+
+---
+
+## DB Integration Tests
+
+Repository-level tests that run against a real Dockerized PostgreSQL instance.
+
+**What they test:**
+- Every repository function (SELECT, INSERT, UPDATE, DELETE)
+- Query correctness (joins, filters, edge cases)
+- Constraint enforcement (unique, FK, NOT NULL)
+- Transaction behavior
+
+**How they work:**
+- Tests run in Vitest "db" project (Node.js, not browser)
+- Each test uses `withinTransaction()` helper — wraps in a transaction that rolls back after assertions
+- Tests live next to the module they test (e.g. `app/lib/db/auth.test.ts` beside `auth.ts`)
+- Requires Docker Compose Postgres running + migrations applied
+
+**Commands:**
+
+```bash
+docker compose up -d          # Start Postgres
+bun run db:migrate            # Apply migrations
+bun run test:db               # Run DB integration tests
+```
+
+**Gate rule:** No repository function may be used in an API route or server action until its DB integration test passes. This ensures every database call is verified before it enters the application layer.
+
+**Example:**
+
+```ts
+import { withTestDb } from "./test-helpers";
+
+describe("auth repository", () => {
+  const db = withTestDb();
+  afterAll(() => db.cleanup());
+
+  it("creates and verifies a magic link", async () => {
+    await db.withinTransaction(async (tx) => {
+      // Seed a player
+      const [player] = await tx`
+        INSERT INTO player (name, email_address, created)
+        VALUES ('Alice', 'alice@example.com', NOW())
+        RETURNING id
+      `;
+
+      // Create magic link
+      await tx`
+        INSERT INTO magic_links (player_id, token, expires_at)
+        VALUES (${player.id}, 'test-token-123', NOW() + INTERVAL '15 minutes')
+      `;
+
+      // Verify atomic delete-and-return
+      const [link] = await tx`
+        DELETE FROM magic_links
+        WHERE token = 'test-token-123' AND expires_at > NOW()
+        RETURNING player_id
+      `;
+      expect(link.player_id).toBe(player.id);
+    });
+  });
+});
+```
+
+---
+
+## Storybook Interaction Tests
+
+Component-level tests that run inside Storybook via `@storybook/addon-vitest` + Playwright browser mode.
+
+**What they test:**
+- UI rendering, form validation, state changes
+- User interactions (click, type, select, drag)
+- Accessibility (axe-core via `@storybook/addon-a11y`)
+- Responsive behavior (viewport parameters)
+- Loading, empty, and error states
+
+**How they work:**
+- Stories import real components from `app/` and `components/`
+- `play` functions define interaction sequences and assertions
+- Run in a real browser (Chromium via `@vitest/browser-playwright`)
+- No server, database, or API needed — data passed as props
+
+**Commands:**
+
+```bash
+bun run test              # Watch mode
+bun run test:ci           # Single run (CI)
+bun run test:coverage     # With Istanbul coverage
+```
+
+**Example:**
+
+```tsx
+export const SubmitChallenge = meta.story({
+  render: () => <ChallengeSheet opponent={mockPlayer} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole("button", { name: /herausfordern/i });
+
+    // Button enabled by default (message is optional)
+    await expect(button).toBeEnabled();
+
+    // Type optional message
+    const textarea = canvas.getByRole("textbox");
+    await userEvent.type(textarea, "Samstag 14 Uhr?");
+    await expect(textarea).toHaveValue("Samstag 14 Uhr?");
+  },
+});
+```
+
+---
+
+## Playwright E2E Tests
+
+Full-stack tests against a running Next.js server with a real database.
+
+**What they test:**
+- Auth flows (magic link → session → redirect)
+- API routes and server actions
+- Database state changes (challenge created, rankings updated)
+- Middleware behavior (route protection, session expiry)
+- Multi-user scenarios (challenger + challengee)
+
+**How they work:**
+- Playwright drives a real Chromium browser against `localhost:3000`
+- Tests live in `e2e/` directory, named `*.spec.ts`
+- `playwright.config.ts` auto-starts the dev server
+- Two projects: desktop Chrome + iPhone 14 (mobile)
+
+**Commands:**
+
+```bash
+bun run test:e2e          # Headless run
+bun run test:e2e:ui       # Interactive UI mode
+```
+
+**Example:**
+
+```ts
+test("unauthenticated user is redirected to /login", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/login/);
+});
+```
+
+---
+
+## When to Use Which Layer
+
+| Scenario | Layer |
+|----------|-------|
+| Pyramid challenge rules (who can challenge whom) | Unit (table-driven) |
+| Winner determination from scores | Unit (table-driven) |
+| Rankings position swap logic | Unit (table-driven) |
+| Repository function returns correct data | DB Integration |
+| Constraint violations (duplicate email, missing FK) | DB Integration |
+| Complex queries (joins, aggregations, array ops) | DB Integration |
+| Form validation (empty fields, invalid input) | Storybook |
+| Button states (disabled, loading) | Storybook |
+| Dialog/sheet open and close | Storybook |
+| Pyramid card layout and indicators | Storybook |
+| Component accessibility | Storybook |
+| Login → session cookie → redirect | Playwright |
+| Challenge creation → DB row → event generated | Playwright |
+| Match result → standings update | Playwright |
+| Middleware redirects (expired session, no club) | Playwright |
+| Multi-user flows (A challenges B, B confirms) | Playwright |
+
+**Rule of thumb:** Pure business logic with no I/O → unit test (table-driven). Database queries → DB integration. UI behavior with mock data → Storybook. Full-stack flow with server + database → Playwright.
+
+---
+
+## File Structure
+
+```
+├── app/lib/                     # Application logic + colocated tests
+│   ├── pyramid.ts              # Challenge rules, rankings
+│   ├── pyramid.test.ts         # Unit tests for pyramid logic
+│   ├── scoring.ts              # Winner determination
+│   ├── scoring.test.ts         # Unit tests for scoring
+│   └── ...
+├── app/lib/db/                 # Database repository layer
+│   ├── auth.ts                 # Auth repository functions
+│   ├── auth.test.ts            # DB integration tests for auth
+│   ├── smoke.test.ts           # Schema verification
+│   ├── test-helpers.ts         # Transaction isolation helpers
+│   ├── test-setup.ts           # Test setup (DB connectivity check)
+│   ├── clubs.ts                # Club repository functions
+│   └── index.ts                # DB connection re-export
+├── db/                         # Database migrations
+│   ├── migrations/             # Numbered .sql migration files
+│   │   └── 001_initial_schema.sql
+│   ├── migrate.ts              # Migration runner
+│   └── seed.ts                 # Test seed data
+├── e2e/                        # Playwright e2e tests
+│   ├── smoke.spec.ts           # Basic app reachability
+│   ├── auth.spec.ts            # Magic link, session, logout
+│   ├── challenge.spec.ts       # Challenge lifecycle
+│   └── ...
+├── stories/                    # Storybook stories + interaction tests
+│   ├── ui/                     # Layer 1: shadcn/ui primitives
+│   ├── composites/             # Layer 2: Composite components
+│   ├── domain/                 # Layer 3: Domain components
+│   └── pages/                  # Full page compositions
+├── playwright.config.ts        # Playwright configuration
+├── vitest.config.ts            # Vitest + Storybook + DB test config
+└── .storybook/
+    ├── main.ts                 # Storybook config
+    ├── preview.tsx             # Decorators, globals, a11y
+    └── vitest.setup.ts         # Vitest setup for Storybook
+```
+
+---
+
+## Conventions
+
+### Story Files
+
+- Stories import **real components**, not inline definitions
+- Every interactive story has a `play` function with assertions
+- Use `within(canvasElement)` for scoped queries
+- Prefer accessible queries: `getByRole`, `getByLabelText`, `getByText`
+- Test both happy path and edge cases (empty state, error state) as separate stories
+
+### E2E Test Files
+
+- One file per domain: `auth.spec.ts`, `challenge.spec.ts`, `rankings.spec.ts`
+- Use `test.describe()` to group related flows
+- Use page objects or helper functions for repeated interactions (login, seed data)
+- Keep tests independent — each test can run in isolation
+- Use `test.slow()` for multi-step flows that need extra time
+
+### Naming
+
+```
+# Stories
+stories/pages/Login.stories.tsx        → "Pages/Login"
+stories/domain/PyramidGrid.stories.tsx → "Domain/PyramidGrid"
+
+# E2E tests
+e2e/auth.spec.ts                       → "auth > login flow"
+e2e/challenge.spec.ts                  → "challenge > create from pyramid"
+```
+
+---
+
+## Implementation Order
+
+User stories are implemented in dependency order. Each story gets both test layers where applicable.
+
+| Phase | User Stories | Storybook | Playwright |
+|-------|-------------|-----------|------------|
+| 1. Auth | AUTH-01→05, 09, 10 | Login page, check-email, onboarding | Magic link flow, session, redirect |
+| 2. Club join | AUTH-06, 08 | Join page, invite code input | Join → auto-enroll → redirect |
+| 3. Rankings | RANK-01→04 | Pyramid grid, list view, season selector | Load standings from DB |
+| 4. Challenge | CHAL-01, 05, 09 | Challenge sheet, match detail | Create challenge → DB state |
+| 5. Match lifecycle | CHAL-10→13, 19 | Date picker, score input, confirm | Full match → ranking update |
+| 6. Feed | FEED-01, 05→07 | Event cards, empty state, notification bell | Events from DB, read tracking |
+| 7. Profile | PROF-01→02, 04→05 | Profile view, edit dialog, availability | Update player, availability toggle |
+| 8. Admin | ADMIN-01→03, 08 | Dashboard, season form, invite | Create season, invite member |
+| 9. Polish | Remaining P1/P2 | Per-story | Per-story |
+
+---
+
+## Database Setup
+
+### Local Development & Testing
+
+PostgreSQL runs via Docker Compose:
+
+```bash
+docker compose up -d          # Start Postgres on port 5433
+bun run db:migrate            # Apply all migrations
+bun run db:reset              # Drop + re-apply (full reset)
+```
+
+**Connection:** `postgres://pyramid:pyramid@localhost:5433/pyramid_dev`
+
+Set in `.env.local`:
+```
+DATABASE_URL=postgres://pyramid:pyramid@localhost:5433/pyramid_dev
+```
+
+### Seed Data
+
+`db/seed.ts` is a placeholder for test fixtures (known players, clubs, seasons) that will be added as features are implemented.
+
+### Test Isolation
+
+- **DB integration tests:** Transaction rollback per test (zero data leakage)
+- **E2E tests:** Will reset to seed state via `beforeAll` (not yet implemented)
+
+### CI
+
+Postgres service container in GitHub Actions, same Docker image.
+
+---
+
+## CI Integration
+
+Target CI pipeline:
+
+```
+1. bun install
+2. bun run lint                    # ESLint
+3. bun run test:db                 # DB integration tests
+4. bun run test:ci                 # Storybook interaction tests
+5. bun run build                   # Next.js build
+6. bun run test:e2e                # Playwright e2e (against built app)
+7. bun run chromatic               # Visual regression (Chromatic)
+```
+
+Steps 3 and 4 can run in parallel. Step 6 depends on step 5.

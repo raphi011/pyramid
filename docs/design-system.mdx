@@ -1,0 +1,612 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Design System" />
+
+# Design System: "Court"
+
+Sporty, energetic, mobile-first pyramid ranking app. Bold greens evoking the court, warm accents for rankings and achievements. High contrast, tactile interactions, card-based layouts.
+
+---
+
+## Color Palette
+
+### Primary — Court Green
+
+The hero color. CTAs, active states, pyramid highlights, brand identity.
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `court-50` | `#F0FDF4` | Light backgrounds, subtle tints |
+| `court-100` | `#DCFCE7` | Hover backgrounds, win badge bg |
+| `court-200` | `#BBF7D0` | Active/pressed backgrounds |
+| `court-300` | `#86EFAC` | Borders on active elements |
+| `court-400` | `#4ADE80` | Secondary buttons, badges |
+| `court-500` | `#22C55E` | **Primary brand** — buttons, links, current player |
+| `court-600` | `#16A34A` | Hover on primary buttons |
+| `court-700` | `#15803D` | Active/pressed primary, win badge text |
+| `court-800` | `#166534` | Dark mode primary surfaces |
+| `court-900` | `#14532D` | Dark mode backgrounds |
+| `court-950` | `#052E16` | Darkest shade |
+
+These map to Tailwind's `green-*` scale. Define them as `court-*` in `tailwind.config.ts` so code always uses semantic names.
+
+### Accent — Trophy Gold
+
+Rankings, achievements, challenge highlights, rank #1 badge, movement indicators.
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `trophy-50` | `#FFFBEB` | Notification tints |
+| `trophy-100` | `#FEF3C7` | Pending badge bg, warning bg |
+| `trophy-200` | `#FDE68A` | Highlight borders |
+| `trophy-400` | `#FBBF24` | Stars, rank badges |
+| `trophy-500` | `#F59E0B` | **Main accent** — rank #1, highlights |
+| `trophy-600` | `#D97706` | Hover accent, pending badge text |
+
+### Semantic Colors
+
+| Role | Token | Hex | Usage |
+|------|-------|-----|-------|
+| Win / Success | `court-500` | `#22C55E` | Match wins, confirmations |
+| Loss / Error | `red-500` | `#EF4444` | Match losses, form errors, destructive actions |
+| Loss bg | `red-100` | `#FEE2E2` | Loss badge background |
+| Loss text | `red-700` | `#B91C1C` | Loss badge text |
+| Warning | `trophy-500` | `#F59E0B` | Pending challenges, vacation notice |
+| Info | `sky-500` | `#0EA5E9` | Info badges, links, neutral status |
+| Challenged | `orange-500` | `#F97316` | Open challenge indicator |
+| Challenged bg | `orange-50` | `#FFF7ED` | Challenged player card bg |
+
+### Neutrals — Slate
+
+Warmer than zinc, pairs well with green for a sporty feel. Use `slate-*` everywhere — **never `gray-*` or `zinc-*`**.
+
+| Token | Hex | Role |
+|-------|-----|------|
+| `slate-50` | `#F8FAFC` | Page background (light mode) |
+| `slate-100` | `#F1F5F9` | Card alt bg, subtle surfaces |
+| `slate-200` | `#E2E8F0` | Borders, dividers, card rings |
+| `slate-300` | `#CBD5E1` | Disabled text, placeholder |
+| `slate-400` | `#94A3B8` | Secondary/muted text |
+| `slate-500` | `#64748B` | Helper text |
+| `slate-600` | `#475569` | Body text (light mode) |
+| `slate-700` | `#334155` | Headings (light mode) |
+| `slate-800` | `#1E293B` | Card bg (dark mode) |
+| `slate-900` | `#0F172A` | Page bg (dark mode) |
+| `slate-950` | `#020617` | Deepest dark |
+
+---
+
+## Typography
+
+**Font**: Inter (Google Fonts) — excellent mobile legibility, variable weight support.
+
+| Role | Class | Weight | Tracking | Notes |
+|------|-------|--------|----------|-------|
+| Display | `text-2xl` (24px) | Bold (700) | `tracking-tight` | Page titles |
+| Heading | `text-xl` (20px) | Semibold (600) | `tracking-tight` | Section titles |
+| Subheading | `text-base` (16px) | Semibold (600) | normal | Card titles, labels |
+| Body | `text-sm` (14px) | Regular (400) | normal | Default text |
+| Caption | `text-xs` (12px) | Medium (500) | `tracking-wide` | Timestamps, metadata |
+| Score | `text-lg` (18px) | Bold (700) | `tabular-nums` | Match scores (digits align) |
+
+Sporty feel: **headings use tight tracking + semibold/bold**.
+
+---
+
+## Spacing & Sizing
+
+Base unit: 4px (Tailwind default).
+
+| Use case | Value | Class |
+|----------|-------|-------|
+| Inline padding (badges, pills) | 8px / 2px | `px-2 py-0.5` |
+| Button padding | 16px / 10px | `px-4 py-2.5` |
+| Card internal padding | 16px | `p-4` |
+| Section gap | 24px | `gap-6` |
+| Page padding (mobile) | 16px | `px-4` |
+| Page padding (desktop) | 24px | `px-6` |
+| Between list items | 1px separator | `Separator` component |
+
+**Touch targets**: minimum 44x44px on all interactive elements.
+
+---
+
+## Border Radius
+
+Generous rounding for app-like feel.
+
+| Element | Radius | Class |
+|---------|--------|-------|
+| Buttons | 12px | `rounded-xl` |
+| Cards | 16px | `rounded-2xl` |
+| Inputs | 12px | `rounded-xl` |
+| Badges / pills | Full | `rounded-full` |
+| Avatars | Full | `rounded-full` |
+| Bottom sheet / modal | 24px top | `rounded-t-3xl` |
+| Page container (desktop) | 16px | `lg:rounded-2xl` |
+
+---
+
+## Elevation & Borders
+
+Mobile-first: prefer borders over shadows. Shadows for floating elements only.
+
+| Level | Usage | Class |
+|-------|-------|-------|
+| None | Default cards | `ring-1 ring-slate-200 dark:ring-slate-800` |
+| Low | Raised cards, buttons | `shadow-sm` |
+| Medium | Dropdowns, popovers | `shadow-md` |
+| High | Modals, bottom sheets | `shadow-xl` |
+
+Use `ring-1` instead of `border` — rings don't affect layout sizing, preventing 1px shifts on hover/focus state changes.
+
+**Dark mode**: replace visible shadows with `ring-1 ring-white/10`.
+
+---
+
+## Dark Mode
+
+Light-first with manual toggle (stored in `localStorage`, system preference as default).
+
+| Element | Light | Dark |
+|---------|-------|------|
+| Page bg | `slate-50` | `slate-950` |
+| Card bg | `white` | `slate-900` |
+| Card border | `ring-slate-200` | `ring-slate-800` |
+| Heading text | `slate-900` | `white` |
+| Body text | `slate-600` | `slate-400` |
+| Primary button bg | `court-500` | `court-500` (same) |
+| Muted surface | `slate-100` | `slate-800` |
+| Separator | `slate-200` | `slate-800` |
+
+---
+
+## Motion & Transitions
+
+Sporty = snappy, not sluggish.
+
+| Type | Duration | Easing |
+|------|----------|--------|
+| Hover / focus | 150ms | `ease-out` |
+| Page transitions | 200ms | `ease-in-out` |
+| Modal enter | 250ms | `ease-out` |
+| Modal leave | 150ms | `ease-in` |
+| Rank change animation | 300ms | `spring` (Framer Motion) |
+| Skeleton pulse | 1.5s | `ease-in-out` infinite |
+
+Key animations:
+- **Rank movement**: Framer Motion `layout` prop — player cards slide up/down when standings change.
+- **Challenge sent**: brief pulse/glow on challenged player's card.
+- **Bottom nav**: active indicator slides between items (`layoutId`).
+- **List items**: staggered fade-in on initial load.
+
+---
+
+## Layout
+
+### Mobile (default)
+
+- **Bottom navigation bar**: 4 items (Rangliste, Spiele, Neuigkeiten, Profil)
+- Full-width cards, `px-4` page padding
+- Bottom sheet for dialogs (not centered modal)
+- Scroll-based views, no pagination
+
+### Desktop (lg+)
+
+- **Sidebar navigation** (left side)
+- Content area: `max-w-2xl` centered for readability
+- `slate-50` bg behind content card
+- Centered modals (Dialog) replace bottom sheets
+
+### Responsive Breakpoints
+
+| Breakpoint | Width | Layout |
+|------------|-------|--------|
+| Default | < 1024px | Bottom nav, full-width cards, `px-4` |
+| `lg` | ≥ 1024px | Sidebar nav, `max-w-2xl` content, `px-6` |
+
+### App Shell
+
+```
+Mobile:                          Desktop (lg+):
+┌──────────────────┐            ┌────────┬─────────────────┐
+│   Page Content   │            │Sidebar │  Page Content    │
+│                  │            │        │                  │
+│                  │            │ Nav    │                  │
+│                  │            │ items  │                  │
+│                  │            │        │                  │
+├──────────────────┤            │        │                  │
+│ BottomNav (fixed)│            │        │                  │
+└──────────────────┘            └────────┴─────────────────┘
+```
+
+### Navigation Items
+
+| Icon | Label | Route | Description |
+|------|-------|-------|-------------|
+| Trophy | Rangliste | `/` | Pyramid view |
+| Swords | Spiele | `/matches` | Match list |
+| Bell | Neuigkeiten | `/events` | Event timeline |
+| User | Profil | `/profile` | Player profile |
+
+---
+
+## Component Patterns
+
+### Primitive Styles
+
+**Card** (universal container):
+```
+bg-white dark:bg-slate-900
+ring-1 ring-slate-200 dark:ring-slate-800
+rounded-2xl p-4
+```
+
+**Primary Button**:
+```
+bg-court-500 hover:bg-court-600 active:bg-court-700
+text-white font-semibold
+rounded-xl px-4 py-2.5
+shadow-sm active:shadow-none
+```
+
+**Outline Button**:
+```
+bg-transparent
+ring-1 ring-slate-300 dark:ring-slate-700
+hover:bg-slate-50 dark:hover:bg-slate-800
+text-slate-700 dark:text-slate-300
+rounded-xl px-4 py-2.5
+```
+
+**Destructive Button**:
+```
+bg-red-500 hover:bg-red-600 active:bg-red-700
+text-white font-semibold
+rounded-xl px-4 py-2.5
+```
+
+**Ghost Button**:
+```
+bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800
+text-slate-600 dark:text-slate-400
+rounded-xl px-4 py-2.5
+```
+
+**Input Field**:
+```
+bg-white dark:bg-slate-900
+ring-1 ring-slate-300 dark:ring-slate-700
+focus:ring-2 focus:ring-court-500
+rounded-xl px-3 py-2.5
+text-sm text-slate-900 dark:text-white
+placeholder:text-slate-400
+```
+
+### Domain Element Styles
+
+**Pyramid Player Card variants**:
+
+| Variant | Style |
+|---------|-------|
+| Default | `bg-white ring-1 ring-slate-200 rounded-xl` |
+| Current player | `bg-court-500 text-white ring-0` |
+| Challengeable | `ring-2 ring-court-400 bg-court-50` |
+| Challenged | `ring-2 ring-orange-400 bg-orange-50` |
+| Unavailable | `bg-slate-100 text-slate-400 opacity-60` |
+
+**Badge variants**:
+
+| Variant | Style |
+|---------|-------|
+| Win | `bg-court-100 text-court-700 rounded-full` |
+| Loss | `bg-red-100 text-red-700 rounded-full` |
+| Pending | `bg-trophy-100 text-trophy-700 rounded-full` |
+| Rank #1 | `bg-trophy-500 text-white rounded-full` |
+| Info | `bg-sky-100 text-sky-700 rounded-full` |
+
+---
+
+## Component Library Architecture
+
+### Three Layers
+
+```
+┌─────────────────────────────────────────────────┐
+│  Layer 3: Domain Components                     │
+│  PlayerCard, MatchRow, PyramidGrid,             │
+│  ChallengeSheet, EventItem, StandingsTable      │
+│  — sport-specific, composed from Layer 1+2       │
+├─────────────────────────────────────────────────┤
+│  Layer 2: Composite Components                  │
+│  Card, EmptyState, DataList, FormField,         │
+│  BottomNav, PageLayout, AppShell, StatBlock     │
+│  — reusable patterns, app-agnostic             │
+├─────────────────────────────────────────────────┤
+│  Layer 1: Primitives (shadcn/ui)                │
+│  Button, Input, Badge, Avatar, Dialog,          │
+│  Sheet, Select, Skeleton, Toast, Tabs           │
+│  — atomic, themed to Court palette              │
+└─────────────────────────────────────────────────┘
+```
+
+### Layer 1 — Primitives (`components/ui/`)
+
+shadcn/ui components, themed to Court palette. These are the atomic building blocks.
+
+| Component | Source | Customization |
+|-----------|--------|---------------|
+| Button | shadcn `button` | `court-500` primary, `rounded-xl`, tactile press |
+| Input | shadcn `input` | `rounded-xl`, `court-500` focus ring |
+| Textarea | shadcn `textarea` | Same as Input |
+| Select | shadcn `select` | Native on mobile, Radix on desktop |
+| Checkbox | shadcn `checkbox` | `court-500` checked state |
+| Badge | shadcn `badge` | Semantic variants: win, loss, pending, rank |
+| Avatar | shadcn `avatar` | Initials fallback, status ring |
+| Dialog | shadcn `dialog` | Desktop centered modal |
+| Sheet | shadcn `sheet` | Mobile bottom sheet, `rounded-t-3xl` |
+| Dropdown Menu | shadcn `dropdown-menu` | User menu, context actions |
+| Tabs | shadcn `tabs` | Match filters, season views |
+| Skeleton | shadcn `skeleton` | Loading placeholders |
+| Toast | shadcn `sonner` | Notifications |
+| Separator | shadcn `separator` | List dividers |
+| Tooltip | shadcn `tooltip` | Truncated text, icon labels |
+| Label | shadcn `label` | Form labels |
+| Switch | shadcn `switch` | Toggles (dark mode, notifications) |
+| Popover | shadcn `popover` | Date picker, info bubbles |
+| Calendar | shadcn `calendar` | Challenge date selection |
+| Scroll Area | shadcn `scroll-area` | Scrollable lists |
+
+### Layer 2 — Composites (`components/`)
+
+Reusable patterns from primitives. App-agnostic — no domain/player/match awareness.
+
+**Card** — Universal container.
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Title</CardTitle>
+    <CardAction><Button size="sm">Edit</Button></CardAction>
+  </CardHeader>
+  <CardContent>...</CardContent>
+  <CardFooter>...</CardFooter>
+</Card>
+// Variants: default, interactive (hover), highlighted (court-500 left accent)
+```
+
+**PageLayout** — Wraps every page.
+```tsx
+<PageLayout title="Rangliste" subtitle="Saison 2026" action={<Button>...</Button>}>
+  {children}
+</PageLayout>
+```
+
+**AppShell** — Top-level layout, switches BottomNav (mobile) ↔ SidebarNav (desktop).
+```tsx
+<AppShell>
+  {children}
+</AppShell>
+```
+
+**BottomNav** — Fixed mobile navigation.
+```tsx
+<BottomNav items={[
+  { icon: TrophyIcon, label: "Rangliste", href: "/" },
+  { icon: SwordsIcon, label: "Spiele", href: "/matches" },
+  ...
+]} />
+```
+
+**DataList** — List with loading, empty, and separator handling.
+```tsx
+<DataList
+  items={matches}
+  loading={isLoading}
+  empty={<EmptyState icon={SwordsIcon} title="Keine Spiele" />}
+  renderItem={(match) => <MatchRow match={match} />}
+/>
+```
+
+**EmptyState** — Shown when list/section has no data.
+```tsx
+<EmptyState
+  icon={TrophyIcon}
+  title="Noch keine Rangliste"
+  description="Der Admin muss die Saison starten."
+  action={<Button>Saison erstellen</Button>}
+/>
+```
+
+**FormField** — Label + Input + Error composed together.
+```tsx
+<FormField label="E-Mail" error={errors.email}>
+  <Input type="email" placeholder="name@example.com" />
+</FormField>
+```
+
+**StatBlock** — Compact stat display.
+```tsx
+<StatBlock label="Siege" value={12} />
+<StatBlock label="Rang" value={3} trend="up" />
+```
+
+**ResponsiveDialog** — Dialog on desktop, Sheet on mobile. Single API.
+```tsx
+<ResponsiveDialog open={open} onOpenChange={setOpen} title="Fordern">
+  {children}
+</ResponsiveDialog>
+```
+
+**ConfirmDialog** — Wraps ResponsiveDialog for destructive confirmations.
+```tsx
+<ConfirmDialog
+  title="Forderung zurückziehen?"
+  description="Die Forderung wird gelöscht."
+  confirmLabel="Zurückziehen"
+  variant="destructive"
+  onConfirm={handleWithdraw}
+/>
+```
+
+### Layer 3 — Domain Components (`components/domain/`)
+
+Sport-specific. Composed from Layer 1+2. Contain business logic awareness.
+
+**PyramidGrid** — Full pyramid visualization.
+```tsx
+<PyramidGrid
+  standings={standings}
+  currentPlayerId={player.id}
+  onPlayerClick={(player) => setSelected(player)}
+/>
+// Internally renders PyramidRow → PlayerCard
+```
+
+**PlayerCard** — Single player in pyramid or list.
+```tsx
+<PlayerCard
+  player={player}
+  variant="default" | "current" | "challengeable" | "challenged" | "unavailable"
+  compact  // pyramid uses compact, profile uses full
+/>
+// Composed of: Card + Avatar + Badge + rank indicator
+```
+
+**MatchRow** — Single match in a list.
+```tsx
+<MatchRow match={match} currentPlayerId={player.id} />
+// Shows: avatars, names, set scores, status badge, date
+// Highlights win/loss relative to currentPlayerId
+```
+
+**MatchScoreInput** — Set-by-set score entry.
+```tsx
+<MatchScoreInput sets={3} value={scores} onChange={setScores} />
+// Pairs of number inputs per set, add/remove set buttons
+```
+
+**ChallengeSheet** — Challenge action (ResponsiveDialog).
+```tsx
+<ChallengeSheet
+  challenger={currentPlayer}
+  opponent={selectedPlayer}
+  onChallenge={handleChallenge}
+/>
+// Contains: message field, date picker, submit button
+```
+
+**EventItem** — Single event in timeline.
+```tsx
+<EventItem event={event} />
+// Renders different layouts per type: challenge, result, withdrawal, new_player, season_start/end
+```
+
+**EventTimeline** — Full events list.
+```tsx
+<EventTimeline events={events} loading={isLoading} />
+// Composed of: DataList + EventItem + EmptyState
+```
+
+**PlayerProfile** — Profile header with stats.
+```tsx
+<PlayerProfile player={player} stats={stats} />
+// Composed of: Avatar (large) + StatBlock grid + availability Badge
+```
+
+**StandingsTable** — Table view of rankings (admin/desktop alternative).
+```tsx
+<StandingsTable standings={standings} />
+// Composed of: Table + Avatar + Badge + rank movement arrows
+```
+
+**SeasonSelector** — Switch active season.
+```tsx
+<SeasonSelector seasons={seasons} current={currentSeason} onChange={setSeason} />
+```
+
+**ClubJoinCard** — Join code display (admin) or entry (player).
+```tsx
+<ClubJoinCard code="ABC123" />        // admin: display shareable code
+<ClubJoinCard onJoin={handleJoin} />  // player: enter code to join
+```
+
+### File Structure
+
+```
+components/
+├── ui/                          # Layer 1: shadcn primitives
+│   ├── button.tsx
+│   ├── input.tsx
+│   ├── badge.tsx
+│   ├── avatar.tsx
+│   ├── dialog.tsx
+│   ├── sheet.tsx
+│   ├── select.tsx
+│   ├── tabs.tsx
+│   ├── skeleton.tsx
+│   ├── separator.tsx
+│   ├── tooltip.tsx
+│   ├── label.tsx
+│   ├── switch.tsx
+│   ├── popover.tsx
+│   ├── calendar.tsx
+│   ├── scroll-area.tsx
+│   ├── dropdown-menu.tsx
+│   └── sonner.tsx               # toast
+│
+├── card.tsx                     # Layer 2: composites
+├── page-layout.tsx
+├── bottom-nav.tsx
+├── sidebar-nav.tsx
+├── app-shell.tsx
+├── form-field.tsx
+├── data-list.tsx
+├── empty-state.tsx
+├── stat-block.tsx
+├── confirm-dialog.tsx
+├── responsive-dialog.tsx
+│
+└── domain/                      # Layer 3: domain-specific
+    ├── pyramid-grid.tsx
+    ├── player-card.tsx
+    ├── match-row.tsx
+    ├── match-score-input.tsx
+    ├── challenge-sheet.tsx
+    ├── event-item.tsx
+    ├── event-timeline.tsx
+    ├── player-profile.tsx
+    ├── standings-table.tsx
+    ├── season-selector.tsx
+    └── club-join-card.tsx
+```
+
+---
+
+## Composition & Import Rules
+
+1. **Pages** import only from `components/domain/` and `components/` — never from `components/ui/` directly.
+2. **Domain components** (`components/domain/`) import from `components/` and `components/ui/`.
+3. **Composite components** (`components/`) import only from `components/ui/`.
+4. **Primitives** (`components/ui/`) never import from other layers — they are leaf nodes.
+5. **No inline Tailwind layout in page files** — if you need a pattern, extract a component.
+6. **Every list** uses `DataList` with `loading` + `empty` props — no bare `.map()` in pages.
+7. **Every modal/sheet** uses `ResponsiveDialog` — never raw `Dialog` or `Sheet` in pages.
+8. **Every form** uses `FormField` — never raw `Label` + `Input` side by side in pages.
+
+---
+
+## Consistency Rules
+
+1. **Never use `gray-*` or `zinc-*`** — always `slate-*` for neutrals.
+2. **Never use `border`** — use `ring-1 ring-slate-200` (no layout shift).
+3. **All interactive elements**: `rounded-xl` minimum.
+4. **All cards**: `rounded-2xl`.
+5. **Primary actions**: always `court-500` green.
+6. **Destructive actions**: always `red-500`, always require confirmation via `ConfirmDialog`.
+7. **Text hierarchy**: max 3 levels per view (heading + body + caption).
+8. **Icons**: Heroicons 2 only, `size-5` (20px) for UI, `size-6` (24px) for nav.
+9. **Spacing between sections**: always `gap-6` or `space-y-6`.
+10. **No raw Tailwind color classes in domain/page code** — use semantic tokens (`court-*`, `trophy-*`, `slate-*`).
+11. **German UI text** — all user-facing labels in German.
+12. **Loading states**: every data-fetching view must show `Skeleton` components while loading.
+13. **Empty states**: every list must handle zero items with `EmptyState`.

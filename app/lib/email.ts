@@ -25,9 +25,13 @@ export function getAppUrl(): string {
 export async function sendMagicLinkEmail(
   email: string,
   name: string,
-  token: string
+  token: string,
+  returnTo?: string,
 ): Promise<{ success: boolean; error?: string }> {
-  const magicLinkUrl = `${getAppUrl()}/api/auth/verify?token=${token}`;
+  let magicLinkUrl = `${getAppUrl()}/api/auth/verify?token=${token}`;
+  if (returnTo) {
+    magicLinkUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
+  }
 
   try {
     await getTransporter().sendMail({

@@ -40,6 +40,18 @@ export default defineConfig({
           teardownTimeout: 20000,
         },
       },
+      {
+        extends: true,
+        test: {
+          name: "db",
+          include: [
+            "app/lib/**/*.test.ts",
+          ],
+          environment: "node",
+          pool: "forks",
+          setupFiles: ["./app/lib/db/test-setup.ts"],
+        },
+      },
     ],
   },
 });

@@ -14,7 +14,7 @@ export const dateSetMatch: MatchRowProps = {
   player1: maxMustermann,
   player2: annaSchmidt,
   status: "date_set",
-  date: "Sa, 15.03.2026",
+  date: "Sa, 15.03.2026 18:00",
 };
 
 export const completedWinMatch: MatchRowProps = {
@@ -49,6 +49,20 @@ export const forfeitedMatch: MatchRowProps = {
   date: "05.03.2026",
 };
 
+export const disputedMatch: MatchRowProps = {
+  player1: maxMustermann,
+  player2: annaSchmidt,
+  status: "disputed",
+  date: "03.03.2026",
+};
+
+export const pendingConfirmationMatch: MatchRowProps = {
+  player1: maxMustermann,
+  player2: annaSchmidt,
+  status: "pending_confirmation",
+  date: "Sa, 01.03.2026 17:00",
+};
+
 // ── Full match list (page-level) ───────────────
 
 export const matchList: (MatchRowProps & { id: string })[] = [
@@ -64,7 +78,7 @@ export const matchList: (MatchRowProps & { id: string })[] = [
     player1: tomWeber,
     player2: annaSchmidt,
     status: "date_set",
-    date: "15.02.2026, 18:00",
+    date: "Sa, 15.02.2026 18:00",
   },
   {
     id: "m3",

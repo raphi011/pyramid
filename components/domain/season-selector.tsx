@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 type Season = {
   id: string | number;
   name: string;
+  status?: "draft" | "active" | "ended";
   archived?: boolean;
 };
 
@@ -35,6 +36,7 @@ function SeasonSelector({
       {seasons.map((season) => (
         <option key={season.id} value={season.id.toString()}>
           {season.name}
+          {season.status === "draft" ? ` ${t("draft")}` : ""}
           {season.archived ? ` ${t("archived")}` : ""}
         </option>
       ))}
