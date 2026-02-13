@@ -1,0 +1,2151 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/User Stories" />
+
+# User Stories
+
+Living documentation of every user flow in the Pyramid app. Serves as a manual QA regression checklist and foundation for Playwright e2e tests.
+
+**Read `docs/ui-spec.md` and `docs/database.md` for full context.**
+
+---
+
+## Conventions
+
+- **ID format**: `US-{DOMAIN}-{NN}` (e.g. `US-AUTH-01`)
+- **Priority**: P0 = critical path, P1 = important, P2 = nice-to-have
+- **Step format**: "User does X → System shows/does Y" (maps to Playwright assertions)
+- **Roles**: Player, Club Admin, App Admin
+- **Cross-refs**: `→ US-XXX-NN` links to related stories
+
+---
+
+## Summary Table
+
+| ID | Title | Role | Priority | Domain |
+|----|-------|------|----------|--------|
+| US-AUTH-01 | Login with magic link | Player | P0 | Auth |
+| US-AUTH-02 | Check email confirmation | Player | P0 | Auth |
+| US-AUTH-03 | Verify magic link | Player | P0 | Auth |
+| US-AUTH-04 | Expired magic link | Player | P0 | Auth |
+| US-AUTH-05 | Complete onboarding | Player | P0 | Auth |
+| US-AUTH-06 | Join club via invite code | Player | P0 | Auth |
+| US-AUTH-07 | Join club via QR code | Player | P1 | Auth |
+| US-AUTH-08 | Auto-enrollment in active seasons | Player | P0 | Auth |
+| US-AUTH-09 | Logout | Player | P0 | Auth |
+| US-AUTH-10 | Session expiry | Player | P0 | Auth |
+| US-FEED-01 | View feed | Player | P0 | Feed |
+| US-FEED-02 | Filter feed by club | Player | P1 | Feed |
+| US-FEED-03 | Navigate from event card | Player | P1 | Feed |
+| US-FEED-04 | Infinite scroll | Player | P1 | Feed |
+| US-FEED-05 | Empty feed state | Player | P1 | Feed |
+| US-FEED-06 | Bell badge shows unread count | Player | P0 | Feed |
+| US-FEED-07 | Notification center | Player | P0 | Feed |
+| US-FEED-08 | Navigate from notification | Player | P1 | Feed |
+| US-FEED-09 | Mark all notifications read | Player | P1 | Feed |
+| US-FEED-10 | Read tracking watermark | Player | P1 | Feed |
+| US-RANK-01 | View pyramid | Player | P0 | Rankings |
+| US-RANK-02 | View list | Player | P0 | Rankings |
+| US-RANK-03 | Toggle pyramid/list views | Player | P1 | Rankings |
+| US-RANK-04 | Season selector | Player | P0 | Rankings |
+| US-RANK-05 | Challengeable indicators | Player | P0 | Rankings |
+| US-RANK-06 | Unavailable indicators | Player | P1 | Rankings |
+| US-RANK-07 | Open-challenge indicators | Player | P1 | Rankings |
+| US-RANK-08 | Archived season (read-only) | Player | P1 | Rankings |
+| US-CHAL-01 | Challenge from pyramid card | Player | P0 | Challenges |
+| US-CHAL-02 | Challenge from FAB | Player | P0 | Challenges |
+| US-CHAL-03 | Challenge from player profile | Player | P1 | Challenges |
+| US-CHAL-04 | Season picker (multiple active) | Player | P1 | Challenges |
+| US-CHAL-05 | Challenge validation rules | Player | P0 | Challenges |
+| US-CHAL-06 | FAB disabled state | Player | P1 | Challenges |
+| US-CHAL-07 | View match list | Player | P0 | Challenges |
+| US-CHAL-08 | Filter matches (My/All/Open) | Player | P1 | Challenges |
+| US-CHAL-09 | View match detail | Player | P0 | Challenges |
+| US-CHAL-10 | Propose a date | Player | P0 | Challenges |
+| US-CHAL-11 | Accept/decline date proposal | Player | P0 | Challenges |
+| US-CHAL-12 | Enter match result | Player | P0 | Challenges |
+| US-CHAL-13 | Confirm match result | Player | P0 | Challenges |
+| US-CHAL-14 | Dispute match result | Player | P1 | Challenges |
+| US-CHAL-15 | Forfeit match | Player | P1 | Challenges |
+| US-CHAL-16 | Withdraw challenge | Player | P1 | Challenges |
+| US-CHAL-17 | Post match comment | Player | P1 | Challenges |
+| US-CHAL-18 | Edit match comment | Player | P2 | Challenges |
+| US-CHAL-19 | Rankings update after result | Player | P0 | Challenges |
+| US-PROF-01 | View own profile | Player | P0 | Profile |
+| US-PROF-02 | Edit profile (name, phone, bio) | Player | P0 | Profile |
+| US-PROF-03 | Upload/change profile photo | Player | P1 | Profile |
+| US-PROF-04 | Set unavailability | Player | P1 | Profile |
+| US-PROF-05 | Cancel unavailability | Player | P1 | Profile |
+| US-PROF-06 | Stats scoping (season/club/all) | Player | P1 | Profile |
+| US-PROF-07 | Rank progression chart | Player | P2 | Profile |
+| US-PROF-08 | Head-to-head record | Player | P2 | Profile |
+| US-PROF-09 | View other player profile | Player | P1 | Profile |
+| US-PROF-10 | Challenge from other profile | Player | P1 | Profile |
+| US-SETT-01 | Toggle dark mode | Player | P2 | Settings |
+| US-SETT-02 | Change language | Player | P1 | Settings |
+| US-SETT-03 | Configure email notifications | Player | P1 | Settings |
+| US-SETT-04 | Leave club | Player | P1 | Settings |
+| US-SETT-05 | Join another club | Player | P1 | Settings |
+| US-SETT-06 | Delete account | Player | P2 | Settings |
+| US-ADMIN-01 | View club dashboard | Club Admin | P0 | Admin |
+| US-ADMIN-02 | Create season | Club Admin | P0 | Admin |
+| US-ADMIN-03 | Start season | Club Admin | P0 | Admin |
+| US-ADMIN-04 | Edit season settings | Club Admin | P1 | Admin |
+| US-ADMIN-05 | Edit standings (manual reorder) | Club Admin | P1 | Admin |
+| US-ADMIN-06 | End season | Club Admin | P0 | Admin |
+| US-ADMIN-07 | Manage teams | Club Admin | P1 | Admin |
+| US-ADMIN-08 | Invite member | Club Admin | P0 | Admin |
+| US-ADMIN-09 | Promote player to admin | Club Admin | P1 | Admin |
+| US-ADMIN-10 | Demote admin to player | Club Admin | P1 | Admin |
+| US-ADMIN-11 | Remove member | Club Admin | P1 | Admin |
+| US-ADMIN-12 | Send announcement | Club Admin | P1 | Admin |
+| US-ADMIN-13 | Regenerate invite code | Club Admin | P2 | Admin |
+| US-ADMIN-14 | Nudge overdue match | Club Admin | P1 | Admin |
+| US-ADMIN-15 | Resolve disputed match | Club Admin | P1 | Admin |
+| US-ADMIN-16 | Edit club settings | Club Admin | P1 | Admin |
+| US-APP-01 | View global stats | App Admin | P1 | App Admin |
+| US-APP-02 | Create club | App Admin | P0 | App Admin |
+| US-APP-03 | Disable club | App Admin | P2 | App Admin |
+| US-APP-04 | Manage app admins | App Admin | P2 | App Admin |
+
+---
+
+## Authentication & Onboarding
+
+### US-AUTH-01: Login with magic link
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player account exists in `player` table with a valid `email_address`.
+
+**Steps**:
+1. User navigates to `/login` → System shows centered card with email input, "Sign in" button, and "Ask your club admin" hint.
+2. User enters email address and clicks "Sign in" → System sends POST to `/api/auth/login`.
+3. System looks up email in `player` table (case-insensitive) → If found, creates magic link via UPSERT into `magic_links` (15-min expiry), sends email via Resend.
+4. System redirects to `/check-email` regardless of whether the email was found (email enumeration protection).
+
+**Postconditions**:
+- `magic_links` row exists for the player (old link replaced if any).
+- Player receives email with magic link URL.
+
+**Edge cases**:
+- Email not found → System still redirects to `/check-email` (no error shown).
+- Player requests second link → Old link is replaced (UPSERT on `player_id`).
+- Empty email / invalid format → Inline validation error, no submission.
+
+**Cross-refs**: → US-AUTH-02, → US-AUTH-03
+
+---
+
+### US-AUTH-02: Check email confirmation
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: User just submitted login form.
+
+**Steps**:
+1. User arrives at `/check-email` → System shows envelope icon, "Check your email" heading, masked email address, "Link valid for 15 min" note, "Back to login" link.
+2. User clicks "Back to login" → System navigates to `/login`.
+
+**Postconditions**: None (informational page only).
+
+**Edge cases**:
+- Direct navigation to `/check-email` without login → Page still renders (no server-side guard needed).
+
+**Cross-refs**: → US-AUTH-01, → US-AUTH-03
+
+---
+
+### US-AUTH-03: Verify magic link
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player has a valid, unexpired magic link.
+
+**Steps**:
+1. User clicks magic link in email → System sends GET to `/api/auth/verify?token=...`.
+2. System atomically deletes the `magic_links` row (DELETE+RETURNING) to prevent replay.
+3. System creates a `sessions` row (7-day expiry) and sets `session_token` cookie (httpOnly, secure in prod, sameSite=lax).
+4. System checks if `player.name` is null/empty → If yes, redirects to `/onboarding`. If no, redirects to `/`.
+
+**Postconditions**:
+- `magic_links` row deleted.
+- `sessions` row created.
+- Session cookie set in browser.
+
+**Edge cases**:
+- Token already used (replay) → `DELETE...RETURNING` returns 0 rows → System shows error page.
+- Token expired → Same as above (WHERE clause checks `expires_at > NOW()`).
+
+**Cross-refs**: → US-AUTH-01, → US-AUTH-04, → US-AUTH-05
+
+---
+
+### US-AUTH-04: Expired magic link
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player clicks a magic link that has expired (> 15 min) or was already used.
+
+**Steps**:
+1. User clicks expired/used link → System attempts DELETE+RETURNING, finds no matching row.
+2. System shows error page with "Link expired or already used" message and "Back to login" link.
+3. User clicks "Back to login" → System navigates to `/login`.
+
+**Postconditions**: No session created. No data modified.
+
+**Edge cases**:
+- Malformed token → Same error page.
+- Valid token but different browser → Works (tokens are not browser-bound).
+
+**Cross-refs**: → US-AUTH-01, → US-AUTH-03
+
+---
+
+### US-AUTH-05: Complete onboarding
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player authenticated but `player.name` is null/empty (first login after admin invite).
+
+**Steps**:
+1. User is redirected to `/onboarding` → System shows welcome message, avatar upload (optional), name input (required), phone input (optional).
+2. User enters name (required) → "Continue" button becomes enabled.
+3. User optionally uploads a profile photo → System stores in `player.photo_data` as binary.
+4. User clicks "Continue" → System updates `player.name` (and optionally `phone_number`, `photo_data`).
+5. System checks club membership: 0 clubs → redirects to `/join`. 1+ clubs → redirects to `/`.
+
+**Postconditions**:
+- `player.name` is set (no longer empty).
+- `player.photo_data` set if photo uploaded.
+
+**Edge cases**:
+- Name field left empty → Submit button disabled / inline validation.
+- Player already has a name (direct navigation to `/onboarding`) → Should redirect to `/`.
+
+**Cross-refs**: → US-AUTH-06, → US-PROF-02
+
+---
+
+### US-AUTH-06: Join club via invite code
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated, has completed onboarding, has 0 clubs (or navigates manually from settings).
+
+**Steps**:
+1. User navigates to `/join` → System shows invite code input (6-char, spaced), "Join Club" button, and "Scan QR code" option.
+2. User enters 6-character code and clicks "Join Club" → System validates code against `clubs.invite_code`.
+3. Code valid → System shows confirmation dialog: club name, member count, "Join" / "Cancel" buttons.
+4. User clicks "Join" → System creates `club_members` row (role = `player`).
+5. System auto-enrolls player in all active seasons (→ US-AUTH-08).
+6. System generates `new_player` event in `events` table.
+7. System redirects to `/` (feed).
+
+**Postconditions**:
+- `club_members` row created.
+- `teams` row(s) created for active individual seasons.
+- `new_player` event in `events`.
+
+**Edge cases**:
+- Invalid code → Inline error "Code not found".
+- Player already a member → Error "You're already a member of this club".
+- Club is disabled (`is_disabled = true`) → Error "This club is not available".
+
+**Cross-refs**: → US-AUTH-07, → US-AUTH-08, → US-SETT-05
+
+---
+
+### US-AUTH-07: Join club via QR code
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is authenticated, on `/join` page, device has camera.
+
+**Steps**:
+1. User taps "Scan QR code" → System requests camera permission and opens scanner.
+2. User scans QR code containing the club invite code → System extracts code and validates.
+3. Same flow as US-AUTH-06 step 3 onwards.
+
+**Postconditions**: Same as US-AUTH-06.
+
+**Edge cases**:
+- Camera permission denied → Error "Camera access required to scan QR codes".
+- QR code doesn't contain a valid invite code → Error "Invalid QR code".
+
+**Cross-refs**: → US-AUTH-06
+
+---
+
+### US-AUTH-08: Auto-enrollment in active seasons
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player just joined a club that has active seasons.
+
+**Steps**:
+1. System finds all `seasons` with `status = 'active'` for the joined club.
+2. For each individual season (`max_team_size = 1`): System creates a `teams` row (1-person team) and a `team_players` row linking the player.
+3. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
+4. System creates a standings snapshot in `season_standings`.
+
+**Postconditions**:
+- `teams` + `team_players` rows created per active individual season.
+- Player appears at bottom of standings.
+
+**Edge cases**:
+- Team seasons → Player is NOT auto-enrolled (admin assigns teams manually → US-ADMIN-07).
+- No active seasons → No enrollment, no error.
+
+**Cross-refs**: → US-AUTH-06, → US-ADMIN-07
+
+---
+
+### US-AUTH-09: Logout
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated with a valid session.
+
+**Steps**:
+1. User clicks "Sign out" (on profile page or settings page) → System sends form-based POST (CSRF protection).
+2. System deletes the `sessions` row for the current token.
+3. System clears the `session_token` cookie.
+4. System redirects to `/login`.
+
+**Postconditions**:
+- `sessions` row deleted.
+- Cookie cleared.
+
+**Edge cases**:
+- Session already expired → Cookie cleared anyway, redirect to `/login`.
+
+**Cross-refs**: → US-AUTH-10
+
+---
+
+### US-AUTH-10: Session expiry
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player's session has expired (> 7 days since creation).
+
+**Steps**:
+1. User makes any request → Middleware reads `session_token` cookie, queries `sessions` with `expires_at > NOW()`.
+2. No valid session found → System redirects to `/login`.
+
+**Postconditions**: User must re-authenticate.
+
+**Edge cases**:
+- Multiple sessions → Only the expired session is affected; other devices remain logged in.
+- Cookie exists but session row missing → Same as expired.
+
+**Cross-refs**: → US-AUTH-01
+
+---
+
+## Feed & Notifications
+
+### US-FEED-01: View feed
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated and a member of at least one club.
+
+**Steps**:
+1. User navigates to `/` → System queries `events` for all clubs the player belongs to (public events where `target_player_id IS NULL`).
+2. System renders event cards chronologically (newest first): avatar, event icon, title, detail text, relative time.
+3. Each event card shows the appropriate icon and content per `event_type`:
+   - `result` → Trophy icon, `"{winner} beat {loser}"`, score, rank change.
+   - `challenge` → Bolt icon, `"{challenger} challenged {challengee}"`.
+   - `withdrawal` → Arrow icon, `"{player} withdrew challenge against {opponent}"`.
+   - `forfeit` → Warning icon, `"{player} won by walkover against {opponent}"`.
+   - `new_player` → UserPlus icon, `"{player} joined the ranking"`, starting rank.
+   - `season_start` → Calendar icon, `"{season} has started"`.
+   - `season_end` → Calendar icon, `"{season} has ended"`.
+   - `unavailable` → Pause icon, `"{player} is away"`, return date.
+
+**Postconditions**: Feed renders with paginated event cards.
+
+**Edge cases**:
+- Player in multiple clubs → "All clubs" tab shows merged feed with club name labels on each card.
+
+**Cross-refs**: → US-FEED-02, → US-FEED-03, → US-FEED-04
+
+---
+
+### US-FEED-02: Filter feed by club
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is a member of 2+ clubs.
+
+**Steps**:
+1. User sees pill-style filter tabs at top of feed: "All clubs", "Club A", "Club B", etc.
+2. User taps a club tab → System filters events to only that club's `club_id`.
+3. Club name labels on individual event cards are hidden (redundant when filtered).
+
+**Postconditions**: Feed shows only events for the selected club.
+
+**Edge cases**:
+- Player in only 1 club → Filter tabs still shown but only "All clubs" and one club tab.
+- Switching clubs refreshes the feed with new data.
+
+**Cross-refs**: → US-FEED-01
+
+---
+
+### US-FEED-03: Navigate from event card
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Feed is visible with event cards.
+
+**Steps**:
+1. User taps an event card → System navigates to the relevant detail page:
+   - `result` / `challenge` / `withdrawal` / `forfeit` → `/matches/[id]`
+   - `new_player` → `/player/[id]`
+   - `season_start` / `season_end` → `/rankings` (with season selected)
+   - `unavailable` → `/player/[id]`
+
+**Postconditions**: User is on the detail page for the tapped event.
+
+**Edge cases**:
+- Event references a deleted/unavailable entity → 404 page or graceful fallback.
+
+**Cross-refs**: → US-CHAL-09, → US-PROF-09
+
+---
+
+### US-FEED-04: Infinite scroll
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Feed has more events than the initial page size.
+
+**Steps**:
+1. User scrolls to the bottom of the feed → System shows "Load more..." button or auto-loads next page.
+2. System queries next batch from `events` (cursor-based pagination using `created` timestamp).
+3. New events append below existing ones.
+
+**Postconditions**: Additional events visible in the feed.
+
+**Edge cases**:
+- No more events → "Load more" disappears or "No more events" message.
+- Network error during load → Error toast, retry option.
+
+**Cross-refs**: → US-FEED-01
+
+---
+
+### US-FEED-05: Empty feed state
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player's clubs have no events (brand new club).
+
+**Steps**:
+1. User navigates to `/` → System queries `events`, finds none.
+2. System shows empty state: "No news" heading, "You'll be notified here when something happens." description.
+
+**Postconditions**: Empty state rendered (uses `DataList` empty prop).
+
+**Edge cases**: None.
+
+**Cross-refs**: → US-FEED-01
+
+---
+
+### US-FEED-06: Bell badge shows unread count
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player has unread notifications (personal events with `created > event_reads.last_read_at`).
+
+**Steps**:
+1. System computes unread count: `SELECT COUNT(*) FROM events WHERE target_player_id = $playerId AND created > COALESCE(last_read_at, '-infinity')`.
+2. Bell icon in top bar (mobile) or sidebar (desktop) shows red badge with unread count.
+
+**Postconditions**: Badge displays accurate unread count.
+
+**Edge cases**:
+- 0 unread → No badge shown.
+- 99+ unread → Badge shows "99+".
+- Count updates when new notification arrives (polling or SSE).
+
+**Cross-refs**: → US-FEED-07, → US-FEED-10
+
+---
+
+### US-FEED-07: Notification center
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated.
+
+**Steps**:
+1. User taps bell icon → System navigates to `/notifications`.
+2. System queries personal events (`target_player_id = $playerId`) ordered by `created DESC`.
+3. System groups notifications: "New" (after `last_read_at`) and "Earlier" (before).
+4. Each notification shows: unread dot (filled ● vs empty ○), event text, relative time.
+5. System updates `event_reads.last_read_at` to `NOW()` for each of the player's clubs.
+
+**Postconditions**:
+- Notifications rendered in chronological groups.
+- `event_reads.last_read_at` updated (bell badge clears).
+
+**Edge cases**:
+- No notifications → Empty state with appropriate message.
+- First visit ever → All notifications are "New" (no `event_reads` row yet, `COALESCE` to `-infinity`).
+
+**Cross-refs**: → US-FEED-06, → US-FEED-08, → US-FEED-09
+
+---
+
+### US-FEED-08: Navigate from notification
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Notification center is visible.
+
+**Steps**:
+1. User taps a notification → System navigates based on event type:
+   - `challenged` / `challenge_accepted` / `challenge_withdrawn` / `date_proposed` / `date_accepted` / `date_reminder` / `result_entered` / `result_confirmed` / `result_disputed` / `forfeit` / `deadline_exceeded` → `/matches/[match_id]`
+   - `announcement` → Admin announcement detail or stays on notifications.
+
+**Postconditions**: User is on the relevant detail page.
+
+**Edge cases**:
+- Match no longer exists → 404 or graceful fallback.
+
+**Cross-refs**: → US-FEED-07, → US-CHAL-09
+
+---
+
+### US-FEED-09: Mark all notifications read
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player has unread notifications.
+
+**Steps**:
+1. User taps "Mark all as read" on `/notifications` → System updates `event_reads.last_read_at` to `NOW()` for all of the player's clubs.
+2. All notification dots change from filled (●) to empty (○).
+3. Bell badge count resets to 0.
+
+**Postconditions**: `event_reads.last_read_at` updated for all clubs.
+
+**Edge cases**:
+- Already all read → Button still works (idempotent), no visual change.
+
+**Cross-refs**: → US-FEED-06, → US-FEED-07
+
+---
+
+### US-FEED-10: Read tracking watermark
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player has an `event_reads` row (or none — first visit).
+
+**Steps**:
+1. System uses `event_reads.last_read_at` per `(player_id, club_id)` as the watermark.
+2. Events with `created > last_read_at` are unread.
+3. When player views notifications → watermark advances to `NOW()`.
+
+**Postconditions**: Accurate unread/read state persisted.
+
+**Edge cases**:
+- No `event_reads` row → `COALESCE` to `-infinity`, all events are unread.
+- Player in multiple clubs → Separate watermark per club.
+
+**Cross-refs**: → US-FEED-06, → US-FEED-07
+
+---
+
+## Rankings & Pyramid
+
+### US-RANK-01: View pyramid
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is in a club with an active season that has standings.
+
+**Steps**:
+1. User navigates to `/rankings` → System loads the latest `season_standings` row for the selected season.
+2. System renders pyramid visualization: row 1 = 1 card, row 2 = 2 cards, row 3 = 3 cards, etc.
+3. Each card shows: avatar/initials, truncated name, rank number.
+4. Current player's card highlighted with `court-500` background.
+5. Legend shown below pyramid: "You", "Challengeable", "In a Challenge", "Unavailable".
+
+**Postconditions**: Pyramid renders with correct layout and card states.
+
+**Edge cases**:
+- Last pyramid row is incomplete → Padded with empty placeholder cards.
+- Season has 0 players → Empty state: "No players", "No players have been added for this season yet."
+
+**Cross-refs**: → US-RANK-02, → US-RANK-05, → US-RANK-06, → US-CHAL-01
+
+---
+
+### US-RANK-02: View list
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Same as US-RANK-01.
+
+**Steps**:
+1. User selects "List" toggle → System switches to list/table view.
+2. System shows columns: Rank (#), Player/Team (avatar + name), Wins (W), Losses (L), Movement (arrow + magnitude).
+3. Movement computed by comparing the two most recent `season_standings` snapshots.
+4. Challengeable rows have a subtle green left accent.
+
+**Postconditions**: List renders with accurate W/L counts and movement indicators.
+
+**Edge cases**:
+- No completed matches yet → All W/L = 0, movement = "—" (no change).
+- Only 1 standings snapshot → Movement = "—" for all (nothing to compare).
+
+**Cross-refs**: → US-RANK-01, → US-RANK-03
+
+---
+
+### US-RANK-03: Toggle pyramid/list views
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Rankings page is loaded.
+
+**Steps**:
+1. User taps toggle control → System switches between pyramid and list views.
+2. View preference persists for the session.
+
+**Postconditions**: Selected view is rendered.
+
+**Edge cases**:
+- Mobile → Toggle shown as tabs above content.
+- Desktop → Toggle shown as buttons top-right.
+
+**Cross-refs**: → US-RANK-01, → US-RANK-02
+
+---
+
+### US-RANK-04: Season selector
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Club has 1+ seasons (active or ended).
+
+**Steps**:
+1. User sees season selector dropdown on `/rankings` → System lists all `active` and `ended` seasons for the club. `draft` seasons are excluded (admin-only).
+2. User selects a season → System loads the latest `season_standings` for that season.
+3. Ended seasons show "(Archive)" label.
+
+**Postconditions**: Rankings update to reflect the selected season.
+
+**Edge cases**:
+- Multiple active seasons → All shown without archive label.
+- No seasons → Season selector shows "Select season" placeholder, rankings area empty.
+
+**Cross-refs**: → US-RANK-08
+
+---
+
+### US-RANK-05: Challengeable indicators
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Active season, player has no open challenge.
+
+**Steps**:
+1. System evaluates `canChallenge()` for each player relative to the current player:
+   - Left neighbor in same row.
+   - Right neighbor in row above.
+   - Rank 3 can challenge ranks 1 and 2.
+   - Formula: `maxRank = challengerRank + 1 - floor((1 + sqrt(8 * challengerRank - 7)) / 2)`.
+2. Challengeable cards show: `court-50` background + `court-400` ring.
+3. Non-challengeable players show no special indicator.
+
+**Postconditions**: Only valid challenge targets are visually highlighted.
+
+**Edge cases**:
+- Player already has an open challenge → No cards are highlighted.
+- Potential target also has an open challenge → That card is not highlighted.
+- Target is unavailable → Card dimmed, not challengeable.
+
+**Cross-refs**: → US-CHAL-01, → US-CHAL-05
+
+---
+
+### US-RANK-06: Unavailable indicators
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: One or more players have `unavailable_from` / `unavailable_until` set and the current date falls in that range.
+
+**Steps**:
+1. System checks each player's `unavailable_from` and `unavailable_until` fields.
+2. Unavailable players' pyramid cards are dimmed.
+3. Unavailable players cannot be challenged (not highlighted even if position allows it).
+
+**Postconditions**: Dimmed cards for unavailable players.
+
+**Edge cases**:
+- Unavailability date has passed → Player is available again (no dimming).
+- `unavailable_until` is NULL → Player is unavailable indefinitely until cancelled.
+
+**Cross-refs**: → US-PROF-04, → US-PROF-05
+
+---
+
+### US-RANK-07: Open-challenge indicators
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: One or more players have an open challenge (status `challenged` or `date_set`).
+
+**Steps**:
+1. System queries `season_matches` with `status IN ('challenged', 'date_set')` for the current season.
+2. Players involved in an open challenge show: `orange-50` background + `orange-400` ring on their pyramid card.
+
+**Postconditions**: Cards for players in active challenges are visually distinct.
+
+**Edge cases**:
+- Player is both "in a challenge" and "current player" → Current player styling takes priority.
+
+**Cross-refs**: → US-RANK-01, → US-CHAL-05
+
+---
+
+### US-RANK-08: Archived season (read-only)
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Club has at least one season with `status = 'ended'`.
+
+**Steps**:
+1. User selects an archived season from the season selector → Season labeled "(Archive)".
+2. System shows final standings (pyramid or list view).
+3. No challenge interactions available — cards are not highlighted as challengeable.
+4. FAB is disabled or hidden for archived seasons.
+
+**Postconditions**: Read-only historical standings displayed.
+
+**Edge cases**:
+- User tries to challenge via FAB while viewing archived season → Message: "This season has ended."
+
+**Cross-refs**: → US-RANK-04, → US-CHAL-06
+
+---
+
+## Challenges & Matches
+
+### US-CHAL-01: Challenge from pyramid card
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Active season, player has no open challenge, target is challengeable (→ US-RANK-05).
+
+**Steps**:
+1. User taps a challengeable card in the pyramid → System opens ChallengeSheet (ResponsiveDialog: bottom sheet on mobile, dialog on desktop).
+2. Sheet shows: target player name, rank, optional message textarea, "Send Challenge" button.
+3. User optionally types a message and taps "Send Challenge" → System creates `season_matches` row (status = `challenged`, `challenge_text` = message).
+4. System generates events: public `challenge` event + personal `challenged` event (to target).
+5. If `notification_preferences.challenge_emails` is true for the target → System sends challenge email via Resend.
+6. Sheet closes, pyramid updates (both players now show "in challenge" state).
+
+**Postconditions**:
+- `season_matches` row with `status = 'challenged'`.
+- `events` rows for public + personal notifications.
+- Email sent to challengee (if enabled).
+
+**Edge cases**:
+- Race condition: target gets challenged by someone else first → Server returns error "Player already has an open challenge", sheet shows error.
+- Network failure → Error toast, challenge not created.
+
+**Cross-refs**: → US-CHAL-02, → US-CHAL-05, → US-RANK-05
+
+---
+
+### US-CHAL-02: Challenge from FAB
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Active season, player has no open challenge.
+
+**Steps**:
+1. User taps FAB (center of bottom nav on mobile, "Challenge" button in header on desktop).
+2. If multiple active seasons → System shows season picker first (→ US-CHAL-04).
+3. System shows eligible opponents list: avatar, name, rank — filtered by `canChallenge()` rules.
+4. User taps an opponent → System transitions to confirmation step: `"Challenge {name}?"`, optional message textarea, "Send Challenge" button.
+5. User taps "Send Challenge" → Same as US-CHAL-01 step 3 onwards.
+
+**Postconditions**: Same as US-CHAL-01.
+
+**Edge cases**:
+- No eligible opponents → Message: "No one available? Players may be on vacation or already in an open challenge."
+- Player already has open challenge → FAB disabled (→ US-CHAL-06).
+
+**Cross-refs**: → US-CHAL-01, → US-CHAL-04, → US-CHAL-06
+
+---
+
+### US-CHAL-03: Challenge from player profile
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Target player is challengeable in the selected season.
+
+**Steps**:
+1. User navigates to `/player/[id]` → System shows target's profile with "Challenge" button (prominent, at top).
+2. User taps "Challenge" → System opens ChallengeSheet (same as US-CHAL-01 step 2).
+3. Same flow as US-CHAL-01 step 3 onwards.
+
+**Postconditions**: Same as US-CHAL-01.
+
+**Edge cases**:
+- Target not challengeable → "Challenge" button hidden or disabled.
+- Multiple seasons where target is challengeable → Season picker shown first.
+
+**Cross-refs**: → US-CHAL-01, → US-PROF-10
+
+---
+
+### US-CHAL-04: Season picker (multiple active seasons)
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Club has 2+ seasons with `status = 'active'`.
+
+**Steps**:
+1. User triggers challenge (via FAB or profile) → System detects multiple active seasons.
+2. System shows season picker: "Which season?", list of active season names.
+3. User taps a season → System proceeds with challenge flow for that season.
+
+**Postconditions**: Season context set for the challenge.
+
+**Edge cases**:
+- Only 1 active season → Picker is skipped.
+- Player is not enrolled in a season → That season is not shown.
+
+**Cross-refs**: → US-CHAL-01, → US-CHAL-02
+
+---
+
+### US-CHAL-05: Challenge validation rules
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player attempts to create a challenge.
+
+**Steps**:
+1. System validates ALL of the following:
+   - Challenger has no open challenge in this season (`status IN ('challenged', 'date_set')` as team1 or team2).
+   - Challengee has no open challenge in this season.
+   - Both players are not unavailable (no overlapping `unavailable_from`/`unavailable_until` with current date).
+   - Season is `active` (not `draft` or `ended`).
+   - Pyramid position rules are met (→ US-RANK-05 formula).
+2. If any validation fails → System returns descriptive error, challenge not created.
+
+**Postconditions**: Challenge only created if all rules pass.
+
+**Edge cases**:
+- Challengee becomes unavailable between page load and submission → Server-side validation catches it.
+- Season ends between page load and submission → Server-side validation catches it.
+
+**Cross-refs**: → US-RANK-05, → US-CHAL-01
+
+---
+
+### US-CHAL-06: FAB disabled state
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player already has an open challenge in the selected season.
+
+**Steps**:
+1. System detects open challenge for current player in the active season.
+2. FAB appears dimmed (reduced opacity, no elevation).
+3. User taps dimmed FAB → System shows message: "You already have an open challenge in this season."
+
+**Postconditions**: No challenge flow opens.
+
+**Edge cases**:
+- Player has open challenge in season A but not season B → If season B is selected, FAB is active.
+- Open challenge gets resolved → FAB becomes active again (requires page refresh or real-time update).
+
+**Cross-refs**: → US-CHAL-02, → US-RANK-08
+
+---
+
+### US-CHAL-07: View match list
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is in a club with at least one season.
+
+**Steps**:
+1. User navigates to `/matches` → System queries `season_matches` for the selected season.
+2. System renders match cards: both players/teams (avatars + names), status badge, score (if completed), relative time.
+3. Status badges: "Open" (`challenged`/`disputed`), "Scheduled" (`date_set`/`pending_confirmation`), "Completed", "Withdrawn", "Forfeited".
+4. Matches grouped: "Open Challenges" section on top, "Completed" section below.
+
+**Postconditions**: Match list rendered with current season's matches.
+
+**Edge cases**:
+- No matches in the season → Empty state: "No matches", "Challenge a player to get started."
+- `pending_confirmation` status → Shows as "Scheduled" to uninvolved players, "Pending Confirmation" to involved players and admins.
+- `disputed` status → Shows as "Open" to uninvolved players, "Disputed" to involved players and admins.
+
+**Cross-refs**: → US-CHAL-08, → US-CHAL-09
+
+---
+
+### US-CHAL-08: Filter matches (My/All/Open)
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Match list is visible.
+
+**Steps**:
+1. User sees tabs: "My", "All", "Open".
+2. "My" → System filters to matches where player's team is `team1_id` or `team2_id`.
+3. "All" → System shows all matches in the season.
+4. "Open" → System filters to `status IN ('challenged', 'date_set')`.
+
+**Postconditions**: Match list filtered per selected tab.
+
+**Edge cases**:
+- "My" with no matches → "No matches" empty state.
+- "Open" with no open challenges → "No matches" empty state.
+
+**Cross-refs**: → US-CHAL-07
+
+---
+
+### US-CHAL-09: View match detail
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: A match exists.
+
+**Steps**:
+1. User taps a match card or navigates to `/matches/[id]` → System loads `season_matches` row + related `match_comments` + `date_proposals`.
+2. System renders:
+   - Header: both players (avatar, name, rank), status badge, match date (if set).
+   - Score section (if completed): game-by-game scores, winner indicator.
+   - Date proposals section: cards with proposed datetime, Accept/Decline buttons (for opponent).
+   - Comments section: chronological comments with author, time, content.
+   - Comment input: sticky input at bottom.
+   - Actions: "Enter Result", "Forfeit", "Withdraw Challenge" (visibility per role).
+
+**Postconditions**: Full match detail rendered.
+
+**Edge cases**:
+- Match is completed → "Enter Result" hidden; score section shown.
+- Match is withdrawn/forfeited → Actions hidden, final status displayed.
+
+**Cross-refs**: → US-CHAL-10 through US-CHAL-18
+
+---
+
+### US-CHAL-10: Propose a date
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Match status is `challenged` (no date set yet). Player is one of the match participants.
+
+**Steps**:
+1. User taps "Propose a date" on match detail → System opens date + time picker.
+2. User selects date and time, confirms → System creates `date_proposals` row (status = `pending`, `proposed_by` = current player).
+3. System generates `date_proposed` personal event for the opponent.
+4. Proposal card appears in the date proposals section.
+
+**Postconditions**:
+- `date_proposals` row created.
+- `date_proposed` event in `events`.
+
+**Edge cases**:
+- Multiple proposals from the same player → All displayed, opponent can accept any.
+- Both players propose dates → Both see each other's proposals.
+
+**Cross-refs**: → US-CHAL-11
+
+---
+
+### US-CHAL-11: Accept/decline date proposal
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: A pending date proposal exists from the opponent.
+
+**Steps**:
+1. User sees date proposal card with "Accept" and "Decline" buttons.
+2. **Accept**: User taps "Accept" → System updates `date_proposals.status = 'accepted'`, sets `season_matches.game_at` to the accepted datetime, updates `season_matches.status = 'date_set'`, dismisses all other pending proposals (status → `dismissed`).
+3. System generates `date_accepted` personal event for the proposer.
+4. **Decline**: User taps "Decline" → System updates `date_proposals.status = 'declined'`.
+
+**Postconditions (accept)**:
+- `date_proposals.status = 'accepted'` for the selected proposal.
+- `season_matches.status = 'date_set'`, `game_at` populated.
+- Other proposals `status = 'dismissed'`.
+- `date_accepted` event created.
+
+**Postconditions (decline)**:
+- `date_proposals.status = 'declined'`.
+
+**Edge cases**:
+- All proposals declined → Match remains `challenged`, players can propose new dates.
+- No date agreed within `match_deadline_days` → System sends `date_reminder` event + email, flags to admin.
+
+**Cross-refs**: → US-CHAL-10, → US-ADMIN-14
+
+---
+
+### US-CHAL-12: Enter match result
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Match status is `challenged` or `date_set`. Player is a match participant.
+
+**Steps**:
+1. User taps "Enter Result" on match detail → System opens MatchScoreInput sheet.
+2. Sheet shows game-by-game score pairs based on season's `best_of` config (e.g., best of 3 = up to 3 game rows).
+3. User enters scores for each game.
+4. System validates: winner must win majority of games (e.g., 2 out of 3).
+5. User submits → System updates `season_matches`:
+   - If `seasons.requires_result_confirmation = false`: `status = 'completed'`, `winner_team_id` set, `team1_score`/`team2_score` set.
+   - If `requires_result_confirmation = true`: `status = 'pending_confirmation'`, scores stored, `result_entered_by` and `result_entered_at` set.
+6. System generates appropriate events:
+   - If completed: public `result` event (with `old_rank`/`new_rank` in metadata) + personal `result_confirmed` events.
+   - If pending confirmation: personal `result_entered` event to the opponent.
+
+**Postconditions**:
+- `season_matches` updated with scores and status.
+- Events generated.
+- If completed: standings updated (→ US-CHAL-19).
+
+**Edge cases**:
+- Invalid scores (no clear winner) → Validation error, submission blocked.
+- Both players try to enter simultaneously → Server accepts first, second gets conflict error.
+
+**Cross-refs**: → US-CHAL-13, → US-CHAL-19
+
+---
+
+### US-CHAL-13: Confirm match result
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Match status is `pending_confirmation`. Player is the opponent of the result enterer.
+
+**Steps**:
+1. User views match detail → System shows entered scores with "Confirm" and "Dispute" buttons.
+2. User taps "Confirm" → System updates `season_matches.status = 'completed'`, `confirmed_by` = current player.
+3. System generates public `result` event + personal `result_confirmed` event.
+4. Rankings update (→ US-CHAL-19).
+
+**Postconditions**:
+- `season_matches.status = 'completed'`.
+- `confirmed_by` set.
+- Standings snapshot created.
+- Events generated.
+
+**Edge cases**:
+- Player confirms their own result entry → Not allowed (only opponent can confirm).
+
+**Cross-refs**: → US-CHAL-12, → US-CHAL-14, → US-CHAL-19
+
+---
+
+### US-CHAL-14: Dispute match result
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Match status is `pending_confirmation`. Player is the opponent of the result enterer.
+
+**Steps**:
+1. User views match detail → System shows entered scores with "Confirm" and "Dispute" buttons.
+2. User taps "Dispute" → System shows reason textarea.
+3. User enters reason and submits → System updates `season_matches.status = 'disputed'`, `disputed_reason` set.
+4. System generates personal `result_disputed` event to the other player.
+5. Match flagged for admin resolution (→ US-ADMIN-15).
+
+**Postconditions**:
+- `season_matches.status = 'disputed'`.
+- `disputed_reason` stored.
+- `result_disputed` event created.
+- Visible to admin on dashboard as requiring resolution.
+
+**Edge cases**:
+- `disputed` status appears as "Open" to uninvolved players (privacy).
+- Admin must resolve before match can be completed.
+
+**Cross-refs**: → US-CHAL-13, → US-ADMIN-15
+
+---
+
+### US-CHAL-15: Forfeit match
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Match status is `challenged` or `date_set`. Player is a match participant.
+
+**Steps**:
+1. User taps "Forfeit" on match detail → System shows ConfirmDialog: "Are you sure you want to forfeit? This counts as a loss."
+2. User confirms → System updates `season_matches.status = 'forfeited'`, `winner_team_id` = opponent's team.
+3. System generates public `forfeit` event.
+4. Rankings update: forfeiting player is treated as the loser (→ US-CHAL-19).
+
+**Postconditions**:
+- `season_matches.status = 'forfeited'`, winner set to opponent.
+- Rankings updated.
+- `forfeit` event created.
+
+**Edge cases**:
+- Both players see the "Forfeit" button — either can forfeit.
+- Forfeit after date is set → Same behavior.
+
+**Cross-refs**: → US-CHAL-19
+
+---
+
+### US-CHAL-16: Withdraw challenge
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Match status is `challenged` or `date_set`. Current player is the challenger (`team1_id`).
+
+**Steps**:
+1. User taps "Withdraw Challenge" on match detail → System shows ConfirmDialog: "Withdraw your challenge? No ranking effect."
+2. User confirms → System updates `season_matches.status = 'withdrawn'`.
+3. System generates public `withdrawal` event + personal `challenge_withdrawn` event to the opponent.
+
+**Postconditions**:
+- `season_matches.status = 'withdrawn'`.
+- No ranking change.
+- Events created.
+
+**Edge cases**:
+- Only the challenger (team1) can withdraw — button hidden for the challengee.
+- Withdraw after date is set → Same behavior.
+
+**Cross-refs**: → US-CHAL-09
+
+---
+
+### US-CHAL-17: Post match comment
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Match exists (any status). Player is a match participant.
+
+**Steps**:
+1. User types in the comment input at the bottom of match detail.
+2. User taps send button → System creates `match_comments` row (match_id, player_id, comment, created).
+3. Comment appears in the comments section with author avatar, name, relative time, and content.
+
+**Postconditions**: `match_comments` row created.
+
+**Edge cases**:
+- Empty comment → Submit button disabled.
+- Comment on a completed/withdrawn match → Still allowed (for post-match discussion).
+
+**Cross-refs**: → US-CHAL-09, → US-CHAL-18
+
+---
+
+### US-CHAL-18: Edit match comment
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player has posted a comment on a match.
+
+**Steps**:
+1. User taps their own comment → System shows edit option (e.g., "..." menu with "Edit").
+2. User edits comment text and saves → System updates `match_comments.comment` and sets `match_comments.edited_at` to `NOW()`.
+3. Comment displays "(edited)" indicator next to the timestamp.
+
+**Postconditions**:
+- `match_comments.comment` updated.
+- `match_comments.edited_at` set.
+
+**Edge cases**:
+- Only the comment author can edit (not admins, not opponents).
+- Editing to empty string → Not allowed, validation error.
+
+**Cross-refs**: → US-CHAL-17
+
+---
+
+### US-CHAL-19: Rankings update after result
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Match just completed (status → `completed` or `forfeited`).
+
+**Steps**:
+1. System determines the winner and loser teams.
+2. **If challenger wins**: challenger takes the challengee's rank position, everyone between shifts down by 1. New `season_standings` snapshot inserted with updated `results` array.
+3. **If challengee wins**: no ranking change. New `season_standings` snapshot inserted (unchanged order, linked to match_id).
+4. System generates public `result` event with `metadata: { score, old_rank, new_rank }`.
+
+**Postconditions**:
+- New `season_standings` row with `match_id` link.
+- Rankings reflect the match outcome.
+- Movement indicators in list view update.
+
+**Edge cases**:
+- Forfeit → Treated as challenger loss if challenger forfeits, or challengee loss if challengee forfeits.
+- Admin manually resolved dispute → Same rankings logic applies.
+
+**Cross-refs**: → US-CHAL-12, → US-CHAL-13, → US-CHAL-15, → US-ADMIN-15
+
+---
+
+## Player Profile & Availability
+
+### US-PROF-01: View own profile
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated.
+
+**Steps**:
+1. User navigates to `/profile` → System loads player data from `player` table + stats from `season_matches`.
+2. System renders: avatar (tappable to change), name, email, "Edit Profile" button.
+3. Stats section: wins, losses, rank for the selected scope.
+4. Availability section: current status (available/unavailable with dates).
+5. Match history: recent matches with results.
+6. Rank progression chart: line chart of rank over time (inverted y-axis).
+7. Head-to-head: win/loss record against each opponent.
+8. Clubs list: clubs with role labels.
+9. "Sign out" button at bottom.
+
+**Postconditions**: Profile page rendered with all sections.
+
+**Edge cases**:
+- No matches played → Stats show 0/0, match history empty, chart empty.
+- Player in 0 clubs (shouldn't happen, but edge case) → Clubs section empty.
+
+**Cross-refs**: → US-PROF-02 through US-PROF-08
+
+---
+
+### US-PROF-02: Edit profile (name, phone, bio)
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is on their own profile page.
+
+**Steps**:
+1. User taps "Edit Profile" → System opens ResponsiveDialog with: name input, email (read-only or editable), phone input, bio textarea.
+2. User edits fields and taps "Save" → System updates `player` row: `name`, `phone_number`, `bio`.
+3. Dialog closes, profile page refreshes with updated data.
+
+**Postconditions**: `player` row updated.
+
+**Edge cases**:
+- Empty name → Validation error (name is required).
+- Bio field → Free-text, stored in `player.bio`.
+
+**Cross-refs**: → US-AUTH-05, → US-PROF-03
+
+---
+
+### US-PROF-03: Upload/change profile photo
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is editing their profile.
+
+**Steps**:
+1. User taps avatar or "Upload photo" → System opens file picker (image types only).
+2. User selects image → System encodes as binary, stores in `player.photo_data`.
+3. Avatar updates immediately (served via `/api/players/[id]/avatar`).
+
+**Postconditions**: `player.photo_data` updated. Avatar API returns new image.
+
+**Edge cases**:
+- No photo uploaded → Avatar falls back to initial-based avatar.
+- Remove photo → `photo_data` set to NULL, avatar reverts to initials.
+- Large image → Client-side resize before upload.
+
+**Cross-refs**: → US-PROF-02
+
+---
+
+### US-PROF-04: Set unavailability
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is currently available.
+
+**Steps**:
+1. User taps "Set unavailable" on profile → System opens date range picker (from/until).
+2. User selects dates and optionally enters a reason → System updates `player.unavailable_from`, `unavailable_until`, `unavailable_reason`.
+3. System generates public `unavailable` event with `metadata: { return_date }`.
+4. Player's pyramid card becomes dimmed. Player cannot be challenged.
+
+**Postconditions**:
+- `player.unavailable_from`, `unavailable_until` set.
+- `player.unavailable_reason` stored (private, never exposed to other players).
+- `unavailable` event created.
+
+**Edge cases**:
+- `unavailable_until` not set → Player unavailable indefinitely until manually cancelled.
+- Player has an open challenge → Should they still be allowed to set unavailable? Business rule TBD — may want to block or warn.
+
+**Cross-refs**: → US-PROF-05, → US-RANK-06
+
+---
+
+### US-PROF-05: Cancel unavailability
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is currently unavailable.
+
+**Steps**:
+1. Player sees `"Unavailable until {date}"` with "Cancel unavailability" button.
+2. User taps "Cancel unavailability" → System clears `player.unavailable_from`, `unavailable_until`, `unavailable_reason`.
+3. System generates public `unavailable` event (with no `return_date` → rendered as `"{player} is available again"`).
+4. Player's pyramid card returns to normal state; player can be challenged again.
+
+**Postconditions**:
+- `player.unavailable_from`, `unavailable_until`, `unavailable_reason` cleared.
+- `unavailable` event created (available variant).
+
+**Edge cases**:
+- Unavailability period has already passed → Player should already appear available (UI auto-detects).
+
+**Cross-refs**: → US-PROF-04, → US-RANK-06
+
+---
+
+### US-PROF-06: Stats scoping (season/club/all)
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player profile is visible.
+
+**Steps**:
+1. User sees scope tabs: "Season", "Club", "All".
+2. **Season**: Stats computed from `season_matches` where player's team participated in the selected season, `status IN ('completed', 'forfeited')`.
+3. **Club**: Aggregate across all seasons in the active club.
+4. **All**: Aggregate across all clubs and seasons.
+5. Stats shown: Wins, Losses, Rank (season scope only), Win Rate.
+
+**Postconditions**: Stats update based on selected scope.
+
+**Edge cases**:
+- No matches in scope → 0 wins, 0 losses, win rate 0%.
+- Rank only shown for "Season" scope (meaningless for club/all aggregates).
+
+**Cross-refs**: → US-PROF-01
+
+---
+
+### US-PROF-07: Rank progression chart
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player has participated in matches that changed standings.
+
+**Steps**:
+1. System queries `season_standings` snapshots for the selected season, ordered by `created`.
+2. For each snapshot, extracts the player's team position in the `results` array.
+3. Renders a line chart: x-axis = date, y-axis = rank (inverted, rank 1 at top).
+
+**Postconditions**: Chart renders showing rank trajectory.
+
+**Edge cases**:
+- Only 1 snapshot → Single point, no line.
+- Player joined mid-season → Chart starts from join date.
+
+**Cross-refs**: → US-PROF-01
+
+---
+
+### US-PROF-08: Head-to-head record
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player has completed matches against other players.
+
+**Steps**:
+1. System queries `season_matches` where player's team was involved, `status IN ('completed', 'forfeited')`.
+2. Groups by opponent team, counts wins and losses.
+3. Renders list: `"vs {opponent}: {W}W - {L}L"`.
+
+**Postconditions**: Head-to-head records displayed per opponent.
+
+**Edge cases**:
+- No matches → Section empty or hidden.
+- Stats scope affects which matches are counted (season vs club vs all).
+
+**Cross-refs**: → US-PROF-01, → US-PROF-06
+
+---
+
+### US-PROF-09: View other player profile
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Target player is in the same club.
+
+**Steps**:
+1. User navigates to `/player/[id]` → System loads the target player's data.
+2. System renders read-only profile: avatar, name, rank, stats (with scope tabs), match history, rank chart, head-to-head with the viewer.
+3. Availability status shown: dates visible, reason hidden.
+4. If challengeable → Prominent "Challenge" button at top (→ US-PROF-10).
+
+**Postconditions**: Other player's profile rendered.
+
+**Edge cases**:
+- Player from a different club → 404 or access denied.
+- Player who left the club → Profile still viewable (match history preserved).
+
+**Cross-refs**: → US-PROF-10, → US-CHAL-03
+
+---
+
+### US-PROF-10: Challenge from other player's profile
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Target player is challengeable (→ US-RANK-05 rules apply).
+
+**Steps**:
+1. User sees "Challenge" button on target's profile.
+2. User taps "Challenge" → System opens ChallengeSheet.
+3. Same flow as US-CHAL-01 step 2 onwards.
+
+**Postconditions**: Same as US-CHAL-01.
+
+**Edge cases**:
+- Target not challengeable → Button hidden.
+- Multiple seasons → Season picker shown first (→ US-CHAL-04).
+
+**Cross-refs**: → US-CHAL-01, → US-CHAL-03
+
+---
+
+## Settings & Preferences
+
+### US-SETT-01: Toggle dark mode
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player is on `/settings`.
+
+**Steps**:
+1. User sees "Dark mode" toggle under "Appearance" section.
+2. User toggles → System updates `player.theme` to `'dark'`, `'light'`, or `'auto'`.
+3. UI immediately applies the new theme.
+
+**Postconditions**: `player.theme` updated in DB.
+
+**Edge cases**:
+- `'auto'` follows browser/OS preference.
+
+**Cross-refs**: None.
+
+---
+
+### US-SETT-02: Change language
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is on `/settings`.
+
+**Steps**:
+1. User sees "Language" dropdown under "Appearance": English (EN), German (DE).
+2. User selects a language → System updates `player.language`.
+3. UI re-renders with the selected locale (via `next-intl`).
+
+**Postconditions**: `player.language` updated. All UI text switches to selected language.
+
+**Edge cases**:
+- User-generated content (names, comments, announcements) is never translated.
+
+**Cross-refs**: None.
+
+---
+
+### US-SETT-03: Configure email notifications
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is on `/settings`.
+
+**Steps**:
+1. User sees "Notifications" section with toggles:
+   - "Email notifications" (master toggle) → `notification_preferences.email_enabled`.
+   - "Challenge emails" → `challenge_emails`.
+   - "Result emails" → `result_emails`.
+   - "Reminder emails" → `reminder_emails`.
+2. User toggles any setting → System updates `notification_preferences` row (UPSERT).
+3. If master toggle is off → All sub-toggles disabled (grayed out). No emails sent regardless.
+
+**Postconditions**: `notification_preferences` row updated.
+
+**Edge cases**:
+- No `notification_preferences` row exists → All defaults to `true` (row created on first toggle).
+
+**Cross-refs**: → US-CHAL-01 (challenge email), → US-CHAL-12 (result email)
+
+---
+
+### US-SETT-04: Leave club
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is a member of 1+ clubs.
+
+**Steps**:
+1. User taps "Leave club" under "Clubs" section → System shows club picker (if multiple clubs).
+2. User selects a club → System shows ConfirmDialog: `"Leave {club name}? Your match history will be preserved."`
+3. User confirms → System deletes `club_members` row. Player removed from all active seasons (team opted out or deleted). Match history preserved.
+
+**Postconditions**:
+- `club_members` row deleted.
+- Player's teams in active seasons opted out (`teams.opted_out = true`).
+- Match history and events preserved (attributed to player name).
+
+**Edge cases**:
+- Player is the only admin → Warning: "You are the only admin. Promote another member first." Prevents leaving.
+- Player has an open challenge → Warning or block.
+- Player in only 1 club → After leaving, redirected to `/join`.
+
+**Cross-refs**: → US-AUTH-06
+
+---
+
+### US-SETT-05: Join another club
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is authenticated.
+
+**Steps**:
+1. User taps "Join another club" → System navigates to `/join`.
+2. Same flow as US-AUTH-06.
+
+**Postconditions**: Same as US-AUTH-06.
+
+**Edge cases**: None beyond US-AUTH-06.
+
+**Cross-refs**: → US-AUTH-06
+
+---
+
+### US-SETT-06: Delete account
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player is on `/settings`.
+
+**Steps**:
+1. User taps "Delete account" under "Danger Zone" → System shows ConfirmDialog with warning text and "Type DELETE to confirm" input.
+2. User types "DELETE" and confirms → System removes PII from `player` row but preserves the record (name kept for match attribution).
+3. All `sessions` and `magic_links` deleted (CASCADE).
+4. System clears session cookie, redirects to `/login`.
+
+**Postconditions**:
+- `player` PII removed (email, phone, photo, bio cleared). Name preserved.
+- `sessions` + `magic_links` deleted.
+- `club_members` rows removed.
+- Match records preserved with player name.
+
+**Edge cases**:
+- Player is a club admin → Warning to promote another admin first.
+- Player has an open challenge → Resolve first, or system auto-forfeits.
+
+**Cross-refs**: → US-SETT-04
+
+---
+
+## Club Administration
+
+### US-ADMIN-01: View club dashboard
+
+**Role**: Club Admin | **Priority**: P0
+
+**Preconditions**: Player has `club_members.role = 'admin'` for the club.
+
+**Steps**:
+1. User navigates to `/admin/club/[id]` (via "Admin" nav item) → System loads dashboard.
+2. System renders:
+   - Quick stats: player count, season count, open challenges count.
+   - Active seasons: list of `status = 'active'` seasons with player/team count, open challenges, overdue warnings.
+   - Overdue matches: matches where `created + match_deadline_days < NOW()` and `status IN ('challenged', 'date_set')`.
+   - Actions: "Manage members", "Create new season", "Send announcement", "Club settings".
+   - Invite link section: join code, Copy/Share/QR buttons, "Regenerate code" option.
+
+**Postconditions**: Dashboard rendered with live data.
+
+**Edge cases**:
+- No active seasons → "Active Seasons" section shows "No active seasons" with "Create new season" CTA.
+- No overdue matches → "Overdue Matches" section hidden.
+
+**Cross-refs**: → US-ADMIN-02, → US-ADMIN-08, → US-ADMIN-12, → US-ADMIN-14
+
+---
+
+### US-ADMIN-02: Create season
+
+**Role**: Club Admin | **Priority**: P0
+
+**Preconditions**: Admin is on club dashboard.
+
+**Steps**:
+1. Admin taps "Create new season" → System navigates to `/admin/club/[id]/season/new`.
+2. Form shows:
+   - Basics: name (text), type (Individual/Team dropdown), team size (if Team).
+   - Scoring: best of (1, 3, 5, 7...).
+   - Deadlines: match deadline days (default 14), reminder after days (default 7).
+   - Result confirmation: toggle for `requires_result_confirmation`.
+   - Starting ranks: empty (manual), from previous season (keep/shuffle/invert).
+   - Players: all club members auto-enrolled, checkboxes to remove before start.
+3. Admin fills form and taps "Create Season" → System creates `seasons` row (`status = 'draft'`).
+4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season.
+
+**Postconditions**:
+- `seasons` row created with `status = 'draft'`.
+- Season only visible to admins until started.
+
+**Edge cases**:
+- Best of must be odd number → Validation.
+- Team size < 1 → Validation error.
+- Name already used → Allowed (no unique constraint on season names).
+
+**Cross-refs**: → US-ADMIN-03, → US-ADMIN-04
+
+---
+
+### US-ADMIN-03: Start season
+
+**Role**: Club Admin | **Priority**: P0
+
+**Preconditions**: Season exists with `status = 'draft'`. Initial standings are set.
+
+**Steps**:
+1. Admin views season management page → Sees "Start Season" button.
+2. Admin taps "Start Season" → System shows ConfirmDialog.
+3. Admin confirms → System updates `seasons.status = 'active'`, sets `started_at = NOW()`.
+4. System creates initial `season_standings` snapshot.
+5. System creates teams for individual seasons (1-person teams for each enrolled player).
+6. System generates public `season_start` event.
+
+**Postconditions**:
+- `seasons.status = 'active'`, `started_at` set.
+- `season_standings` snapshot created.
+- `teams` + `team_players` rows for individual seasons.
+- `season_start` event created.
+- Season now visible to all players in season selector.
+
+**Edge cases**:
+- No players enrolled → Block start with error.
+- For team seasons: unassigned players → Warning but not blocked.
+- Initial standings not set → Must be set before start.
+
+**Cross-refs**: → US-ADMIN-02
+
+---
+
+### US-ADMIN-04: Edit season settings
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Season exists (draft or active).
+
+**Steps**:
+1. Admin navigates to `/admin/club/[id]/season/[id]` → System shows season config form.
+2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation.
+3. Admin taps "Save changes" → System updates `seasons` row.
+
+**Postconditions**: `seasons` row updated.
+
+**Edge cases**:
+- Changing `best_of` while matches are in progress → Warning: "Existing matches will use the new setting."
+- Ended season → Settings are read-only.
+
+**Cross-refs**: → US-ADMIN-02
+
+---
+
+### US-ADMIN-05: Edit standings (manual reorder)
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Season is active. Admin is viewing rankings or season management page.
+
+**Steps**:
+1. Admin taps "Edit standings" → System enters reorder mode (drag-and-drop or up/down buttons per player/team).
+2. Admin reorders players.
+3. Admin taps "Save" → System inserts a new `season_standings` snapshot with `match_id = NULL`, `comment` = admin's note (optional).
+4. Rankings update immediately for all players.
+
+**Postconditions**:
+- New `season_standings` row with updated `results` array, `match_id = NULL`.
+
+**Edge cases**:
+- Admin accidentally saves → Can reorder again (no undo, but previous snapshots preserved).
+- Concurrent match completes during reorder → Admin's save may create stale snapshot.
+
+**Cross-refs**: → US-RANK-01
+
+---
+
+### US-ADMIN-06: End season
+
+**Role**: Club Admin | **Priority**: P0
+
+**Preconditions**: Season has `status = 'active'`.
+
+**Steps**:
+1. Admin taps "End season" on season management page → System shows ConfirmDialog: "End this season? No more challenges can be issued."
+2. Admin confirms → System updates `seasons.status = 'ended'`, sets `ended_at = NOW()`.
+3. System auto-forfeits or withdraws any open challenges (`status IN ('challenged', 'date_set')`) → All become `withdrawn`.
+4. System generates public `season_end` event.
+
+**Postconditions**:
+- `seasons.status = 'ended'`, `ended_at` set.
+- Open challenges resolved.
+- `season_end` event created.
+- Season appears as "(Archive)" in season selector.
+
+**Edge cases**:
+- Open challenges exist → Confirmation dialog warns admin: "X open challenges will be withdrawn."
+- Season with `pending_confirmation` matches → Admin should resolve first or system auto-completes.
+
+**Cross-refs**: → US-RANK-08
+
+---
+
+### US-ADMIN-07: Manage teams
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Season is a team season (`max_team_size > 1`), status is `draft` or `active`.
+
+**Steps**:
+1. Admin navigates to `/admin/club/[id]/season/[id]/teams`.
+2. System shows existing teams (name, members, Edit/Delete) and unassigned players.
+3. Admin taps "Create team" → Enters team name, selects players from dropdown, taps "Create".
+4. System creates `teams` row + `team_players` rows. Validates team size (between `min_team_size` and `max_team_size`).
+5. Admin can edit existing teams (rename, add/remove players) or delete them.
+
+**Postconditions**:
+- `teams` + `team_players` rows created/updated.
+
+**Edge cases**:
+- Team size exceeds `max_team_size` → Validation error.
+- Team size below `min_team_size` → Warning (team incomplete).
+- Deleting a team with match history → Should be blocked or soft-deleted.
+
+**Cross-refs**: → US-ADMIN-02, → US-AUTH-08
+
+---
+
+### US-ADMIN-08: Invite member
+
+**Role**: Club Admin | **Priority**: P0
+
+**Preconditions**: Admin is on the member management page.
+
+**Steps**:
+1. Admin taps "Invite new player" → System expands invite form: email (required), name (optional).
+2. Admin enters email and taps "Send invite".
+3. **If email has an existing account**: System adds `club_members` row (role = `player`), auto-enrolls in active seasons. Player notified in-app.
+4. **If email has no account**: System creates `player` row (with optional name, email set), creates `club_members` row, sends magic link email. Email-only `invited_to_club` flow (no feed entry — feed is club-scoped, invite happens before membership).
+5. New player follows: magic link → onboarding (if name not set) → auto-joined to club.
+
+**Postconditions**:
+- `player` row created (if new).
+- `club_members` row created.
+- Magic link email sent (if new account).
+- `new_player` event created in `events` (after player actually joins).
+
+**Edge cases**:
+- Email already a member → Error "Player is already a member of this club".
+- Invalid email format → Validation error.
+- `invited_to_club` is email-only — no `events` row, since the player isn't a club member yet.
+
+**Cross-refs**: → US-AUTH-05, → US-AUTH-08
+
+---
+
+### US-ADMIN-09: Promote player to admin
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Target player is a club member with `role = 'player'`.
+
+**Steps**:
+1. Admin taps "Make admin" on a player's card in member management.
+2. System shows ConfirmDialog: `"Promote {name} to admin?"`
+3. Admin confirms → System updates `club_members.role = 'admin'`.
+
+**Postconditions**: `club_members.role` updated to `'admin'`.
+
+**Edge cases**:
+- Multiple admins allowed per club.
+- Player is already an admin → Button not shown.
+
+**Cross-refs**: → US-ADMIN-10
+
+---
+
+### US-ADMIN-10: Demote admin to player
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Target is a club admin. Club has at least 2 admins.
+
+**Steps**:
+1. Admin taps "Demote" on another admin's card.
+2. System shows ConfirmDialog: `"Demote {name} to player?"`
+3. Admin confirms → System updates `club_members.role = 'player'`.
+
+**Postconditions**: `club_members.role` updated to `'player'`.
+
+**Edge cases**:
+- Last remaining admin → Demotion blocked: "At least one admin is required."
+- Admin demoting themselves → Allowed if at least 1 other admin remains.
+
+**Cross-refs**: → US-ADMIN-09
+
+---
+
+### US-ADMIN-11: Remove member
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Target is a club member.
+
+**Steps**:
+1. Admin taps "Remove" on a player's card → System shows ConfirmDialog: `"Remove {name}? Match history will be preserved."`
+2. Admin confirms → System deletes `club_members` row. Player's teams opted out in active seasons. Player removed from club context.
+
+**Postconditions**:
+- `club_members` row deleted.
+- Teams opted out in active seasons.
+- Match history preserved.
+
+**Edge cases**:
+- Removing an admin → Blocked if they are the only admin.
+- Player has an open challenge → Force-forfeit or require resolution first.
+
+**Cross-refs**: → US-SETT-04
+
+---
+
+### US-ADMIN-12: Send announcement
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Admin is on announcements page.
+
+**Steps**:
+1. Admin navigates to `/admin/club/[id]/announcements` → System shows announcement form and past announcements.
+2. Admin types message, optionally checks "Send as email".
+3. Admin taps "Send" → System creates personal `announcement` events for all club members (one `events` row per member with `target_player_id` set).
+4. If "Send as email" checked → System sends email to all members (respecting `notification_preferences.email_enabled`).
+
+**Postconditions**:
+- `announcement` events created (one per member).
+- Emails sent (if opted in and checkbox checked).
+
+**Edge cases**:
+- Empty message → Submit button disabled.
+- Large club (100+ members) → Bulk insert for events, batched email sends.
+
+**Cross-refs**: → US-FEED-07
+
+---
+
+### US-ADMIN-13: Regenerate invite code
+
+**Role**: Club Admin | **Priority**: P2
+
+**Preconditions**: Admin is on club dashboard, viewing invite section.
+
+**Steps**:
+1. Admin taps "Regenerate code" → System shows ConfirmDialog: "Old code will stop working immediately."
+2. Admin confirms → System generates new 6-char alphanumeric code, updates `clubs.invite_code`.
+
+**Postconditions**: `clubs.invite_code` updated. Old code invalid immediately.
+
+**Edge cases**:
+- Players using old code get "Code not found" error.
+- QR codes using old code become invalid — admin must share new QR.
+
+**Cross-refs**: → US-AUTH-06
+
+---
+
+### US-ADMIN-14: Nudge overdue match
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: A match has exceeded `match_deadline_days` with no date agreed.
+
+**Steps**:
+1. Admin sees overdue match on dashboard with "Nudge" button.
+2. Admin taps "Nudge" → System sends `deadline_exceeded` personal event to both players.
+3. System also sends reminder email to both players (if `notification_preferences.reminder_emails` is true).
+
+**Postconditions**:
+- `deadline_exceeded` events created for both players.
+- Emails sent (if enabled).
+
+**Edge cases**:
+- Match already has a date set (but is still old) → Button may still show; admin discretion.
+- Admin can also use "Resolve" to directly handle the match (→ US-ADMIN-15).
+
+**Cross-refs**: → US-CHAL-11, → US-ADMIN-15
+
+---
+
+### US-ADMIN-15: Resolve disputed match
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Match has `status = 'disputed'` (or admin wants to override any match).
+
+**Steps**:
+1. Admin opens the match detail → Sees "Resolve Dispute" button (or "Edit Result" for completed matches, "Cancel Match" for any open match).
+2. **Resolve dispute**: Admin reviews the scores, chooses: accept the entered result, enter a corrected result, or cancel the match.
+   - Accept → Same as US-CHAL-13 (confirm flow).
+   - Correct → Admin enters new scores → System updates `season_matches` scores and sets `status = 'completed'`.
+   - Cancel → `status = 'withdrawn'`, no ranking change.
+3. If result accepted/corrected → Rankings update (→ US-CHAL-19).
+
+**Postconditions**:
+- `season_matches` status resolved.
+- Rankings updated (if completed).
+- Events generated.
+
+**Edge cases**:
+- Dispute reason preserved in `disputed_reason` for audit.
+- Admin can also resolve non-disputed matches (override any result).
+
+**Cross-refs**: → US-CHAL-14, → US-CHAL-19
+
+---
+
+### US-ADMIN-16: Edit club settings
+
+**Role**: Club Admin | **Priority**: P1
+
+**Preconditions**: Admin is on the club dashboard.
+
+**Steps**:
+1. Admin taps "Club settings" → System shows form with: name, URL, phone number, address, city, zip, country, logo upload.
+2. Admin edits fields and/or uploads a new logo.
+3. Admin taps "Save" → System updates `clubs` row: `name`, `url`, `phone_number`, `address`, `city`, `zip`, `country`, `logo_data`.
+
+**Postconditions**: `clubs` row updated. Logo served via `/api/clubs/[id]/logo`.
+
+**Edge cases**:
+- Logo removed → `logo_data` set to NULL, avatar falls back to initial-based.
+- Empty name → Validation error (name required).
+- URL format validation (optional field, but if provided must be valid).
+
+**Cross-refs**: → US-ADMIN-01
+
+---
+
+## App Administration
+
+### US-APP-01: View global stats
+
+**Role**: App Admin | **Priority**: P1
+
+**Preconditions**: Player has `player.is_app_admin = true`.
+
+**Steps**:
+1. Admin navigates to `/admin/app` → System shows global overview.
+2. Quick stats: total clubs, total players, total seasons.
+3. Clubs list: name, member count, status (active/disabled), primary admin email.
+
+**Postconditions**: Dashboard rendered with aggregate stats.
+
+**Edge cases**:
+- No clubs → "No clubs yet" with "Create new club" CTA.
+
+**Cross-refs**: → US-APP-02, → US-APP-03
+
+---
+
+### US-APP-02: Create club
+
+**Role**: App Admin | **Priority**: P0
+
+**Preconditions**: Player has `is_app_admin = true`.
+
+**Steps**:
+1. Admin taps "Create new club" → System shows form: club name (required).
+2. Admin enters name and submits → System creates `clubs` row with auto-generated `invite_code` (6-char alphanumeric).
+3. Admin assigns initial club admin by entering their email → System creates or looks up the player, creates `club_members` row with `role = 'admin'`.
+
+**Postconditions**:
+- `clubs` row created.
+- `club_members` row created for the club admin.
+- Invite code generated.
+
+**Edge cases**:
+- Email doesn't exist → Player account created, magic link sent.
+- App admin assigns themselves as club admin → Allowed.
+
+**Cross-refs**: → US-APP-01
+
+---
+
+### US-APP-03: Disable club
+
+**Role**: App Admin | **Priority**: P2
+
+**Preconditions**: Club exists with `is_disabled = false`.
+
+**Steps**:
+1. Admin taps "Disable" on a club card → System shows ConfirmDialog.
+2. Admin confirms → System updates `clubs.is_disabled = true`.
+3. Disabled club: members can't access features, club doesn't appear in club switcher for non-admin members.
+
+**Postconditions**: `clubs.is_disabled = true`.
+
+**Edge cases**:
+- Re-enabling a club → Same flow, toggle back to `false`.
+- Members of disabled club → See "Club disabled" message.
+
+**Cross-refs**: → US-APP-01
+
+---
+
+### US-APP-04: Manage app admins
+
+**Role**: App Admin | **Priority**: P2
+
+**Preconditions**: Current user has `is_app_admin = true`.
+
+**Steps**:
+1. Admin sees "App Admins" section on `/admin/app` → List of all players with `is_app_admin = true`.
+2. Admin taps "Add app admin" → Enters email → System looks up player, sets `player.is_app_admin = true`.
+3. Admin taps "Revoke admin" on an existing admin → System sets `player.is_app_admin = false`.
+
+**Postconditions**: `player.is_app_admin` updated.
+
+**Edge cases**:
+- Last app admin tries to revoke themselves → Blocked: "At least one app admin is required."
+- Email not found → Error or prompt to invite first.
+
+**Cross-refs**: → US-APP-01
+
+---
+
+## Cross-Cutting Concerns
+
+### Responsive Behavior
+
+All stories assume mobile-first design with desktop adaptations:
+
+| Element | Mobile (< lg) | Desktop (lg+) |
+|---------|---------------|---------------|
+| Navigation | Bottom nav (fixed) + top bar | Sidebar (left) |
+| Notification bell | Top bar, right side | Sidebar, with badge |
+| Club switcher | Top bar, left side | Top of sidebar |
+| Dialogs / sheets | Bottom sheet (`rounded-t-3xl`) | Centered dialog |
+| Challenge FAB | Center of bottom nav, raised | Button in page header |
+| Admin actions | Hidden in "..." menu | Visible inline buttons |
+
+### Internationalization (i18n)
+
+- All UI text uses `next-intl` translation keys.
+- Supported: English (default), German.
+- Per-user `player.language` setting. Falls back to browser locale → English.
+- User-generated content (names, comments, announcements) is never translated.
+
+### Accessibility
+
+Per `docs/a11y-guide.md`:
+- All icon-only buttons have `aria-label`.
+- Touch targets minimum 44x44px (`min-h-11 min-w-11`).
+- Tooltips never wrap interactive elements.
+- Scrollable containers have `tabIndex={0}`.
+- Avatars render sr-only text for screen readers.
+
+---
+
+## Verification Checklist
+
+### Event Types Coverage
+
+Every `events.event_type` value appears in at least one story:
+
+| Event Type | Stories |
+|------------|---------|
+| `challenge` | US-CHAL-01, US-FEED-01 |
+| `challenged` | US-CHAL-01, US-FEED-07 |
+| `challenge_accepted` | US-CHAL-01 (implicit via flow), US-FEED-07 |
+| `withdrawal` | US-CHAL-16, US-FEED-01 |
+| `challenge_withdrawn` | US-CHAL-16, US-FEED-07 |
+| `forfeit` | US-CHAL-15, US-FEED-01 |
+| `date_proposed` | US-CHAL-10, US-FEED-07 |
+| `date_accepted` | US-CHAL-11, US-FEED-07 |
+| `date_reminder` | US-CHAL-11 (edge case), US-FEED-07 |
+| `result_entered` | US-CHAL-12, US-FEED-07 |
+| `result_confirmed` | US-CHAL-13, US-FEED-07 |
+| `result` | US-CHAL-12, US-CHAL-19, US-FEED-01 |
+| `result_disputed` | US-CHAL-14, US-FEED-07 |
+| `new_player` | US-AUTH-06, US-FEED-01 |
+| `season_start` | US-ADMIN-03, US-FEED-01 |
+| `season_end` | US-ADMIN-06, US-FEED-01 |
+| `unavailable` | US-PROF-04, US-PROF-05, US-FEED-01 |
+| `announcement` | US-ADMIN-12, US-FEED-07 |
+| `deadline_exceeded` | US-ADMIN-14, US-FEED-07 |
+| `invited_to_club` | US-ADMIN-08 (email-only, no feed entry) |
+
+### Database Table Coverage
+
+Every DB table is exercised by at least one story:
+
+| Table | Stories |
+|-------|---------|
+| `clubs` | US-AUTH-06, US-ADMIN-16, US-APP-02, US-APP-03 |
+| `player` | US-AUTH-05, US-PROF-02, US-PROF-03, US-PROF-04, US-SETT-01, US-SETT-02, US-SETT-06 |
+| `club_members` | US-AUTH-06, US-ADMIN-08, US-ADMIN-09, US-ADMIN-10, US-ADMIN-11, US-SETT-04 |
+| `seasons` | US-ADMIN-02, US-ADMIN-03, US-ADMIN-04, US-ADMIN-06, US-RANK-04 |
+| `teams` | US-AUTH-08, US-ADMIN-03, US-ADMIN-07 |
+| `team_players` | US-AUTH-08, US-ADMIN-07 |
+| `season_matches` | US-CHAL-01, US-CHAL-07, US-CHAL-09, US-CHAL-12, US-CHAL-13–16, US-CHAL-19 |
+| `match_comments` | US-CHAL-17, US-CHAL-18 |
+| `date_proposals` | US-CHAL-10, US-CHAL-11 |
+| `season_standings` | US-CHAL-19, US-ADMIN-05, US-RANK-01, US-PROF-07 |
+| `events` | US-FEED-01, US-FEED-06, US-FEED-07, US-CHAL-01 |
+| `event_reads` | US-FEED-06, US-FEED-07, US-FEED-09, US-FEED-10 |
+| `notification_preferences` | US-SETT-03 |
+| `magic_links` | US-AUTH-01, US-AUTH-03, US-AUTH-04 |
+| `sessions` | US-AUTH-03, US-AUTH-09, US-AUTH-10 |
+
+### Match Status Transition Coverage
+
+Every `season_matches.status` transition is covered:
+
+| Transition | Story |
+|------------|-------|
+| → `challenged` | US-CHAL-01 |
+| `challenged` → `date_set` | US-CHAL-11 (accept date) |
+| `challenged` → `completed` | US-CHAL-12 (no confirmation required) |
+| `challenged` → `withdrawn` | US-CHAL-16 |
+| `challenged` → `forfeited` | US-CHAL-15 |
+| `date_set` → `completed` | US-CHAL-12 (no confirmation required) |
+| `date_set` → `pending_confirmation` | US-CHAL-12 (confirmation required) |
+| `date_set` → `withdrawn` | US-CHAL-16 |
+| `date_set` → `forfeited` | US-CHAL-15 |
+| `pending_confirmation` → `completed` | US-CHAL-13 |
+| `pending_confirmation` → `disputed` | US-CHAL-14 |
+| `disputed` → `completed` | US-ADMIN-15 (admin resolve) |
+| `disputed` → `withdrawn` | US-ADMIN-15 (admin cancel) |

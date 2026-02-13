@@ -8,10 +8,17 @@ Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challeng
 
 ## Specification Docs
 
-- `docs/design-system.md` — Full design system: colors, typography, component library, composition rules. **Read before any UI work.**
-- `docs/ui-spec.md` — Complete UI specification: pages, layouts, navigation, user flows. **Read before building any page.**
-- `docs/a11y-guide.md` — Accessibility best practices, common violations, and Storybook a11y testing gotchas. **Read before adding components or stories.**
-- `docs/database.md` — Full database schema: tables, enums, relationships, business rules, migration notes. **Read before any backend or data-layer work.**
+All docs are MDX files hosted in Storybook (`bun storybook` → "Docs" sidebar group).
+
+- `docs/design-system.mdx` — Full design system: colors, typography, component library, composition rules. **Read before any UI work.**
+- `docs/ui-spec.mdx` — Complete UI specification: pages, layouts, navigation, user flows. **Read before building any page.**
+- `docs/a11y-guide.mdx` — Accessibility best practices, common violations, and Storybook a11y testing gotchas. **Read before adding components or stories.**
+- `docs/database.mdx` — Full database schema: tables, enums, relationships, business rules, migration notes. **Read before any backend or data-layer work.**
+- `docs/user-stories.mdx` — All user stories: flows, preconditions, steps, edge cases. **Read before implementing features or writing e2e tests.**
+- `docs/component-plan.mdx` — Phased component build order across all layers.
+- `docs/component-architecture.mdx` — Three-layer component architecture, import rules, composition patterns.
+- `docs/design-principles.mdx` — Color philosophy, typography, spacing, dark mode, motion.
+- `docs/layout-patterns.mdx` — App shell, navigation, responsive breakpoints, card patterns.
 
 ## Development Commands
 
@@ -37,8 +44,8 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 ### Tech Stack
 - Next.js 16 (App Router) with TypeScript
 - Tailwind CSS + Headless UI + Framer Motion
-- Neon (serverless Postgres) for database
-- Resend for transactional emails
+- PostgreSQL via `postgres.js` driver
+- Nodemailer for transactional emails
 - Vercel deployment (Analytics/Speed Insights integrated)
 
 ### Key Files
@@ -48,7 +55,7 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - `app/db.sql` - Database schema
 - `app/lib/auth.ts` - Authentication (magic links, sessions)
 - `app/lib/db.ts` - Database connection wrapper
-- `app/lib/email.ts` - Email sending via Resend
+- `app/lib/email.ts` - Email sending via Nodemailer
 - `middleware.ts` - Route protection
 
 ### Database Schema (`app/db.sql`)
@@ -107,7 +114,7 @@ In `app/pyramid.tsx`:
 
 ## Design System & Frontend
 
-**Read `docs/design-system.md` before any frontend/UI work.** It contains the full color palette, component catalog, and composition patterns.
+**Read `docs/design-system.mdx` before any frontend/UI work.** It contains the full color palette, component catalog, and composition patterns.
 
 Key rules (always enforce):
 - **Theme "Court"**: primary = `court-*` (green), accent = `trophy-*` (gold), neutrals = `slate-*` only
@@ -141,9 +148,14 @@ Production URL: https://deployment-flax-ten.vercel.app
 
 Vercel auto-detects Next.js settings. No `vercel.json` needed. Environment variables are configured in the Vercel dashboard.
 
+## Database Conventions
+
+- **`TEXT` over `VARCHAR`** — no length-limited string columns
+- **`NOT NULL DEFAULT ''` over nullable strings** — where no semantic difference between `NULL` and `''`, prefer `NOT NULL DEFAULT ''` to avoid null checks in app code
+
 ## Environment Variables
 
 Required for production (set in Vercel dashboard):
-- `DATABASE_URL` - Neon connection string
-- `RESEND_API_KEY` - Resend API key for emails
+- `DATABASE_URL` - PostgreSQL connection string
+- `SMTP_*` - SMTP credentials for Nodemailer
 - `APP_URL` - Application base URL (e.g., `https://pyramid.example.com`)

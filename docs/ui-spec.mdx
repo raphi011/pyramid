@@ -1,3 +1,7 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/UI Specification" />
+
 # UI Specification
 
 Complete page-by-page specification for the Pyramid app — a sport-agnostic pyramid ranking system.
@@ -351,15 +355,15 @@ After code validated:
 
 | Type | Icon | Content |
 |------|------|---------|
-| `result` | Trophy | "{winner} beat {loser}" + score + rank change |
-| `challenge` | Swords | "{challenger} challenged {challengee}" |
-| `withdrawal` | X | "{player} withdrew challenge against {player}" |
-| `forfeit` | Flag | "{player} forfeited against {player}" |
-| `rank_change` | Arrow up/down | "{player} moved from #X to #Y" |
-| `new_player` | Wave | "{player} joined {club}" |
-| `season_start` | Calendar | "Season '{name}' started" |
-| `season_end` | Flag | "Season '{name}' ended" |
-| `unavailable` | Clock | "{player} is unavailable until {date}" |
+| `result` | Trophy | `"{winner} beat {loser}"` + score + rank change |
+| `challenge` | Swords | `"{challenger} challenged {challengee}"` |
+| `withdrawal` | X | `"{player} withdrew challenge against {player}"` |
+| `forfeit` | Flag | `"{player} forfeited against {player}"` |
+| `rank_change` | Arrow up/down | `"{player} moved from #X to #Y"` |
+| `new_player` | Wave | `"{player} joined {club}"` |
+| `season_start` | Calendar | `"Season '{name}' started"` |
+| `season_end` | Flag | `"Season '{name}' ended"` |
+| `unavailable` | Clock | `"{player} is unavailable until {date}"` |
 
 **Behavior**:
 - Infinite scroll with pagination.
@@ -716,7 +720,7 @@ Step 2 (same sheet, transitions):
 **Unavailability**:
 - Set date range (from / until). Reason is private.
 - While unavailable: can't be challenged, shown as dimmed in pyramid.
-- Other players see "unavailable until {date}" but NOT the reason.
+- Other players see `"unavailable until {date}"` but NOT the reason.
 
 ---
 
@@ -770,22 +774,22 @@ Step 2 (same sheet, transitions):
 
 | Event | Notification text | Also email? |
 |-------|-------------------|-------------|
-| Challenged | "{player} challenged you" | Yes |
-| Challenge accepted | "{player} accepted your challenge" | No |
-| Challenge withdrawn | "{player} withdrew their challenge" | Yes |
-| Forfeit | "{player} forfeited against you" | Yes |
-| Date proposed | "{player} proposed {date}" | No |
-| Date accepted | "{player} accepted {date}" | No |
-| Date reminder | "No date agreed for match vs {player}" | Yes |
-| Result entered | "{player} entered the result" | Yes |
-| Result confirmed | "{player} confirmed the result" | No |
-| Result disputed | "{player} disputed the result" | Yes |
-| Rank changed | "You moved from #{x} to #{y}" | No |
-| Season started | "Season '{name}' has started" | Yes |
-| Season ended | "Season '{name}' has ended" | Yes |
-| Admin broadcast | "{admin}: {message}" | Yes |
-| Deadline exceeded | "Match deadline exceeded vs {player}" | Yes (to both + admin) |
-| Invited to club | "You've been invited to {club}" | Yes |
+| Challenged | `"{player} challenged you"` | Yes |
+| Challenge accepted | `"{player} accepted your challenge"` | No |
+| Challenge withdrawn | `"{player} withdrew their challenge"` | Yes |
+| Forfeit | `"{player} forfeited against you"` | Yes |
+| Date proposed | `"{player} proposed {date}"` | No |
+| Date accepted | `"{player} accepted {date}"` | No |
+| Date reminder | `"No date agreed for match vs {player}"` | Yes |
+| Result entered | `"{player} entered the result"` | Yes |
+| Result confirmed | `"{player} confirmed the result"` | No |
+| Result disputed | `"{player} disputed the result"` | Yes |
+| Rank changed | `"You moved from #{x} to #{y}"` | No |
+| Season started | `"Season '{name}' has started"` | Yes |
+| Season ended | `"Season '{name}' has ended"` | Yes |
+| Admin broadcast | `"{admin}: {message}"` | Yes |
+| Deadline exceeded | `"Match deadline exceeded vs {player}"` | Yes (to both + admin) |
+| Invited to club | `"You've been invited to {club}"` | Yes |
 
 **Behavior**:
 - Bell icon in top bar shows unread count badge (red dot with number).

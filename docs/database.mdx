@@ -1,3 +1,7 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Database Schema" />
+
 # Database Schema
 
 Canonical reference for the Pyramid app database schema.
@@ -6,202 +10,36 @@ Canonical reference for the Pyramid app database schema.
 
 ---
 
-## Tech Stack
+## Index
 
-- **Neon** (serverless Postgres)
-- All timestamps are `TIMESTAMPTZ` (UTC)
-- IDs are `SERIAL PRIMARY KEY` (auto-incrementing integers)
-- Soft deletes are avoided — records are preserved with attribution for historical integrity
+| # | Table | Section | Purpose |
+|---|-------|---------|---------|
+| 1 | `clubs` | [Core Domain](#clubs) | Club definitions, invite codes |
+| 2 | `player` | [Core Domain](#player) | Player accounts (global) |
+| 3 | `club_members` | [Core Domain](#club_members) | Player-to-club membership with role |
+| 4 | `seasons` | [Seasons & Participation](#seasons) | Season config per club |
+| 5 | `teams` | [Teams](#teams) | Team roster per season |
+| 6 | `team_players` | [Teams](#team_players) | Player assignment to teams |
+| 7 | `season_matches` | [Match Lifecycle](#season_matches) | Challenge + match records |
+| 8 | `match_comments` | [Match Lifecycle](#match_comments) | Comments on matches |
+| 9 | `date_proposals` | [Match Lifecycle](#date_proposals) | Match scheduling proposals |
+| 10 | `season_standings` | [Rankings](#season_standings) | Ranking snapshots |
+| 11 | `events` | [Events & Notifications](#events) | Immutable activity feed |
+| 12 | `event_reads` | [Events & Notifications](#event_reads) | Per-player read watermark |
+| 13 | `notification_preferences` | [Events & Notifications](#notification_preferences) | Email notification settings |
+| 14 | `magic_links` | [Auth](#magic_links) | Passwordless login tokens |
+| 15 | `sessions` | [Auth](#sessions) | Database-backed sessions |
 
 ---
 
-## ER Diagram
+## Tech Stack & Conventions
 
-```mermaid
-erDiagram
-    clubs ||--o{ club_members : "has members"
-    clubs ||--o{ seasons : "has seasons"
-    player ||--o{ club_members : "belongs to clubs"
-    player ||--o{ team_players : "assigned to teams"
-    player ||--o{ sessions : "has sessions"
-    player ||--o{ magic_links : "has magic links"
-    player ||--o{ event_reads : "tracks reads"
-    player ||--o{ notification_preferences : "configures"
-    player ||--o{ match_comments : "writes"
-    player ||--o{ date_proposals : "proposes"
-    seasons ||--o{ season_matches : "has matches"
-    seasons ||--o{ season_standings : "has snapshots"
-    seasons ||--o{ teams : "has teams"
-    seasons ||--o{ events : "generates"
-
-    season_matches ||--o{ match_comments : "has comments"
-    season_matches ||--o{ date_proposals : "has proposals"
-    season_matches ||--o{ season_standings : "triggers snapshots"
-
-    teams ||--o{ team_players : "has members"
-    teams ||--o{ season_matches : "participates in"
-    clubs ||--o{ event_reads : "read tracking"
-    clubs ||--o{ events : "scopes events"
-    player ||--o{ events : "acts in"
-    %% events also has target_player_id FK → player (mermaid can't show two relations between same entities)
-    season_matches ||--o{ events : "generates events"
-
-    clubs {
-        int id PK
-        text name
-        text invite_code UK
-        text url
-        text phone_number
-        text address
-        text city
-        text zip
-        text country
-        bytea logo_data
-        bool is_disabled
-        timestamptz created
-    }
-
-    player {
-        int id PK
-        text name
-        text phone_number
-        text email_address UK
-        bytea photo_data
-        text bio
-        text language
-        text theme
-        bool is_app_admin
-        timestamptz created
-        timestamptz unavailable_from
-        timestamptz unavailable_until
-        text unavailable_reason
-    }
-
-    club_members {
-        int player_id PK,FK
-        int club_id PK,FK
-        text role
-        timestamptz created
-    }
-
-    seasons {
-        int id PK
-        int club_id FK
-        text name
-        int min_team_size
-        int max_team_size
-        int best_of
-        int match_deadline_days
-        int reminder_after_days
-        bool requires_result_confirmation
-        text status
-        timestamptz started_at
-        timestamptz ended_at
-        timestamptz created
-    }
-
-    teams {
-        int id PK
-        int season_id FK
-        text name
-        bool opted_out
-        timestamptz created
-    }
-
-    team_players {
-        int team_id PK,FK
-        int player_id PK,FK
-        timestamptz created
-    }
-
-    season_matches {
-        int id PK
-        int season_id FK
-        int team1_id FK
-        int team2_id FK
-        int winner_team_id FK
-        int result_entered_by FK
-        timestamptz result_entered_at
-        int confirmed_by FK
-        int_array team1_score
-        int_array team2_score
-        text status
-        text challenge_text
-        text disputed_reason
-        timestamptz game_at
-        timestamptz created
-    }
-
-    match_comments {
-        int id PK
-        int match_id FK
-        int player_id FK
-        text comment
-        timestamptz created
-        timestamptz edited_at
-    }
-
-    date_proposals {
-        int id PK
-        int match_id FK
-        int proposed_by FK
-        timestamptz proposed_datetime
-        text status
-        timestamptz created
-    }
-
-    season_standings {
-        int id PK
-        int season_id FK
-        int match_id FK
-        int_array results
-        text comment
-        timestamptz created
-    }
-
-    events {
-        int id PK
-        int club_id FK
-        int season_id FK
-        int match_id FK
-        int player_id FK
-        int target_player_id FK
-        text event_type
-        jsonb metadata
-        timestamptz created
-    }
-
-    event_reads {
-        int player_id PK,FK
-        int club_id PK,FK
-        timestamptz last_read_at
-    }
-
-    notification_preferences {
-        int player_id PK,FK
-        bool email_enabled
-        bool challenge_emails
-        bool result_emails
-        bool reminder_emails
-        timestamptz updated_at
-    }
-
-    magic_links {
-        int id PK
-        int player_id FK,UK
-        text token UK
-        timestamptz expires_at
-        timestamptz created_at
-    }
-
-    sessions {
-        int id PK
-        int player_id FK
-        text token UK
-        timestamptz expires_at
-        timestamptz created_at
-    }
-```
+- **PostgreSQL** via `postgres.js` driver
+- All timestamps are `TIMESTAMPTZ` (UTC)
+- IDs are `SERIAL PRIMARY KEY` (auto-incrementing integers)
+- Soft deletes are avoided — records are preserved with attribution for historical integrity
+- **`TEXT` over `VARCHAR`** — no length-limited string columns; use `TEXT` everywhere
+- **`NOT NULL DEFAULT ''` over nullable strings** — where there's no semantic difference between `NULL` and `''`, prefer `NOT NULL DEFAULT ''` to simplify application logic (no null checks)
 
 ---
 
