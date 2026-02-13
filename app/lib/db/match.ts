@@ -7,10 +7,11 @@ type Sql = postgres.Sql | postgres.TransactionSql;
 export type MatchStatus =
   | "challenged"
   | "date_set"
+  | "pending_confirmation"
   | "completed"
-  | "disputed"
-  | "cancelled"
-  | "forfeited";
+  | "withdrawn"
+  | "forfeited"
+  | "disputed";
 
 export type Match = {
   id: number;
