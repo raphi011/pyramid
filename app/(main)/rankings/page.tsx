@@ -9,6 +9,10 @@ import {
   getTeamWinsLosses,
   getPlayerTeamId,
 } from "@/app/lib/db/season";
+import {
+  getTeamsWithOpenChallenge,
+  getUnavailableTeamIds,
+} from "@/app/lib/db/match";
 import { canChallenge, computeMovement } from "@/app/lib/pyramid";
 import { RankingsView } from "./rankings-view";
 import type { Season } from "@/app/lib/db/season";
@@ -41,6 +45,8 @@ export default async function RankingsPage({
         clubName={clubName}
         pyramidPlayers={[]}
         standingsPlayers={[]}
+        currentPlayerTeamId={null}
+        hasOpenChallenge={false}
       />
     );
   }
@@ -57,11 +63,14 @@ export default async function RankingsPage({
     season = seasons[0];
   }
 
-  // Fetch standings and wins/losses in parallel
-  const [standingsData, winsLossesMap] = await Promise.all([
-    getStandingsWithPlayers(sql, season.id),
-    getTeamWinsLosses(sql, season.id),
-  ]);
+  // Fetch standings, wins/losses, open challenges, and unavailability in parallel
+  const [standingsData, winsLossesMap, openChallengeTeams, unavailableTeams] =
+    await Promise.all([
+      getStandingsWithPlayers(sql, season.id),
+      getTeamWinsLosses(sql, season.id),
+      getTeamsWithOpenChallenge(sql, season.id),
+      getUnavailableTeamIds(sql, season.id),
+    ]);
 
   const { players, previousResults } = standingsData;
   const currentResults = players.map((p) => p.teamId);
@@ -79,10 +88,17 @@ export default async function RankingsPage({
     const variant =
       p.teamId === currentTeamId
         ? ("current" as const)
-        : currentPlayerRank !== null &&
-            canChallenge(currentPlayerRank, p.rank)
-          ? ("challengeable" as const)
-          : ("default" as const);
+        : unavailableTeams.has(p.teamId)
+          ? ("unavailable" as const)
+          : currentPlayerRank !== null &&
+              canChallenge(currentPlayerRank, p.rank) &&
+              !openChallengeTeams.has(p.teamId) &&
+              !openChallengeTeams.has(currentTeamId!) &&
+              !unavailableTeams.has(currentTeamId!)
+            ? ("challengeable" as const)
+            : openChallengeTeams.has(p.teamId)
+              ? ("challenged" as const)
+              : ("default" as const);
 
     return {
       id: p.teamId,
@@ -98,7 +114,13 @@ export default async function RankingsPage({
     const wl = winsLossesMap.get(p.teamId) ?? { wins: 0, losses: 0 };
     const movement = computeMovement(p.teamId, currentResults, previousResults);
     const challengeable =
-      currentPlayerRank !== null && canChallenge(currentPlayerRank, p.rank);
+      currentPlayerRank !== null &&
+      canChallenge(currentPlayerRank, p.rank) &&
+      p.teamId !== currentTeamId &&
+      !openChallengeTeams.has(p.teamId) &&
+      !openChallengeTeams.has(currentTeamId!) &&
+      !unavailableTeams.has(p.teamId) &&
+      !unavailableTeams.has(currentTeamId!);
 
     return {
       id: p.teamId,
@@ -118,6 +140,10 @@ export default async function RankingsPage({
       clubName={clubName}
       pyramidPlayers={pyramidPlayers}
       standingsPlayers={standingsPlayers}
+      currentPlayerTeamId={currentTeamId}
+      hasOpenChallenge={
+        currentTeamId !== null && openChallengeTeams.has(currentTeamId)
+      }
     />
   );
 }
