@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getSession } from "@/app/lib/auth";
 import { updatePlayerProfile } from "@/app/lib/db/auth";
 import { getPlayerClubs } from "@/app/lib/db/club";
@@ -23,7 +24,8 @@ export async function completeOnboarding(
   const phoneNumber = (formData.get("phone") as string)?.trim() ?? "";
 
   if (!name) {
-    return { error: "Name ist erforderlich" };
+    const t = await getTranslations("onboarding");
+    return { error: t("nameRequired") };
   }
 
   await updatePlayerProfile(sql, session.playerId, { name, phoneNumber });

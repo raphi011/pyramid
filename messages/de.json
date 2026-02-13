@@ -107,7 +107,7 @@
     "codePlaceholder": "Code eingeben...",
     "join": "Beitreten",
     "confirmJoin": "Möchtest du \u201E{club}\u201C beitreten?",
-    "confirmJoinDesc": "Du wirst automatisch in alle aktiven Saisons eingetragen.",
+    "confirmJoinDesc": "Du kannst dich danach für aktive Saisons anmelden.",
     "alreadyMember": "Du bist bereits Mitglied von {club}",
     "goHome": "Zur Startseite",
     "emailLabel": "E-Mail-Adresse",
@@ -128,6 +128,16 @@
     "title": "Etwas ist schiefgelaufen",
     "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "retry": "Erneut versuchen"
+  },
+  "onboarding": {
+    "welcome": "Willkommen!",
+    "subtitle": "Vervollständige dein Profil",
+    "nameLabel": "Name",
+    "namePlaceholder": "Max Mustermann",
+    "nameRequired": "Name ist erforderlich",
+    "phoneLabel": "Telefon",
+    "phonePlaceholder": "+49 170 1234567",
+    "submit": "Weiter"
   },
   "notifications": {
     "ariaLabel": "Benachrichtigungen",

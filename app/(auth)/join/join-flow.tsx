@@ -95,7 +95,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
               {currentState.clubName} beitreten?
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Du wirst automatisch in alle aktiven Saisons eingetragen.
+              Du kannst dich danach für aktive Saisons anmelden.
             </p>
           </div>
 

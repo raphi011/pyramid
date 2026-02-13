@@ -28,10 +28,10 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-AUTH-02](#us-auth-02-check-email-confirmation) | Check email confirmation | Player | P0 | Auth | ✅ |
 | [US-AUTH-03](#us-auth-03-verify-magic-link) | Verify magic link | Player | P0 | Auth | ✅ |
 | [US-AUTH-04](#us-auth-04-expired-magic-link) | Expired magic link | Player | P0 | Auth | ✅ |
-| [US-AUTH-05](#us-auth-05-complete-onboarding) | Complete onboarding | Player | P0 | Auth | |
-| [US-AUTH-06](#us-auth-06-join-club-via-invite-code) | Join club via invite code | Player | P0 | Auth | |
+| [US-AUTH-05](#us-auth-05-complete-onboarding) | Complete onboarding | Player | P0 | Auth | ✅ |
+| [US-AUTH-06](#us-auth-06-join-club-via-invite-code) | Join club via invite code | Player | P0 | Auth | ✅ |
 | [US-AUTH-07](#us-auth-07-join-club-via-qr-code) | Join club via QR code | Player | P1 | Auth | |
-| [US-AUTH-08](#us-auth-08-auto-enrollment-in-active-seasons) | Auto-enrollment in active seasons | Player | P0 | Auth | |
+| [US-AUTH-08](#us-auth-08-season-enrollment) | Season enrollment | Player | P0 | Auth | |
 | [US-AUTH-09](#us-auth-09-logout) | Logout | Player | P0 | Auth | ✅ |
 | [US-AUTH-10](#us-auth-10-session-expiry) | Session expiry | Player | P0 | Auth | ✅ |
 | [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | |
@@ -209,21 +209,20 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Preconditions**: Player authenticated but `player.name` is null/empty (first login after admin invite).
 
 **Steps**:
-1. User is redirected to `/onboarding` → System shows welcome message, avatar upload (optional), name input (required), phone input (optional).
+1. User is redirected to `/onboarding` → System shows welcome message, avatar (initials preview), name input (required), phone input (optional).
 2. User enters name (required) → "Continue" button becomes enabled.
-3. User optionally uploads a profile photo → System stores in `player.photo_data` as binary.
-4. User clicks "Continue" → System updates `player.name` (and optionally `phone_number`, `photo_data`).
-5. System checks club membership: 0 clubs → redirects to `/join`. 1+ clubs → redirects to `/`.
+3. User clicks "Continue" → System updates `player.name` (and optionally `phone_number`).
+4. System checks club membership: 0 clubs → redirects to `/join`. 1+ clubs → redirects to `/`.
 
 **Postconditions**:
 - `player.name` is set (no longer empty).
-- `player.photo_data` set if photo uploaded.
 
 **Edge cases**:
 - Name field left empty → Submit button disabled / inline validation.
 - Player already has a name (direct navigation to `/onboarding`) → Should redirect to `/`.
+- Profile photo upload is handled separately on the profile page (→ US-PROF-03).
 
-**Cross-refs**: → US-AUTH-06, → US-PROF-02
+**Cross-refs**: → US-AUTH-06, → US-PROF-02, → US-PROF-03
 
 ---
 
@@ -236,16 +235,13 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Steps**:
 1. User navigates to `/join` → System shows invite code input (6-char, spaced), "Join Club" button, and "Scan QR code" option.
 2. User enters 6-character code and clicks "Join Club" → System validates code against `clubs.invite_code`.
-3. Code valid → System shows confirmation dialog: club name, member count, "Join" / "Cancel" buttons.
+3. Code valid → System shows confirmation dialog: club name, "Join" / "Cancel" buttons.
 4. User clicks "Join" → System creates `club_members` row (role = `player`).
-5. System auto-enrolls player in all active seasons (→ US-AUTH-08).
-6. System generates `new_player` event in `events` table.
-7. System redirects to `/` (feed).
+5. System redirects to `/` (rankings).
 
 **Postconditions**:
 - `club_members` row created.
-- `teams` row(s) created for active individual seasons.
-- `new_player` event in `events`.
+- Player can self-enroll in active seasons (→ US-AUTH-08).
 
 **Edge cases**:
 - Invalid code → Inline error "Code not found".
@@ -277,27 +273,31 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
-### US-AUTH-08: Auto-enrollment in active seasons
+### US-AUTH-08: Season enrollment
 
 **Role**: Player | **Priority**: P0
 
-**Preconditions**: Player just joined a club that has active seasons.
+**Preconditions**: Player is a club member. Club has active seasons with open enrollment.
 
 **Steps**:
-1. System finds all `seasons` with `status = 'active'` for the joined club.
-2. For each individual season (`max_team_size = 1`): System creates a `teams` row (1-person team) and a `team_players` row linking the player.
+1. Player sees available seasons on the rankings page (or a dedicated section) with a "Join" button.
+2. Player taps "Join" on an individual season (`max_team_size = 1`) → System creates a `teams` row (1-person team) and a `team_players` row.
 3. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
 4. System creates a standings snapshot in `season_standings`.
+5. System generates a `new_player` event.
 
 **Postconditions**:
-- `teams` + `team_players` rows created per active individual season.
+- `teams` + `team_players` rows created.
 - Player appears at bottom of standings.
+- `new_player` event created.
 
 **Edge cases**:
-- Team seasons → Player is NOT auto-enrolled (admin assigns teams manually → US-ADMIN-07).
-- No active seasons → No enrollment, no error.
+- Team seasons → Player cannot self-enroll (admin assigns teams manually → US-ADMIN-07).
+- No active seasons → No enrollment options shown.
+- Player already enrolled → "Join" button not shown for that season.
+- Admin can also add/remove players from seasons (→ US-ADMIN-02, → US-ADMIN-07).
 
-**Cross-refs**: → US-AUTH-06, → US-ADMIN-07
+**Cross-refs**: → US-AUTH-06, → US-ADMIN-02, → US-ADMIN-07
 
 ---
 
