@@ -53,7 +53,7 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - **Config:** `eslint.config.mjs` — imports `eslint-config-next` (flat config array)
 - **Command:** `bun run lint` (runs `eslint .`)
 - **ESLint version:** 9.x — do **not** upgrade to ESLint 10; `eslint-plugin-react` is incompatible with ESLint 10 (`getFilename` API removed). Track [jsx-eslint/eslint-plugin-react#3977](https://github.com/jsx-eslint/eslint-plugin-react/issues/3977) for updates.
-- **Known pre-existing warnings:** `react-hooks/rules-of-hooks` in some Storybook stories (using `useState` in CSF `render` functions) — harmless, Storybook pattern.
+- **Storybook hooks rule:** Stories that need hooks must use named function components in `render` — do not regress to inline arrow functions with hooks in CSF `render` fields.
 
 ## Architecture
 
@@ -65,9 +65,9 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - Vercel deployment (Analytics/Speed Insights integrated)
 
 ### Key Files
-- `app/page.tsx` - Home page with mock data (standings, matches, events)
-- `app/pyramid.tsx` - Core pyramid visualization and challenge logic
-- `app/navigation.tsx` - Main layout with sidebar
+- `app/page.tsx` - Root redirect to `/rankings`
+- `app/lib/pyramid.ts` - Pyramid row calculation and challenge logic
+- `app/(main)/app-shell-wrapper.tsx` - Client-side app shell with navigation
 - `db/migrations/001_initial_schema.sql` - Full database schema (15 tables)
 - `db/migrate.ts` - Migration runner
 - `app/lib/auth.ts` - Authentication (magic links, sessions)
@@ -172,8 +172,11 @@ Vercel auto-detects Next.js settings. No `vercel.json` needed. Environment varia
 
 ## Framework Gotchas (Quick Reference)
 
-See `docs/gotchas.mdx` for full details. Key pitfalls:
+See `docs/gotchas.mdx` for full details. **When you encounter a framework-specific pitfall, document it in `docs/gotchas.mdx`** so it's captured for future reference.
 
+Key pitfalls:
+
+- **`"use client"` ≠ browser-only** — client components still SSR; never access `window`/`document` outside `useEffect`
 - **`searchParams` is a `Promise`** (Next.js 15+) — must `await` in server components
 - **Typographic quotes in JSON** — use `\u201E` / `\u201C` for German `„"` quotes, not raw characters
 - **`redirect()` throws** — don't call inside try/catch or it gets swallowed

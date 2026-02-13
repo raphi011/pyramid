@@ -24,6 +24,30 @@ export default async function Page({ searchParams }: Props) {
 }
 ```
 
+### `"use client"` does not mean browser-only
+
+`"use client"` tells the bundler to include the component in the client bundle — but Next.js still **executes** client components on the server during SSR to produce initial HTML. Only `useEffect` / `useLayoutEffect` callbacks are skipped during SSR. Never access browser globals (`window`, `document`, `navigator`) outside of `useEffect`:
+
+```tsx
+// WRONG — crashes during SSR with ReferenceError
+const [isDesktop, setIsDesktop] = useState(
+  () => window.matchMedia("(min-width: 1024px)").matches,
+);
+
+// CORRECT — useSyncExternalStore handles SSR via getServerSnapshot
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(min-width: 1024px)");
+      mql.addEventListener("change", cb);
+      return () => mql.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => false, // server snapshot — no window on server
+  );
+}
+```
+
 ### Middleware `PUBLIC_ROUTES` uses prefix matching
 
 Routes in `PUBLIC_ROUTES` are matched with `pathname.startsWith(route)`. Adding `"/join"` matches both `/join` and `/join?code=X`. Be aware this also matches `/join-something` — if that becomes an issue, switch to exact matching or regex.
