@@ -20,14 +20,29 @@
     "ranking": "Rankings",
     "news": "News",
     "manageClub": "Manage club",
-    "challenge": "Challenge"
+    "challenge": "Challenge",
+    "matches": "Matches"
   },
   "challenge": {
     "title": "Challenge",
     "rank": "Rank {rank}",
     "messageLabel": "Message (optional)",
     "messagePlaceholder": "e.g. Are you free on Saturday?",
-    "submit": "Challenge"
+    "submit": "Send Challenge",
+    "selectSeason": "Which season?",
+    "selectOpponent": "Who do you want to challenge?",
+    "challengeableHeading": "Players you can challenge:",
+    "noOpponents": "No one available?",
+    "noOpponentsDesc": "Players may be on vacation or already in an open challenge.",
+    "confirmTitle": "Challenge {name}?",
+    "fabDisabledMessage": "You already have an open challenge in this season.",
+    "error": {
+      "notActive": "This season is no longer active.",
+      "notEnrolled": "You are not enrolled in this season.",
+      "invalidTarget": "You cannot challenge this player.",
+      "openChallenge": "One of you already has an open challenge.",
+      "unavailable": "This player is currently unavailable."
+    }
   },
   "match": {
     "statusChallenged": "Open",
@@ -42,6 +57,22 @@
     "removeSetAriaLabel": "Remove set {set}",
     "player1Default": "Player 1",
     "player2Default": "Player 2"
+  },
+  "matches": {
+    "title": "Matches",
+    "tabMy": "My",
+    "tabAll": "All",
+    "tabOpen": "Open",
+    "sectionOpen": "Open Challenges",
+    "sectionCompleted": "Completed",
+    "noMatches": "No matches",
+    "noMatchesDesc": "Challenge a player to get started.",
+    "noMyMatches": "No matches yet",
+    "noMyMatchesDesc": "Your matches will appear here.",
+    "noOpenMatches": "No open challenges",
+    "noOpenMatchesDesc": "All challenges have been resolved.",
+    "challenger": "Challenger",
+    "vs": "vs"
   },
   "ranking": {
     "title": "Rankings",
