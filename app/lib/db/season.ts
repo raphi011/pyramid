@@ -32,7 +32,6 @@ export type RankedPlayer = {
   playerId: number;
   name: string;
   rank: number;
-  photoData: Buffer | null;
 };
 
 export type WinsLosses = { wins: number; losses: number };
@@ -41,6 +40,23 @@ export type WinsLosses = { wins: number; losses: number };
 
 export function isIndividualSeason(season: Season): boolean {
   return season.maxTeamSize === 1;
+}
+
+function toSeason(row: Record<string, unknown>): Season {
+  return {
+    id: row.id as number,
+    clubId: row.clubId as number,
+    name: row.name as string,
+    status: row.status as SeasonStatus,
+    minTeamSize: row.minTeamSize as number,
+    maxTeamSize: row.maxTeamSize as number,
+    bestOf: row.bestOf as number,
+    matchDeadlineDays: row.matchDeadlineDays as number,
+    reminderAfterDays: row.reminderAfterDays as number,
+    requiresResultConfirmation: row.requiresResultConfirmation as boolean,
+    startedAt: (row.startedAt as Date) ?? null,
+    endedAt: (row.endedAt as Date) ?? null,
+  };
 }
 
 // ── Queries ────────────────────────────────────────────
@@ -67,7 +83,7 @@ export async function getActiveSeasons(
     WHERE club_id = ${clubId} AND status = 'active'
   `;
 
-  return rows as Season[];
+  return rows.map(toSeason);
 }
 
 export async function getSeasonById(
@@ -92,7 +108,7 @@ export async function getSeasonById(
     WHERE id = ${id}
   `;
 
-  return rows.length > 0 ? (rows[0] as Season) : null;
+  return rows.length > 0 ? toSeason(rows[0]) : null;
 }
 
 export async function getLatestStandings(
@@ -216,24 +232,25 @@ export async function getStandingsWithPlayers(
     SELECT
       t.id AS "teamId",
       p.id AS "playerId",
-      p.name,
-      p.photo_data AS "photoData"
+      p.name
     FROM teams t
     JOIN team_players tp ON tp.team_id = t.id
     JOIN player p ON p.id = tp.player_id
     WHERE t.id = ANY(${currentResults})
   `;
 
-  // Index by teamId for fast lookup
-  const teamMap = new Map<
-    number,
-    { playerId: number; name: string; photoData: Buffer | null }
-  >();
+  // Index by teamId for fast lookup (individual seasons only — one player per team)
+  const teamMap = new Map<number, { playerId: number; name: string }>();
   for (const row of teamPlayerRows) {
-    teamMap.set(row.teamId as number, {
+    const teamId = row.teamId as number;
+    if (teamMap.has(teamId)) {
+      console.warn(
+        `getStandingsWithPlayers: multiple players for team ${teamId} — only individual seasons are currently supported`,
+      );
+    }
+    teamMap.set(teamId, {
       playerId: row.playerId as number,
       name: row.name as string,
-      photoData: row.photoData as Buffer | null,
     });
   }
 
@@ -242,14 +259,18 @@ export async function getStandingsWithPlayers(
   for (let i = 0; i < currentResults.length; i++) {
     const teamId = currentResults[i];
     const info = teamMap.get(teamId);
-    if (!info) continue;
+    if (!info) {
+      console.error(
+        `getStandingsWithPlayers: team ${teamId} in standings for season ${seasonId} not found in DB`,
+      );
+      continue;
+    }
 
     players.push({
       teamId,
       playerId: info.playerId,
       name: info.name,
       rank: i + 1,
-      photoData: info.photoData,
     });
   }
 
@@ -288,25 +309,6 @@ export async function getTeamWinsLosses(
     });
   }
   return map;
-}
-
-export function computeMovement(
-  teamId: number,
-  currentResults: number[],
-  previousResults: number[] | null,
-): "up" | "down" | "none" {
-  if (!previousResults) return "none";
-
-  const currentIdx = currentResults.indexOf(teamId);
-  const previousIdx = previousResults.indexOf(teamId);
-
-  // New player (wasn't in previous standings)
-  if (previousIdx === -1) return "none";
-
-  // Lower index = better rank → moved up if previousIdx > currentIdx
-  if (previousIdx > currentIdx) return "up";
-  if (previousIdx < currentIdx) return "down";
-  return "none";
 }
 
 export async function getPlayerTeamId(

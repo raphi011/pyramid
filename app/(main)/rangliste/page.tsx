@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
@@ -7,9 +8,8 @@ import {
   getStandingsWithPlayers,
   getTeamWinsLosses,
   getPlayerTeamId,
-  computeMovement,
 } from "@/app/lib/db/season";
-import { canChallenge } from "@/app/lib/pyramid";
+import { canChallenge, computeMovement } from "@/app/lib/pyramid";
 import { RankingsView } from "./rankings-view";
 import type { Season } from "@/app/lib/db/season";
 
@@ -22,8 +22,12 @@ export default async function RankingsPage({
 }: RankingsPageProps) {
   const { season: seasonParam } = await searchParams;
 
-  const player = (await getCurrentPlayer())!;
+  const player = await getCurrentPlayer();
+  if (!player) redirect("/login");
+
   const clubs = await getPlayerClubs(sql, player.id);
+  if (clubs.length === 0) redirect("/join");
+
   const clubId = clubs[0].clubId;
   const clubName = clubs[0].clubName;
 
@@ -44,7 +48,10 @@ export default async function RankingsPage({
   // Resolve selected season (from URL param or default to first)
   let season: Season | null = null;
   if (seasonParam) {
-    season = await getSeasonById(sql, Number(seasonParam));
+    const seasonId = parseInt(seasonParam, 10);
+    if (!Number.isNaN(seasonId) && seasonId > 0) {
+      season = await getSeasonById(sql, seasonId);
+    }
   }
   if (!season || season.clubId !== clubId) {
     season = seasons[0];

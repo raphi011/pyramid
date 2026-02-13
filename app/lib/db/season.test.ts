@@ -21,10 +21,8 @@ import {
   autoEnrollInActiveSeasons,
   getStandingsWithPlayers,
   getTeamWinsLosses,
-  computeMovement,
   getPlayerTeamId,
 } from "./season";
-
 const db = withTestDb();
 
 afterAll(() => db.cleanup());
@@ -572,29 +570,26 @@ describe("getTeamWinsLosses", () => {
       expect(wl.size).toBe(0);
     });
   });
-});
 
-// ── computeMovement ─────────────────────────────────
+  it("scoped to season (ignores other season matches)", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const s1 = await seedSeason(tx, clubId);
+      const s2 = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "scope1@example.com");
+      const p2 = await seedPlayer(tx, "scope2@example.com");
+      const t1 = await seedTeam(tx, s1, [p1]);
+      const t2 = await seedTeam(tx, s1, [p2]);
+      const t3 = await seedTeam(tx, s2, [p1]);
+      const t4 = await seedTeam(tx, s2, [p2]);
+      await seedMatch(tx, s1, t1, t2, { winnerTeamId: t1 });
+      await seedMatch(tx, s2, t3, t4, { winnerTeamId: t4 });
 
-describe("computeMovement", () => {
-  it("detects upward movement", () => {
-    expect(computeMovement(10, [10, 20], [20, 10])).toBe("up");
-  });
-
-  it("detects downward movement", () => {
-    expect(computeMovement(20, [10, 20], [20, 10])).toBe("down");
-  });
-
-  it("detects no movement", () => {
-    expect(computeMovement(10, [10, 20], [10, 20])).toBe("none");
-  });
-
-  it("returns none when no previous standings", () => {
-    expect(computeMovement(10, [10, 20], null)).toBe("none");
-  });
-
-  it("returns none for new player", () => {
-    expect(computeMovement(30, [10, 20, 30], [10, 20])).toBe("none");
+      const wl = await getTeamWinsLosses(tx, s1);
+      expect(wl.size).toBe(2);
+      expect(wl.has(t3)).toBe(false);
+      expect(wl.has(t4)).toBe(false);
+    });
   });
 });
 

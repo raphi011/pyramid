@@ -124,6 +124,11 @@
     "draft": "(Entwurf)",
     "selectSeason": "Saison auswählen"
   },
+  "error": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "retry": "Erneut versuchen"
+  },
   "notifications": {
     "ariaLabel": "Benachrichtigungen",
     "ariaLabelWithCount": "{count} ungelesene Benachrichtigungen"

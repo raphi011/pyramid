@@ -16,7 +16,7 @@ type Club = { id: number; name: string };
 
 type AppShellWrapperProps = {
   player: { id: number; name: string };
-  clubs: Club[];
+  clubs: [Club, ...Club[]];
   children: React.ReactNode;
 };
 

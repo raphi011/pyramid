@@ -34,3 +34,24 @@ export function canChallenge(
 
   return challengeeRank >= maxRank;
 }
+
+export function computeMovement(
+  teamId: number,
+  currentResults: number[],
+  previousResults: number[] | null,
+): "up" | "down" | "none" {
+  if (!previousResults) return "none";
+
+  const currentIdx = currentResults.indexOf(teamId);
+  if (currentIdx === -1) return "none";
+
+  const previousIdx = previousResults.indexOf(teamId);
+
+  // New player (wasn't in previous standings)
+  if (previousIdx === -1) return "none";
+
+  // Lower index = better rank → moved up if previousIdx > currentIdx
+  if (previousIdx > currentIdx) return "up";
+  if (previousIdx < currentIdx) return "down";
+  return "none";
+}
