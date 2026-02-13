@@ -278,14 +278,15 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P0
 
-**Preconditions**: Player is a club member. Club has active seasons with open enrollment.
+**Preconditions**: Player is a club member. Club has active seasons.
 
 **Steps**:
-1. Player sees available seasons on the rankings page (or a dedicated section) with a "Join" button.
-2. Player taps "Join" on an individual season (`max_team_size = 1`) → System creates a `teams` row (1-person team) and a `team_players` row.
-3. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
-4. System creates a standings snapshot in `season_standings`.
-5. System generates a `new_player` event.
+1. Player sees available seasons on the rankings page (or a dedicated section).
+2. If `seasons.open_enrollment = true` → "Join" button is shown. If `false` → message "Contact your admin to join" (or similar).
+3. Player taps "Join" on an individual season (`max_team_size = 1`) → System creates a `teams` row (1-person team) and a `team_players` row.
+4. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
+5. System creates a standings snapshot in `season_standings`.
+6. System generates a `new_player` event.
 
 **Postconditions**:
 - `teams` + `team_players` rows created.
@@ -293,12 +294,13 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 - `new_player` event created.
 
 **Edge cases**:
-- Team seasons → Player cannot self-enroll (admin assigns teams manually → US-ADMIN-07).
+- `open_enrollment = false` → Player cannot self-enroll; admin must add them (→ US-ADMIN-07).
+- Team seasons → Player cannot self-enroll regardless of `open_enrollment` (admin assigns teams manually → US-ADMIN-07).
 - No active seasons → No enrollment options shown.
 - Player already enrolled → "Join" button not shown for that season.
-- Admin can also add/remove players from seasons (→ US-ADMIN-02, → US-ADMIN-07).
+- Admin can always add/remove players regardless of `open_enrollment` (→ US-ADMIN-02, → US-ADMIN-07).
 
-**Cross-refs**: → US-AUTH-06, → US-ADMIN-02, → US-ADMIN-07
+**Cross-refs**: → US-AUTH-06, → US-ADMIN-02, → US-ADMIN-04, → US-ADMIN-07
 
 ---
 
@@ -1607,8 +1609,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
    - Scoring: best of (1, 3, 5, 7...).
    - Deadlines: match deadline days (default 14), reminder after days (default 7).
    - Result confirmation: toggle for `requires_result_confirmation`.
+   - Enrollment: toggle for `open_enrollment` (default: on). When on, players can self-enroll. When off, only admins can add players.
    - Starting ranks: empty (manual), from previous season (keep/shuffle/invert).
-   - Players: all club members auto-enrolled, checkboxes to remove before start.
 3. Admin fills form and taps "Create Season" → System creates `seasons` row (`status = 'draft'`).
 4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season.
 
@@ -1663,7 +1665,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Steps**:
 1. Admin navigates to `/admin/club/[id]/season/[id]` → System shows season config form.
-2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation.
+2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation, open_enrollment.
 3. Admin taps "Save changes" → System updates `seasons` row.
 
 **Postconditions**: `seasons` row updated.
