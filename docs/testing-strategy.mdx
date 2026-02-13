@@ -4,11 +4,128 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 # Testing Strategy
 
-Two-layer testing approach: **Storybook interaction tests** for UI behavior and **Playwright e2e tests** for full-stack flows.
+Four-layer testing approach: **Unit tests** for pure domain logic, **DB integration tests** for repository functions, **Storybook interaction tests** for UI behavior, and **Playwright e2e tests** for full-stack flows.
 
 ---
 
-## Layer 1: Storybook Interaction Tests
+## Unit Tests (Domain Logic)
+
+Pure functions that encode business rules — no DB, no server, no React. These are the fastest tests in the suite.
+
+**What they test:**
+- Pyramid challenge rules (`canChallenge()`, valid targets by rank)
+- Winner auto-determination (best-of-N scoring)
+- Rankings update logic (position swaps after match result)
+- Invite code generation / validation
+- Date/availability range checks
+
+**How they work:**
+- Plain Vitest tests in Node.js (same "db" project config, but no DB needed)
+- Tests live alongside the domain modules they test (e.g. `app/lib/__tests__/pyramid.test.ts`)
+- **Table-driven tests** for combinatorial logic — define inputs and expected outputs as arrays of cases
+
+**Commands:**
+
+```bash
+bun run test:db               # Runs both unit and DB integration tests
+```
+
+**Example (table-driven):**
+
+```ts
+// app/lib/__tests__/pyramid.test.ts
+// canChallenge will be a pure function in app/lib/pyramid.ts (extracted from app/pyramid.tsx)
+import { canChallenge } from "../pyramid";
+
+describe("canChallenge", () => {
+  const cases = [
+    { challenger: 4, challengee: 1, expected: false, reason: "too far up" },
+    { challenger: 4, challengee: 3, expected: true, reason: "left in same row" },
+    { challenger: 4, challengee: 2, expected: true, reason: "right in row above" },
+    { challenger: 3, challengee: 1, expected: true, reason: "rank 3 special case" },
+    { challenger: 3, challengee: 2, expected: true, reason: "rank 3 special case" },
+    { challenger: 6, challengee: 3, expected: true, reason: "right in row above" },
+    { challenger: 6, challengee: 5, expected: true, reason: "left in same row" },
+    { challenger: 6, challengee: 1, expected: false, reason: "too far up" },
+    { challenger: 1, challengee: 2, expected: false, reason: "rank 1 cannot challenge down" },
+  ];
+
+  it.each(cases)(
+    "rank $challenger vs $challengee → $expected ($reason)",
+    ({ challenger, challengee, expected }) => {
+      expect(canChallenge(challenger, challengee)).toBe(expected);
+    },
+  );
+});
+```
+
+---
+
+## DB Integration Tests
+
+Repository-level tests that run against a real Dockerized PostgreSQL instance.
+
+**What they test:**
+- Every repository function (SELECT, INSERT, UPDATE, DELETE)
+- Query correctness (joins, filters, edge cases)
+- Constraint enforcement (unique, FK, NOT NULL)
+- Transaction behavior
+
+**How they work:**
+- Tests run in Vitest "db" project (Node.js, not browser)
+- Each test uses `withinTransaction()` helper — wraps in a transaction that rolls back after assertions
+- Tests live in `app/lib/db/__tests__/`, one file per domain
+- Requires Docker Compose Postgres running + migrations applied
+
+**Commands:**
+
+```bash
+docker compose up -d          # Start Postgres
+bun run db:migrate            # Apply migrations
+bun run test:db               # Run DB integration tests
+```
+
+**Gate rule:** No repository function may be used in an API route or server action until its DB integration test passes. This ensures every database call is verified before it enters the application layer.
+
+**Example:**
+
+```ts
+import { withTestDb } from "./helpers";
+
+describe("auth repository", () => {
+  const db = withTestDb();
+  afterAll(() => db.cleanup());
+
+  it("creates and verifies a magic link", async () => {
+    await db.withinTransaction(async (tx) => {
+      // Seed a player
+      const [player] = await tx`
+        INSERT INTO player (name, email_address, created)
+        VALUES ('Alice', 'alice@example.com', NOW())
+        RETURNING id
+      `;
+
+      // Create magic link
+      await tx`
+        INSERT INTO magic_links (player_id, token, expires_at)
+        VALUES (${player.id}, 'test-token-123', NOW() + INTERVAL '15 minutes')
+      `;
+
+      // Verify atomic delete-and-return
+      const [link] = await tx`
+        DELETE FROM magic_links
+        WHERE token = 'test-token-123' AND expires_at > NOW()
+        RETURNING player_id
+      `;
+      expect(link.player_id).toBe(player.id);
+    });
+  });
+});
+```
+
+---
+
+## Storybook Interaction Tests
 
 Component-level tests that run inside Storybook via `@storybook/addon-vitest` + Playwright browser mode.
 
@@ -55,7 +172,7 @@ export const SubmitChallenge = meta.story({
 
 ---
 
-## Layer 2: Playwright E2E Tests
+## Playwright E2E Tests
 
 Full-stack tests against a running Next.js server with a real database.
 
@@ -94,6 +211,12 @@ test("unauthenticated user is redirected to /login", async ({ page }) => {
 
 | Scenario | Layer |
 |----------|-------|
+| Pyramid challenge rules (who can challenge whom) | Unit (table-driven) |
+| Winner determination from scores | Unit (table-driven) |
+| Rankings position swap logic | Unit (table-driven) |
+| Repository function returns correct data | DB Integration |
+| Constraint violations (duplicate email, missing FK) | DB Integration |
+| Complex queries (joins, aggregations, array ops) | DB Integration |
 | Form validation (empty fields, invalid input) | Storybook |
 | Button states (disabled, loading) | Storybook |
 | Dialog/sheet open and close | Storybook |
@@ -105,13 +228,32 @@ test("unauthenticated user is redirected to /login", async ({ page }) => {
 | Middleware redirects (expired session, no club) | Playwright |
 | Multi-user flows (A challenges B, B confirms) | Playwright |
 
-**Rule of thumb:** If the test needs a server or database, it's Playwright. If it's testing UI behavior with mock data, it's Storybook.
+**Rule of thumb:** Pure business logic with no I/O → unit test (table-driven). Database queries → DB integration. UI behavior with mock data → Storybook. Full-stack flow with server + database → Playwright.
 
 ---
 
 ## File Structure
 
 ```
+├── app/lib/__tests__/           # Unit tests (domain logic)
+│   ├── pyramid.test.ts         # Challenge rules, rankings
+│   ├── scoring.test.ts         # Winner determination
+│   └── ...
+├── app/lib/db/                 # Database repository layer
+│   ├── __tests__/              # DB integration tests
+│   │   ├── setup.ts            # Test setup (DB connectivity check)
+│   │   ├── helpers.ts          # Transaction isolation helpers
+│   │   ├── smoke.test.ts       # Schema verification
+│   │   ├── auth.test.ts        # Auth repo tests
+│   │   └── ...
+│   ├── auth.ts                 # Auth repository functions
+│   ├── clubs.ts                # Club repository functions
+│   └── index.ts                # DB connection re-export
+├── db/                         # Database migrations
+│   ├── migrations/             # Numbered .sql migration files
+│   │   └── 001_initial_schema.sql
+│   ├── migrate.ts              # Migration runner
+│   └── seed.ts                 # Test seed data
 ├── e2e/                        # Playwright e2e tests
 │   ├── smoke.spec.ts           # Basic app reachability
 │   ├── auth.spec.ts            # Magic link, session, logout
@@ -123,7 +265,7 @@ test("unauthenticated user is redirected to /login", async ({ page }) => {
 │   ├── domain/                 # Layer 3: Domain components
 │   └── pages/                  # Full page compositions
 ├── playwright.config.ts        # Playwright configuration
-├── vitest.config.ts            # Vitest + Storybook configuration
+├── vitest.config.ts            # Vitest + Storybook + DB test config
 └── .storybook/
     ├── main.ts                 # Storybook config
     ├── preview.tsx             # Decorators, globals, a11y
@@ -182,16 +324,37 @@ User stories are implemented in dependency order. Each story gets both test laye
 
 ---
 
-## Database for E2E Tests
+## Database Setup
 
-> **Not yet set up.** The database schema is documented in `docs/database.mdx` but not deployed to a test environment yet.
+### Local Development & Testing
 
-When ready, the plan is:
+PostgreSQL runs via Docker Compose:
 
-- **Local development:** PostgreSQL via Docker (`docker compose up db-test`)
-- **Seed data:** `e2e/fixtures/seed.sql` with known test players, clubs, seasons
-- **Isolation:** Each test suite resets to seed state via `beforeAll`
-- **CI:** Postgres service container in GitHub Actions
+```bash
+docker compose up -d          # Start Postgres on port 5433
+bun run db:migrate            # Apply all migrations
+bun run db:reset              # Drop + re-apply (full reset)
+```
+
+**Connection:** `postgres://pyramid:pyramid@localhost:5433/pyramid_dev`
+
+Set in `.env.local`:
+```
+DATABASE_URL=postgres://pyramid:pyramid@localhost:5433/pyramid_dev
+```
+
+### Seed Data
+
+`db/seed.ts` is a placeholder for test fixtures (known players, clubs, seasons) that will be added as features are implemented.
+
+### Test Isolation
+
+- **DB integration tests:** Transaction rollback per test (zero data leakage)
+- **E2E tests:** Will reset to seed state via `beforeAll` (not yet implemented)
+
+### CI
+
+Postgres service container in GitHub Actions, same Docker image.
 
 ---
 
@@ -202,10 +365,11 @@ Target CI pipeline:
 ```
 1. bun install
 2. bun run lint                    # ESLint
-3. bun run test:ci                 # Storybook interaction tests
-4. bun run build                   # Next.js build
-5. bun run test:e2e                # Playwright e2e (against built app)
-6. bun run chromatic               # Visual regression (Chromatic)
+3. bun run test:db                 # DB integration tests
+4. bun run test:ci                 # Storybook interaction tests
+5. bun run build                   # Next.js build
+6. bun run test:e2e                # Playwright e2e (against built app)
+7. bun run chromatic               # Visual regression (Chromatic)
 ```
 
-Steps 3 and 4 can run in parallel. Step 5 depends on the build.
+Steps 3 and 4 can run in parallel. Step 6 depends on step 5.

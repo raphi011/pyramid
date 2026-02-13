@@ -17,7 +17,11 @@
     "test:coverage": "vitest --project storybook --run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "chromatic": "chromatic --exit-zero-on-changes"
+    "chromatic": "chromatic --exit-zero-on-changes",
+    "db:migrate": "bun run db/migrate.ts",
+    "db:reset": "bun run db/migrate.ts --reset",
+    "db:seed": "bun run db/seed.ts",
+    "test:db": "vitest --project db --run"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

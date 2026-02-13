@@ -16,21 +16,34 @@ All docs are MDX files hosted in Storybook (`bun storybook` → "Docs" sidebar g
 - `docs/database.mdx` — Full database schema: tables, enums, relationships, business rules, migration notes. **Read before any backend or data-layer work.**
 - `docs/user-stories.mdx` — All user stories: flows, preconditions, steps, edge cases. **Read before implementing features or writing e2e tests.**
 - `docs/component-architecture.mdx` — Three-layer component architecture, import rules, composition patterns.
-- `docs/testing-strategy.mdx` — Two-layer testing approach: Storybook interaction tests + Playwright e2e. **Read before writing tests.**
+- `docs/testing-strategy.mdx` — Four-layer testing approach: unit tests, DB integration, Storybook interaction, Playwright e2e. **Read before writing tests.**
 
 ## Development Commands
 
 ```bash
-bun install        # Install dependencies
-bun run dev        # Start dev server at http://localhost:3000
-bun run build      # Production build
-bun run lint       # ESLint (runs `eslint .` — see note below)
-bun storybook      # Start Storybook at http://localhost:6006
-bun run test       # Storybook interaction tests (watch mode)
-bun run test:ci    # Storybook tests (single run, for CI)
-bun run test:e2e   # Playwright e2e tests (headless)
-bun run test:e2e:ui # Playwright e2e tests (interactive UI)
+bun install           # Install dependencies
+bun run dev           # Start dev server at http://localhost:3000
+bun run build         # Production build
+bun run lint          # ESLint (runs `eslint .` — see note below)
+bun storybook         # Start Storybook at http://localhost:6006
+bun run test          # Storybook interaction tests (watch mode)
+bun run test:ci       # Storybook tests (single run, for CI)
+bun run test:db       # DB integration + unit tests (requires Postgres)
+bun run test:e2e      # Playwright e2e tests (headless)
+bun run test:e2e:ui   # Playwright e2e tests (interactive UI)
+bun run db:migrate    # Apply database migrations
+bun run db:reset      # Drop + re-apply all migrations
+bun run db:seed       # Seed test data
 ```
+
+### Local Database
+
+```bash
+docker compose up -d  # Start Postgres 17 on port 5433
+bun run db:migrate    # Apply migrations
+```
+
+Connection: `postgres://pyramid:pyramid@localhost:5433/pyramid_dev` (set in `.env.local`).
 
 ### Linting
 
@@ -54,7 +67,8 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - `app/page.tsx` - Home page with mock data (standings, matches, events)
 - `app/pyramid.tsx` - Core pyramid visualization and challenge logic
 - `app/navigation.tsx` - Main layout with sidebar
-- `app/db.sql` - Database schema
+- `db/migrations/001_initial_schema.sql` - Full database schema (15 tables)
+- `db/migrate.ts` - Migration runner
 - `app/lib/auth.ts` - Authentication (magic links, sessions)
 - `app/lib/db.ts` - Database connection wrapper
 - `app/lib/email.ts` - Email sending via Nodemailer
