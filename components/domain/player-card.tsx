@@ -71,7 +71,7 @@ function PlayerCard({
           name={name}
           src={avatarSrc}
           size="sm"
-          className={cn(isCurrent && "bg-court-600 text-white")}
+          className={cn(isCurrent && "bg-white text-court-700")}
         />
         <span
           className={cn(
@@ -112,7 +112,7 @@ function PlayerCard({
         name={name}
         src={avatarSrc}
         size="md"
-        className={cn(isCurrent && "bg-court-600 text-white")}
+        className={cn(isCurrent && "bg-white text-court-700")}
       />
       <div className="min-w-0 flex-1">
         <p
