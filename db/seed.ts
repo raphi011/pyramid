@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import postgres from "postgres";
 
 const DATABASE_URL =
@@ -8,11 +9,28 @@ const sql = postgres(DATABASE_URL);
 
 async function seed() {
   await sql.begin(async (tx) => {
+    // ── Wipe existing data ───────────────────────────
+    // Order respects foreign key constraints (children first)
+    await tx`DELETE FROM magic_links`;
+    await tx`DELETE FROM sessions`;
+    await tx`DELETE FROM event_reads`;
+    await tx`DELETE FROM events`;
+    await tx`DELETE FROM match_comments`;
+    await tx`DELETE FROM date_proposals`;
+    await tx`DELETE FROM season_matches`;
+    await tx`DELETE FROM season_standings`;
+    await tx`DELETE FROM team_players`;
+    await tx`DELETE FROM teams`;
+    await tx`DELETE FROM seasons`;
+    await tx`DELETE FROM club_members`;
+    await tx`DELETE FROM notification_preferences`;
+    await tx`DELETE FROM clubs`;
+    await tx`DELETE FROM player`;
+
     // ── Club ──────────────────────────────────────────
     const [club] = await tx`
       INSERT INTO clubs (name, invite_code, is_disabled, created)
       VALUES ('TC Beispiel', 'test-123', false, NOW())
-      ON CONFLICT (invite_code) DO UPDATE SET name = EXCLUDED.name
       RETURNING id
     `;
     const clubId = club.id;
@@ -32,7 +50,6 @@ async function seed() {
       const [row] = await tx`
         INSERT INTO player (name, email_address, created)
         VALUES (${p.name}, ${p.email}, NOW())
-        ON CONFLICT (email_address) DO UPDATE SET name = EXCLUDED.name
         RETURNING id
       `;
       playerIds.push(row.id);
@@ -43,7 +60,6 @@ async function seed() {
       await tx`
         INSERT INTO club_members (player_id, club_id, role, created)
         VALUES (${playerId}, ${clubId}, 'player', NOW())
-        ON CONFLICT DO NOTHING
       `;
     }
     // Make first player admin
@@ -56,30 +72,13 @@ async function seed() {
     const [season] = await tx`
       INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, created, started_at)
       VALUES (${clubId}, 'Einzel 2026', 'active', 1, 1, NOW(), NOW())
-      ON CONFLICT DO NOTHING
       RETURNING id
     `;
-    // If season already existed, fetch it
-    const seasonId =
-      season?.id ??
-      (
-        await tx`SELECT id FROM seasons WHERE club_id = ${clubId} AND name = 'Einzel 2026'`
-      )[0].id;
+    const seasonId = season.id;
 
     // ── Teams (one per player for individual season) ──
     const teamIds: number[] = [];
     for (const playerId of playerIds) {
-      // Check if already enrolled
-      const existing = await tx`
-        SELECT t.id FROM teams t
-        JOIN team_players tp ON tp.team_id = t.id
-        WHERE t.season_id = ${seasonId} AND tp.player_id = ${playerId}
-      `;
-      if (existing.length > 0) {
-        teamIds.push(existing[0].id);
-        continue;
-      }
-
       const [team] = await tx`
         INSERT INTO teams (season_id, name, opted_out, created)
         VALUES (${seasonId}, '', false, NOW())
@@ -129,6 +128,16 @@ async function seed() {
       VALUES (${seasonId}, ${teamIds[4]}, ${teamIds[5]}, NULL, 'challenged', NOW())
     `;
 
+    // ── Magic link for instant login ─────────────────
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await tx`
+      INSERT INTO magic_links (player_id, token, expires_at)
+      VALUES (${playerIds[0]}, ${token}, ${expiresAt})
+    `;
+
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
     console.log("Seeded successfully!");
     console.log(`Club: TC Beispiel (invite code: test-123)`);
     console.log(`Season: Einzel 2026 (${playerIds.length} players)`);
@@ -136,6 +145,10 @@ async function seed() {
     for (const p of players) {
       console.log(`  ${p.email} (${p.name})`);
     }
+    console.log(
+      `\nClick to login as ${players[0].name} (admin):`,
+    );
+    console.log(`  ${appUrl}/api/auth/verify?token=${token}`);
   });
 }
 
