@@ -4,11 +4,13 @@ type Sql = postgres.Sql | postgres.TransactionSql;
 
 // ── Types ──────────────────────────────────────────────
 
+export type SeasonStatus = "draft" | "active" | "ended";
+
 export type Season = {
   id: number;
   clubId: number;
   name: string;
-  status: string;
+  status: SeasonStatus;
   minTeamSize: number;
   maxTeamSize: number;
   bestOf: number;
@@ -24,6 +26,12 @@ export type TeamEnrollment = {
   seasonId: number;
   seasonName: string;
 };
+
+// ── Helpers ────────────────────────────────────────────
+
+export function isIndividualSeason(season: Season): boolean {
+  return season.maxTeamSize === 1;
+}
 
 // ── Queries ────────────────────────────────────────────
 
@@ -130,16 +138,24 @@ export async function enrollPlayerInIndividualSeason(
 }
 
 export async function addTeamToStandings(
-  sql: Sql,
+  tx: postgres.TransactionSql,
   seasonId: number,
   teamId: number,
 ): Promise<void> {
-  const latest = await getLatestStandings(sql, seasonId);
-  const updated = latest ? [...latest.results, teamId] : [teamId];
+  // Advisory lock serializes concurrent standings modifications per season
+  await tx`SELECT pg_advisory_xact_lock(${seasonId})`;
 
-  await sql`
+  await tx`
     INSERT INTO season_standings (season_id, results, created)
-    VALUES (${seasonId}, ${updated}, NOW())
+    SELECT
+      ${seasonId},
+      COALESCE(
+        (SELECT results FROM season_standings
+         WHERE season_id = ${seasonId}
+         ORDER BY id DESC LIMIT 1),
+        '{}'::int[]
+      ) || ${teamId}::int,
+      NOW()
   `;
 }
 
@@ -159,23 +175,23 @@ export async function createNewPlayerEvent(
 }
 
 export async function autoEnrollInActiveSeasons(
-  sql: Sql,
+  tx: postgres.TransactionSql,
   playerId: number,
   clubId: number,
 ): Promise<TeamEnrollment[]> {
-  const seasons = await getActiveSeasons(sql, clubId);
+  const seasons = await getActiveSeasons(tx, clubId);
   const enrollments: TeamEnrollment[] = [];
 
   for (const season of seasons) {
-    // Skip team seasons — they require manual team selection
-    if (season.maxTeamSize > 1) continue;
+    if (!isIndividualSeason(season)) continue;
+    if (await isPlayerEnrolledInSeason(tx, playerId, season.id)) continue;
 
     const teamId = await enrollPlayerInIndividualSeason(
-      sql,
+      tx,
       playerId,
       season.id,
     );
-    await addTeamToStandings(sql, season.id, teamId);
+    await addTeamToStandings(tx, season.id, teamId);
 
     enrollments.push({
       teamId,

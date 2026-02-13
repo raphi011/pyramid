@@ -4,6 +4,8 @@ type Sql = postgres.Sql | postgres.TransactionSql;
 
 // ── Types ──────────────────────────────────────────────
 
+export type ClubRole = "player" | "admin";
+
 export type Club = {
   id: number;
   name: string;
@@ -14,7 +16,7 @@ export type Club = {
 export type ClubMembership = {
   clubId: number;
   clubName: string;
-  role: string;
+  role: ClubRole;
 };
 
 // ── Queries ────────────────────────────────────────────
@@ -63,13 +65,13 @@ export async function getPlayerRole(
   sql: Sql,
   playerId: number,
   clubId: number,
-): Promise<string | null> {
+): Promise<ClubRole | null> {
   const rows = await sql`
     SELECT role FROM club_members
     WHERE player_id = ${playerId} AND club_id = ${clubId}
   `;
 
-  return rows.length > 0 ? (rows[0].role as string) : null;
+  return rows.length > 0 ? (rows[0].role as ClubRole) : null;
 }
 
 export async function isClubMember(
@@ -89,10 +91,14 @@ export async function joinClub(
   sql: Sql,
   playerId: number,
   clubId: number,
-  role = "player",
-): Promise<void> {
-  await sql`
+  role: ClubRole = "player",
+): Promise<{ alreadyMember: boolean }> {
+  const rows = await sql`
     INSERT INTO club_members (player_id, club_id, role, created)
     VALUES (${playerId}, ${clubId}, ${role}, NOW())
+    ON CONFLICT (player_id, club_id) DO NOTHING
+    RETURNING player_id
   `;
+
+  return { alreadyMember: rows.length === 0 };
 }

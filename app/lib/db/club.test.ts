@@ -182,7 +182,8 @@ describe("joinClub", () => {
       const playerId = await seedPlayer(tx, "join@example.com");
       const clubId = await seedClub(tx);
 
-      await joinClub(tx, playerId, clubId);
+      const result = await joinClub(tx, playerId, clubId);
+      expect(result).toEqual({ alreadyMember: false });
 
       const role = await getPlayerRole(tx, playerId, clubId);
       expect(role).toBe("player");
@@ -194,20 +195,22 @@ describe("joinClub", () => {
       const playerId = await seedPlayer(tx, "join-admin@example.com");
       const clubId = await seedClub(tx);
 
-      await joinClub(tx, playerId, clubId, "admin");
+      const result = await joinClub(tx, playerId, clubId, "admin");
+      expect(result).toEqual({ alreadyMember: false });
 
       const role = await getPlayerRole(tx, playerId, clubId);
       expect(role).toBe("admin");
     });
   });
 
-  it("throws on duplicate membership", async () => {
+  it("returns alreadyMember on duplicate", async () => {
     await db.withinTransaction(async (tx) => {
       const playerId = await seedPlayer(tx, "dup@example.com");
       const clubId = await seedClub(tx);
 
       await joinClub(tx, playerId, clubId);
-      await expect(joinClub(tx, playerId, clubId)).rejects.toThrow();
+      const result = await joinClub(tx, playerId, clubId);
+      expect(result).toEqual({ alreadyMember: true });
     });
   });
 });

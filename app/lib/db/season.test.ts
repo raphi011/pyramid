@@ -13,6 +13,7 @@ import {
   getSeasonById,
   getLatestStandings,
   isPlayerEnrolledInSeason,
+  isIndividualSeason,
   enrollPlayerInIndividualSeason,
   addTeamToStandings,
   createNewPlayerEvent,
@@ -99,6 +100,31 @@ describe("getSeasonById", () => {
     await db.withinTransaction(async (tx) => {
       const season = await getSeasonById(tx, 999999);
       expect(season).toBeNull();
+    });
+  });
+});
+
+// ── isIndividualSeason ───────────────────────────────
+
+describe("isIndividualSeason", () => {
+  it("returns true for individual season (maxTeamSize = 1)", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId, { maxTeamSize: 1 });
+      const season = (await getSeasonById(tx, seasonId))!;
+      expect(isIndividualSeason(season)).toBe(true);
+    });
+  });
+
+  it("returns false for team season (maxTeamSize > 1)", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId, {
+        minTeamSize: 2,
+        maxTeamSize: 2,
+      });
+      const season = (await getSeasonById(tx, seasonId))!;
+      expect(isIndividualSeason(season)).toBe(false);
     });
   });
 });
@@ -354,6 +380,28 @@ describe("autoEnrollInActiveSeasons", () => {
       );
 
       expect(enrollments).toEqual([]);
+    });
+  });
+
+  it("skips already-enrolled player (idempotent)", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const playerId = await seedPlayer(tx, "double@example.com");
+      await seedClubMember(tx, playerId, clubId);
+      const seasonId = await seedSeason(tx, clubId, {
+        name: "Einzel",
+        status: "active",
+      });
+
+      const first = await autoEnrollInActiveSeasons(tx, playerId, clubId);
+      expect(first).toHaveLength(1);
+
+      const second = await autoEnrollInActiveSeasons(tx, playerId, clubId);
+      expect(second).toEqual([]);
+
+      // Verify only one team in standings
+      const standings = await getLatestStandings(tx, seasonId);
+      expect(standings!.results).toHaveLength(1);
     });
   });
 
