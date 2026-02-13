@@ -21,7 +21,7 @@ Pure functions that encode business rules — no DB, no server, no React. These 
 
 **How they work:**
 - Plain Vitest tests in Node.js (same "db" project config, but no DB needed)
-- Tests live alongside the domain modules they test (e.g. `app/lib/__tests__/pyramid.test.ts`)
+- Tests live alongside the modules they test (e.g. `app/lib/pyramid.test.ts`)
 - **Table-driven tests** for combinatorial logic — define inputs and expected outputs as arrays of cases
 
 **Commands:**
@@ -74,7 +74,7 @@ Repository-level tests that run against a real Dockerized PostgreSQL instance.
 **How they work:**
 - Tests run in Vitest "db" project (Node.js, not browser)
 - Each test uses `withinTransaction()` helper — wraps in a transaction that rolls back after assertions
-- Tests live in `app/lib/db/__tests__/`, one file per domain
+- Tests live next to the module they test (e.g. `app/lib/db/auth.test.ts` beside `auth.ts`)
 - Requires Docker Compose Postgres running + migrations applied
 
 **Commands:**
@@ -90,7 +90,7 @@ bun run test:db               # Run DB integration tests
 **Example:**
 
 ```ts
-import { withTestDb } from "./helpers";
+import { withTestDb } from "./test-helpers";
 
 describe("auth repository", () => {
   const db = withTestDb();
@@ -235,18 +235,18 @@ test("unauthenticated user is redirected to /login", async ({ page }) => {
 ## File Structure
 
 ```
-├── app/lib/__tests__/           # Unit tests (domain logic)
-│   ├── pyramid.test.ts         # Challenge rules, rankings
-│   ├── scoring.test.ts         # Winner determination
+├── app/lib/                     # Application logic + colocated tests
+│   ├── pyramid.ts              # Challenge rules, rankings
+│   ├── pyramid.test.ts         # Unit tests for pyramid logic
+│   ├── scoring.ts              # Winner determination
+│   ├── scoring.test.ts         # Unit tests for scoring
 │   └── ...
 ├── app/lib/db/                 # Database repository layer
-│   ├── __tests__/              # DB integration tests
-│   │   ├── setup.ts            # Test setup (DB connectivity check)
-│   │   ├── helpers.ts          # Transaction isolation helpers
-│   │   ├── smoke.test.ts       # Schema verification
-│   │   ├── auth.test.ts        # Auth repo tests
-│   │   └── ...
 │   ├── auth.ts                 # Auth repository functions
+│   ├── auth.test.ts            # DB integration tests for auth
+│   ├── smoke.test.ts           # Schema verification
+│   ├── test-helpers.ts         # Transaction isolation helpers
+│   ├── test-setup.ts           # Test setup (DB connectivity check)
 │   ├── clubs.ts                # Club repository functions
 │   └── index.ts                # DB connection re-export
 ├── db/                         # Database migrations

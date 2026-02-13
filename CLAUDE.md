@@ -149,6 +149,7 @@ Key rules (always enforce):
 - German UI text (e.g., "Fordern" = Challenge, "Abmelden" = Logout)
 - Accessibility: 44x44px touch targets, aria-hidden, sr-only
 - TypeScript errors currently ignored in build (`next.config.mjs`)
+- **Colocated tests**: test files live next to the module they test (e.g. `auth.ts` + `auth.test.ts`), not in `__tests__/` directories
 
 ## Deployment
 
