@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { sql } from "./db";
+import * as authRepo from "./db/auth";
 import crypto from "crypto";
 
 const SESSION_COOKIE_NAME = "session_token";
@@ -13,47 +14,27 @@ export function generateToken(): string {
 export async function createMagicLink(playerId: number): Promise<string> {
   const token = generateToken();
   const expiresAt = new Date(
-    Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000
+    Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000,
   );
 
-  // UPSERT: inserts new or replaces existing (UNIQUE on player_id ensures single active link)
-  await sql`
-    INSERT INTO magic_links (player_id, token, expires_at)
-    VALUES (${playerId}, ${token}, ${expiresAt.toISOString()})
-    ON CONFLICT (player_id)
-    DO UPDATE SET token = ${token}, expires_at = ${expiresAt.toISOString()}, created_at = CURRENT_TIMESTAMP
-  `;
+  await authRepo.createMagicLink(sql, playerId, token, expiresAt);
 
   return token;
 }
 
 export async function verifyMagicLink(
-  token: string
+  token: string,
 ): Promise<{ playerId: number } | null> {
-  // Atomic: delete and return in one query to prevent replay attacks
-  const result = await sql`
-    DELETE FROM magic_links
-    WHERE token = ${token} AND expires_at > NOW()
-    RETURNING player_id
-  `;
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  return { playerId: result[0].player_id };
+  return authRepo.verifyMagicLink(sql, token);
 }
 
 export async function createSession(playerId: number): Promise<string> {
   const token = generateToken();
   const expiresAt = new Date(
-    Date.now() + SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+    Date.now() + SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
   );
 
-  await sql`
-    INSERT INTO sessions (player_id, token, expires_at)
-    VALUES (${playerId}, ${token}, ${expiresAt.toISOString()})
-  `;
+  await authRepo.createSession(sql, playerId, token, expiresAt);
 
   return token;
 }
@@ -77,16 +58,7 @@ export async function getSession(): Promise<{ playerId: number } | null> {
     return null;
   }
 
-  const result = await sql`
-    SELECT player_id FROM sessions
-    WHERE token = ${token} AND expires_at > NOW()
-  `;
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  return { playerId: result[0].player_id };
+  return authRepo.getSessionByToken(sql, token);
 }
 
 export async function getCurrentPlayer(): Promise<{
@@ -100,20 +72,7 @@ export async function getCurrentPlayer(): Promise<{
     return null;
   }
 
-  const result = await sql`
-    SELECT id, name, email_address AS email FROM player
-    WHERE id = ${session.playerId}
-  `;
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  return {
-    id: result[0].id,
-    name: result[0].name,
-    email: result[0].email,
-  };
+  return authRepo.getPlayerById(sql, session.playerId);
 }
 
 export async function deleteSession(): Promise<void> {
@@ -121,27 +80,14 @@ export async function deleteSession(): Promise<void> {
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (token) {
-    await sql`DELETE FROM sessions WHERE token = ${token}`;
+    await authRepo.deleteSessionByToken(sql, token);
   }
 
   cookieStore.delete(SESSION_COOKIE_NAME);
 }
 
 export async function getPlayerByEmail(
-  email: string
+  email: string,
 ): Promise<{ id: number; name: string; email: string } | null> {
-  const result = await sql`
-    SELECT id, name, email_address AS email FROM player
-    WHERE LOWER(email_address) = LOWER(${email})
-  `;
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  return {
-    id: result[0].id,
-    name: result[0].name,
-    email: result[0].email,
-  };
+  return authRepo.getPlayerByEmail(sql, email);
 }

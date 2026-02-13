@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import preview from "#.storybook/preview";
+import { within, userEvent, expect } from "storybook/test";
 import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,26 @@ function OnboardingPage({ nameError }: { nameError?: string }) {
 
 export const Default = meta.story({
   render: () => <OnboardingPage />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Button should be disabled when name is empty
+    const button = canvas.getByRole("button", { name: /weiter/i });
+    await expect(button).toBeDisabled();
+
+    // Type name
+    const nameInput = canvas.getByPlaceholderText("Max Mustermann");
+    await userEvent.type(nameInput, "Max Mustermann");
+    await expect(nameInput).toHaveValue("Max Mustermann");
+
+    // Button should now be enabled
+    await expect(button).toBeEnabled();
+
+    // Type phone (optional)
+    const phoneInput = canvas.getByPlaceholderText("+49 170 1234567");
+    await userEvent.type(phoneInput, "+49 170 9999999");
+    await expect(phoneInput).toHaveValue("+49 170 9999999");
+  },
 });
 
 export const WithValidation = meta.story({
