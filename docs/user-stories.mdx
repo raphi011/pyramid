@@ -20,93 +20,93 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
-## Summary Table
+## Index
 
-| ID | Title | Role | Priority | Domain |
-|----|-------|------|----------|--------|
-| US-AUTH-01 | Login with magic link | Player | P0 | Auth |
-| US-AUTH-02 | Check email confirmation | Player | P0 | Auth |
-| US-AUTH-03 | Verify magic link | Player | P0 | Auth |
-| US-AUTH-04 | Expired magic link | Player | P0 | Auth |
-| US-AUTH-05 | Complete onboarding | Player | P0 | Auth |
-| US-AUTH-06 | Join club via invite code | Player | P0 | Auth |
-| US-AUTH-07 | Join club via QR code | Player | P1 | Auth |
-| US-AUTH-08 | Auto-enrollment in active seasons | Player | P0 | Auth |
-| US-AUTH-09 | Logout | Player | P0 | Auth |
-| US-AUTH-10 | Session expiry | Player | P0 | Auth |
-| US-FEED-01 | View feed | Player | P0 | Feed |
-| US-FEED-02 | Filter feed by club | Player | P1 | Feed |
-| US-FEED-03 | Navigate from event card | Player | P1 | Feed |
-| US-FEED-04 | Infinite scroll | Player | P1 | Feed |
-| US-FEED-05 | Empty feed state | Player | P1 | Feed |
-| US-FEED-06 | Bell badge shows unread count | Player | P0 | Feed |
-| US-FEED-07 | Notification center | Player | P0 | Feed |
-| US-FEED-08 | Navigate from notification | Player | P1 | Feed |
-| US-FEED-09 | Mark all notifications read | Player | P1 | Feed |
-| US-FEED-10 | Read tracking watermark | Player | P1 | Feed |
-| US-RANK-01 | View pyramid | Player | P0 | Rankings |
-| US-RANK-02 | View list | Player | P0 | Rankings |
-| US-RANK-03 | Toggle pyramid/list views | Player | P1 | Rankings |
-| US-RANK-04 | Season selector | Player | P0 | Rankings |
-| US-RANK-05 | Challengeable indicators | Player | P0 | Rankings |
-| US-RANK-06 | Unavailable indicators | Player | P1 | Rankings |
-| US-RANK-07 | Open-challenge indicators | Player | P1 | Rankings |
-| US-RANK-08 | Archived season (read-only) | Player | P1 | Rankings |
-| US-CHAL-01 | Challenge from pyramid card | Player | P0 | Challenges |
-| US-CHAL-02 | Challenge from FAB | Player | P0 | Challenges |
-| US-CHAL-03 | Challenge from player profile | Player | P1 | Challenges |
-| US-CHAL-04 | Season picker (multiple active) | Player | P1 | Challenges |
-| US-CHAL-05 | Challenge validation rules | Player | P0 | Challenges |
-| US-CHAL-06 | FAB disabled state | Player | P1 | Challenges |
-| US-CHAL-07 | View match list | Player | P0 | Challenges |
-| US-CHAL-08 | Filter matches (My/All/Open) | Player | P1 | Challenges |
-| US-CHAL-09 | View match detail | Player | P0 | Challenges |
-| US-CHAL-10 | Propose a date | Player | P0 | Challenges |
-| US-CHAL-11 | Accept/decline date proposal | Player | P0 | Challenges |
-| US-CHAL-12 | Enter match result | Player | P0 | Challenges |
-| US-CHAL-13 | Confirm match result | Player | P0 | Challenges |
-| US-CHAL-14 | Dispute match result | Player | P1 | Challenges |
-| US-CHAL-15 | Forfeit match | Player | P1 | Challenges |
-| US-CHAL-16 | Withdraw challenge | Player | P1 | Challenges |
-| US-CHAL-17 | Post match comment | Player | P1 | Challenges |
-| US-CHAL-18 | Edit match comment | Player | P2 | Challenges |
-| US-CHAL-19 | Rankings update after result | Player | P0 | Challenges |
-| US-PROF-01 | View own profile | Player | P0 | Profile |
-| US-PROF-02 | Edit profile (name, phone, bio) | Player | P0 | Profile |
-| US-PROF-03 | Upload/change profile photo | Player | P1 | Profile |
-| US-PROF-04 | Set unavailability | Player | P1 | Profile |
-| US-PROF-05 | Cancel unavailability | Player | P1 | Profile |
-| US-PROF-06 | Stats scoping (season/club/all) | Player | P1 | Profile |
-| US-PROF-07 | Rank progression chart | Player | P2 | Profile |
-| US-PROF-08 | Head-to-head record | Player | P2 | Profile |
-| US-PROF-09 | View other player profile | Player | P1 | Profile |
-| US-PROF-10 | Challenge from other profile | Player | P1 | Profile |
-| US-SETT-01 | Toggle dark mode | Player | P2 | Settings |
-| US-SETT-02 | Change language | Player | P1 | Settings |
-| US-SETT-03 | Configure email notifications | Player | P1 | Settings |
-| US-SETT-04 | Leave club | Player | P1 | Settings |
-| US-SETT-05 | Join another club | Player | P1 | Settings |
-| US-SETT-06 | Delete account | Player | P2 | Settings |
-| US-ADMIN-01 | View club dashboard | Club Admin | P0 | Admin |
-| US-ADMIN-02 | Create season | Club Admin | P0 | Admin |
-| US-ADMIN-03 | Start season | Club Admin | P0 | Admin |
-| US-ADMIN-04 | Edit season settings | Club Admin | P1 | Admin |
-| US-ADMIN-05 | Edit standings (manual reorder) | Club Admin | P1 | Admin |
-| US-ADMIN-06 | End season | Club Admin | P0 | Admin |
-| US-ADMIN-07 | Manage teams | Club Admin | P1 | Admin |
-| US-ADMIN-08 | Invite member | Club Admin | P0 | Admin |
-| US-ADMIN-09 | Promote player to admin | Club Admin | P1 | Admin |
-| US-ADMIN-10 | Demote admin to player | Club Admin | P1 | Admin |
-| US-ADMIN-11 | Remove member | Club Admin | P1 | Admin |
-| US-ADMIN-12 | Send announcement | Club Admin | P1 | Admin |
-| US-ADMIN-13 | Regenerate invite code | Club Admin | P2 | Admin |
-| US-ADMIN-14 | Nudge overdue match | Club Admin | P1 | Admin |
-| US-ADMIN-15 | Resolve disputed match | Club Admin | P1 | Admin |
-| US-ADMIN-16 | Edit club settings | Club Admin | P1 | Admin |
-| US-APP-01 | View global stats | App Admin | P1 | App Admin |
-| US-APP-02 | Create club | App Admin | P0 | App Admin |
-| US-APP-03 | Disable club | App Admin | P2 | App Admin |
-| US-APP-04 | Manage app admins | App Admin | P2 | App Admin |
+| ID | Title | Role | Priority | Domain | Done |
+|----|-------|------|----------|--------|------|
+| [US-AUTH-01](#us-auth-01-login-with-magic-link) | Login with magic link | Player | P0 | Auth | ✅ |
+| [US-AUTH-02](#us-auth-02-check-email-confirmation) | Check email confirmation | Player | P0 | Auth | ✅ |
+| [US-AUTH-03](#us-auth-03-verify-magic-link) | Verify magic link | Player | P0 | Auth | ✅ |
+| [US-AUTH-04](#us-auth-04-expired-magic-link) | Expired magic link | Player | P0 | Auth | ✅ |
+| [US-AUTH-05](#us-auth-05-complete-onboarding) | Complete onboarding | Player | P0 | Auth | |
+| [US-AUTH-06](#us-auth-06-join-club-via-invite-code) | Join club via invite code | Player | P0 | Auth | |
+| [US-AUTH-07](#us-auth-07-join-club-via-qr-code) | Join club via QR code | Player | P1 | Auth | |
+| [US-AUTH-08](#us-auth-08-auto-enrollment-in-active-seasons) | Auto-enrollment in active seasons | Player | P0 | Auth | |
+| [US-AUTH-09](#us-auth-09-logout) | Logout | Player | P0 | Auth | ✅ |
+| [US-AUTH-10](#us-auth-10-session-expiry) | Session expiry | Player | P0 | Auth | ✅ |
+| [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | |
+| [US-FEED-02](#us-feed-02-filter-feed-by-club) | Filter feed by club | Player | P1 | Feed | |
+| [US-FEED-03](#us-feed-03-navigate-from-event-card) | Navigate from event card | Player | P1 | Feed | |
+| [US-FEED-04](#us-feed-04-infinite-scroll) | Infinite scroll | Player | P1 | Feed | |
+| [US-FEED-05](#us-feed-05-empty-feed-state) | Empty feed state | Player | P1 | Feed | |
+| [US-FEED-06](#us-feed-06-bell-badge-shows-unread-count) | Bell badge shows unread count | Player | P0 | Feed | |
+| [US-FEED-07](#us-feed-07-notification-center) | Notification center | Player | P0 | Feed | |
+| [US-FEED-08](#us-feed-08-navigate-from-notification) | Navigate from notification | Player | P1 | Feed | |
+| [US-FEED-09](#us-feed-09-mark-all-notifications-read) | Mark all notifications read | Player | P1 | Feed | |
+| [US-FEED-10](#us-feed-10-read-tracking-watermark) | Read tracking watermark | Player | P1 | Feed | |
+| [US-RANK-01](#us-rank-01-view-pyramid) | View pyramid | Player | P0 | Rankings | |
+| [US-RANK-02](#us-rank-02-view-list) | View list | Player | P0 | Rankings | |
+| [US-RANK-03](#us-rank-03-toggle-pyramidlist-views) | Toggle pyramid/list views | Player | P1 | Rankings | |
+| [US-RANK-04](#us-rank-04-season-selector) | Season selector | Player | P0 | Rankings | |
+| [US-RANK-05](#us-rank-05-challengeable-indicators) | Challengeable indicators | Player | P0 | Rankings | |
+| [US-RANK-06](#us-rank-06-unavailable-indicators) | Unavailable indicators | Player | P1 | Rankings | |
+| [US-RANK-07](#us-rank-07-open-challenge-indicators) | Open-challenge indicators | Player | P1 | Rankings | |
+| [US-RANK-08](#us-rank-08-archived-season-read-only) | Archived season (read-only) | Player | P1 | Rankings | |
+| [US-CHAL-01](#us-chal-01-challenge-from-pyramid-card) | Challenge from pyramid card | Player | P0 | Challenges | |
+| [US-CHAL-02](#us-chal-02-challenge-from-fab) | Challenge from FAB | Player | P0 | Challenges | |
+| [US-CHAL-03](#us-chal-03-challenge-from-player-profile) | Challenge from player profile | Player | P1 | Challenges | |
+| [US-CHAL-04](#us-chal-04-season-picker-multiple-active) | Season picker (multiple active) | Player | P1 | Challenges | |
+| [US-CHAL-05](#us-chal-05-challenge-validation-rules) | Challenge validation rules | Player | P0 | Challenges | |
+| [US-CHAL-06](#us-chal-06-fab-disabled-state) | FAB disabled state | Player | P1 | Challenges | |
+| [US-CHAL-07](#us-chal-07-view-match-list) | View match list | Player | P0 | Challenges | |
+| [US-CHAL-08](#us-chal-08-filter-matches-myallopen) | Filter matches (My/All/Open) | Player | P1 | Challenges | |
+| [US-CHAL-09](#us-chal-09-view-match-detail) | View match detail | Player | P0 | Challenges | |
+| [US-CHAL-10](#us-chal-10-propose-a-date) | Propose a date | Player | P0 | Challenges | |
+| [US-CHAL-11](#us-chal-11-acceptdecline-date-proposal) | Accept/decline date proposal | Player | P0 | Challenges | |
+| [US-CHAL-12](#us-chal-12-enter-match-result) | Enter match result | Player | P0 | Challenges | |
+| [US-CHAL-13](#us-chal-13-confirm-match-result) | Confirm match result | Player | P0 | Challenges | |
+| [US-CHAL-14](#us-chal-14-dispute-match-result) | Dispute match result | Player | P1 | Challenges | |
+| [US-CHAL-15](#us-chal-15-forfeit-match) | Forfeit match | Player | P1 | Challenges | |
+| [US-CHAL-16](#us-chal-16-withdraw-challenge) | Withdraw challenge | Player | P1 | Challenges | |
+| [US-CHAL-17](#us-chal-17-post-match-comment) | Post match comment | Player | P1 | Challenges | |
+| [US-CHAL-18](#us-chal-18-edit-match-comment) | Edit match comment | Player | P2 | Challenges | |
+| [US-CHAL-19](#us-chal-19-rankings-update-after-result) | Rankings update after result | Player | P0 | Challenges | |
+| [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | |
+| [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | |
+| [US-PROF-03](#us-prof-03-uploadchange-profile-photo) | Upload/change profile photo | Player | P1 | Profile | |
+| [US-PROF-04](#us-prof-04-set-unavailability) | Set unavailability | Player | P1 | Profile | |
+| [US-PROF-05](#us-prof-05-cancel-unavailability) | Cancel unavailability | Player | P1 | Profile | |
+| [US-PROF-06](#us-prof-06-stats-scoping-seasoncluball) | Stats scoping (season/club/all) | Player | P1 | Profile | |
+| [US-PROF-07](#us-prof-07-rank-progression-chart) | Rank progression chart | Player | P2 | Profile | |
+| [US-PROF-08](#us-prof-08-head-to-head-record) | Head-to-head record | Player | P2 | Profile | |
+| [US-PROF-09](#us-prof-09-view-other-player-profile) | View other player profile | Player | P1 | Profile | |
+| [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | |
+| [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | |
+| [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | |
+| [US-SETT-03](#us-sett-03-configure-email-notifications) | Configure email notifications | Player | P1 | Settings | |
+| [US-SETT-04](#us-sett-04-leave-club) | Leave club | Player | P1 | Settings | |
+| [US-SETT-05](#us-sett-05-join-another-club) | Join another club | Player | P1 | Settings | |
+| [US-SETT-06](#us-sett-06-delete-account) | Delete account | Player | P2 | Settings | |
+| [US-ADMIN-01](#us-admin-01-view-club-dashboard) | View club dashboard | Club Admin | P0 | Admin | |
+| [US-ADMIN-02](#us-admin-02-create-season) | Create season | Club Admin | P0 | Admin | |
+| [US-ADMIN-03](#us-admin-03-start-season) | Start season | Club Admin | P0 | Admin | |
+| [US-ADMIN-04](#us-admin-04-edit-season-settings) | Edit season settings | Club Admin | P1 | Admin | |
+| [US-ADMIN-05](#us-admin-05-edit-standings-manual-reorder) | Edit standings (manual reorder) | Club Admin | P1 | Admin | |
+| [US-ADMIN-06](#us-admin-06-end-season) | End season | Club Admin | P0 | Admin | |
+| [US-ADMIN-07](#us-admin-07-manage-teams) | Manage teams | Club Admin | P1 | Admin | |
+| [US-ADMIN-08](#us-admin-08-invite-member) | Invite member | Club Admin | P0 | Admin | |
+| [US-ADMIN-09](#us-admin-09-promote-player-to-admin) | Promote player to admin | Club Admin | P1 | Admin | |
+| [US-ADMIN-10](#us-admin-10-demote-admin-to-player) | Demote admin to player | Club Admin | P1 | Admin | |
+| [US-ADMIN-11](#us-admin-11-remove-member) | Remove member | Club Admin | P1 | Admin | |
+| [US-ADMIN-12](#us-admin-12-send-announcement) | Send announcement | Club Admin | P1 | Admin | |
+| [US-ADMIN-13](#us-admin-13-regenerate-invite-code) | Regenerate invite code | Club Admin | P2 | Admin | |
+| [US-ADMIN-14](#us-admin-14-nudge-overdue-match) | Nudge overdue match | Club Admin | P1 | Admin | |
+| [US-ADMIN-15](#us-admin-15-resolve-disputed-match) | Resolve disputed match | Club Admin | P1 | Admin | |
+| [US-ADMIN-16](#us-admin-16-edit-club-settings) | Edit club settings | Club Admin | P1 | Admin | |
+| [US-APP-01](#us-app-01-view-global-stats) | View global stats | App Admin | P1 | App Admin | |
+| [US-APP-02](#us-app-02-create-club) | Create club | App Admin | P0 | App Admin | |
+| [US-APP-03](#us-app-03-disable-club) | Disable club | App Admin | P2 | App Admin | |
+| [US-APP-04](#us-app-04-manage-app-admins) | Manage app admins | App Admin | P2 | App Admin | |
 
 ---
 

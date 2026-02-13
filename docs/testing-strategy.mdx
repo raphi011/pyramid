@@ -1,0 +1,211 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Testing Strategy" />
+
+# Testing Strategy
+
+Two-layer testing approach: **Storybook interaction tests** for UI behavior and **Playwright e2e tests** for full-stack flows.
+
+---
+
+## Layer 1: Storybook Interaction Tests
+
+Component-level tests that run inside Storybook via `@storybook/addon-vitest` + Playwright browser mode.
+
+**What they test:**
+- UI rendering, form validation, state changes
+- User interactions (click, type, select, drag)
+- Accessibility (axe-core via `@storybook/addon-a11y`)
+- Responsive behavior (viewport parameters)
+- Loading, empty, and error states
+
+**How they work:**
+- Stories import real components from `app/` and `components/`
+- `play` functions define interaction sequences and assertions
+- Run in a real browser (Chromium via `@vitest/browser-playwright`)
+- No server, database, or API needed — data passed as props
+
+**Commands:**
+
+```bash
+bun run test              # Watch mode
+bun run test:ci           # Single run (CI)
+bun run test:coverage     # With Istanbul coverage
+```
+
+**Example:**
+
+```tsx
+export const SubmitChallenge = meta.story({
+  render: () => <ChallengeSheet opponent={mockPlayer} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole("button", { name: /herausfordern/i });
+
+    // Button enabled by default (message is optional)
+    await expect(button).toBeEnabled();
+
+    // Type optional message
+    const textarea = canvas.getByRole("textbox");
+    await userEvent.type(textarea, "Samstag 14 Uhr?");
+    await expect(textarea).toHaveValue("Samstag 14 Uhr?");
+  },
+});
+```
+
+---
+
+## Layer 2: Playwright E2E Tests
+
+Full-stack tests against a running Next.js server with a real database.
+
+**What they test:**
+- Auth flows (magic link → session → redirect)
+- API routes and server actions
+- Database state changes (challenge created, rankings updated)
+- Middleware behavior (route protection, session expiry)
+- Multi-user scenarios (challenger + challengee)
+
+**How they work:**
+- Playwright drives a real Chromium browser against `localhost:3000`
+- Tests live in `e2e/` directory, named `*.spec.ts`
+- `playwright.config.ts` auto-starts the dev server
+- Two projects: desktop Chrome + iPhone 14 (mobile)
+
+**Commands:**
+
+```bash
+bun run test:e2e          # Headless run
+bun run test:e2e:ui       # Interactive UI mode
+```
+
+**Example:**
+
+```ts
+test("unauthenticated user is redirected to /login", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/login/);
+});
+```
+
+---
+
+## When to Use Which Layer
+
+| Scenario | Layer |
+|----------|-------|
+| Form validation (empty fields, invalid input) | Storybook |
+| Button states (disabled, loading) | Storybook |
+| Dialog/sheet open and close | Storybook |
+| Pyramid card layout and indicators | Storybook |
+| Component accessibility | Storybook |
+| Login → session cookie → redirect | Playwright |
+| Challenge creation → DB row → event generated | Playwright |
+| Match result → standings update | Playwright |
+| Middleware redirects (expired session, no club) | Playwright |
+| Multi-user flows (A challenges B, B confirms) | Playwright |
+
+**Rule of thumb:** If the test needs a server or database, it's Playwright. If it's testing UI behavior with mock data, it's Storybook.
+
+---
+
+## File Structure
+
+```
+├── e2e/                        # Playwright e2e tests
+│   ├── smoke.spec.ts           # Basic app reachability
+│   ├── auth.spec.ts            # Magic link, session, logout
+│   ├── challenge.spec.ts       # Challenge lifecycle
+│   └── ...
+├── stories/                    # Storybook stories + interaction tests
+│   ├── ui/                     # Layer 1: shadcn/ui primitives
+│   ├── composites/             # Layer 2: Composite components
+│   ├── domain/                 # Layer 3: Domain components
+│   └── pages/                  # Full page compositions
+├── playwright.config.ts        # Playwright configuration
+├── vitest.config.ts            # Vitest + Storybook configuration
+└── .storybook/
+    ├── main.ts                 # Storybook config
+    ├── preview.tsx             # Decorators, globals, a11y
+    └── vitest.setup.ts         # Vitest setup for Storybook
+```
+
+---
+
+## Conventions
+
+### Story Files
+
+- Stories import **real components**, not inline definitions
+- Every interactive story has a `play` function with assertions
+- Use `within(canvasElement)` for scoped queries
+- Prefer accessible queries: `getByRole`, `getByLabelText`, `getByText`
+- Test both happy path and edge cases (empty state, error state) as separate stories
+
+### E2E Test Files
+
+- One file per domain: `auth.spec.ts`, `challenge.spec.ts`, `rankings.spec.ts`
+- Use `test.describe()` to group related flows
+- Use page objects or helper functions for repeated interactions (login, seed data)
+- Keep tests independent — each test can run in isolation
+- Use `test.slow()` for multi-step flows that need extra time
+
+### Naming
+
+```
+# Stories
+stories/pages/Login.stories.tsx        → "Pages/Login"
+stories/domain/PyramidGrid.stories.tsx → "Domain/PyramidGrid"
+
+# E2E tests
+e2e/auth.spec.ts                       → "auth > login flow"
+e2e/challenge.spec.ts                  → "challenge > create from pyramid"
+```
+
+---
+
+## Implementation Order
+
+User stories are implemented in dependency order. Each story gets both test layers where applicable.
+
+| Phase | User Stories | Storybook | Playwright |
+|-------|-------------|-----------|------------|
+| 1. Auth | AUTH-01→05, 09, 10 | Login page, check-email, onboarding | Magic link flow, session, redirect |
+| 2. Club join | AUTH-06, 08 | Join page, invite code input | Join → auto-enroll → redirect |
+| 3. Rankings | RANK-01→04 | Pyramid grid, list view, season selector | Load standings from DB |
+| 4. Challenge | CHAL-01, 05, 09 | Challenge sheet, match detail | Create challenge → DB state |
+| 5. Match lifecycle | CHAL-10→13, 19 | Date picker, score input, confirm | Full match → ranking update |
+| 6. Feed | FEED-01, 05→07 | Event cards, empty state, notification bell | Events from DB, read tracking |
+| 7. Profile | PROF-01→02, 04→05 | Profile view, edit dialog, availability | Update player, availability toggle |
+| 8. Admin | ADMIN-01→03, 08 | Dashboard, season form, invite | Create season, invite member |
+| 9. Polish | Remaining P1/P2 | Per-story | Per-story |
+
+---
+
+## Database for E2E Tests
+
+> **Not yet set up.** The database schema is documented in `docs/database.mdx` but not deployed to a test environment yet.
+
+When ready, the plan is:
+
+- **Local development:** PostgreSQL via Docker (`docker compose up db-test`)
+- **Seed data:** `e2e/fixtures/seed.sql` with known test players, clubs, seasons
+- **Isolation:** Each test suite resets to seed state via `beforeAll`
+- **CI:** Postgres service container in GitHub Actions
+
+---
+
+## CI Integration
+
+Target CI pipeline:
+
+```
+1. bun install
+2. bun run lint                    # ESLint
+3. bun run test:ci                 # Storybook interaction tests
+4. bun run build                   # Next.js build
+5. bun run test:e2e                # Playwright e2e (against built app)
+6. bun run chromatic               # Visual regression (Chromatic)
+```
+
+Steps 3 and 4 can run in parallel. Step 5 depends on the build.

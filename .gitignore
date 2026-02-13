@@ -132,3 +132,7 @@ dist
 
 # Storybook build output
 storybook-static
+
+# Playwright
+e2e/test-results/
+playwright-report/
