@@ -4,7 +4,7 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 # Design System: "Court"
 
-Sporty, energetic, mobile-first tennis pyramid ranking app. Bold greens evoking the court, warm accents for rankings and achievements. High contrast, tactile interactions, card-based layouts.
+Sporty, energetic, mobile-first pyramid ranking app. Bold greens evoking the court, warm accents for rankings and achievements. High contrast, tactile interactions, card-based layouts.
 
 ---
 
@@ -198,6 +198,13 @@ Key animations:
 - `slate-50` bg behind content card
 - Centered modals (Dialog) replace bottom sheets
 
+### Responsive Breakpoints
+
+| Breakpoint | Width | Layout |
+|------------|-------|--------|
+| Default | < 1024px | Bottom nav, full-width cards, `px-4` |
+| `lg` | ≥ 1024px | Sidebar nav, `max-w-2xl` content, `px-6` |
+
 ### App Shell
 
 ```
@@ -309,7 +316,7 @@ placeholder:text-slate-400
 │  Layer 3: Domain Components                     │
 │  PlayerCard, MatchRow, PyramidGrid,             │
 │  ChallengeSheet, EventItem, StandingsTable      │
-│  — tennis-specific, composed from Layer 1+2     │
+│  — sport-specific, composed from Layer 1+2       │
 ├─────────────────────────────────────────────────┤
 │  Layer 2: Composite Components                  │
 │  Card, EmptyState, DataList, FormField,         │
@@ -352,7 +359,7 @@ shadcn/ui components, themed to Court palette. These are the atomic building blo
 
 ### Layer 2 — Composites (`components/`)
 
-Reusable patterns from primitives. App-agnostic — no tennis/player/match awareness.
+Reusable patterns from primitives. App-agnostic — no domain/player/match awareness.
 
 **Card** — Universal container.
 ```tsx
@@ -443,7 +450,7 @@ Reusable patterns from primitives. App-agnostic — no tennis/player/match aware
 
 ### Layer 3 — Domain Components (`components/domain/`)
 
-Tennis-specific. Composed from Layer 1+2. Contain business logic awareness.
+Sport-specific. Composed from Layer 1+2. Contain business logic awareness.
 
 **PyramidGrid** — Full pyramid visualization.
 ```tsx

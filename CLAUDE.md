@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sport-agnostic pyramid ranking system — a Next.js 14 app for managing challenge-based club rankings. Supports multiple clubs, seasons, individual and team pyramids.
+Sport-agnostic pyramid ranking system — a Next.js 16 app for managing challenge-based club rankings. Supports multiple clubs, seasons, individual and team pyramids.
 
 ## Specification Docs
 
@@ -15,10 +15,7 @@ All docs are MDX files hosted in Storybook (`bun storybook` → "Docs" sidebar g
 - `docs/a11y-guide.mdx` — Accessibility best practices, common violations, and Storybook a11y testing gotchas. **Read before adding components or stories.**
 - `docs/database.mdx` — Full database schema: tables, enums, relationships, business rules, migration notes. **Read before any backend or data-layer work.**
 - `docs/user-stories.mdx` — All user stories: flows, preconditions, steps, edge cases. **Read before implementing features or writing e2e tests.**
-- `docs/component-plan.mdx` — Phased component build order across all layers.
 - `docs/component-architecture.mdx` — Three-layer component architecture, import rules, composition patterns.
-- `docs/design-principles.mdx` — Color philosophy, typography, spacing, dark mode, motion.
-- `docs/layout-patterns.mdx` — App shell, navigation, responsive breakpoints, card patterns.
 
 ## Development Commands
 
@@ -58,19 +55,17 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - `app/lib/email.ts` - Email sending via Nodemailer
 - `middleware.ts` - Route protection
 
-### Database Schema (`app/db.sql`)
+### Database Schema
 
-**Core tables:**
-- `clubs` - Tennis clubs
-- `player` - Players with columns: `id`, `name`, `phone_number`, `email_address`, `created`, `unavailable_*`
-- `seasons` - Season definitions per club
-- `season_players` - Player-season membership (with admin flag)
-- `season_matches` - Match records
-- `season_standings` - Ranking snapshots
+See `docs/database.mdx` for full schema. Key tables:
 
-**Auth tables:**
-- `magic_links` - One-time login tokens (UNIQUE on `player_id` for single active link)
-- `sessions` - Database-backed sessions for revocability
+- `clubs` / `club_members` — Club definitions and player membership with roles
+- `player` — Player accounts (global across clubs)
+- `seasons` / `teams` / `team_players` — Season config, team rosters, player assignment
+- `season_matches` / `match_comments` / `date_proposals` — Match lifecycle
+- `season_standings` — Ranking snapshots (append-only)
+- `events` / `event_reads` / `notification_preferences` — Activity feed and notifications
+- `magic_links` / `sessions` — Auth (passwordless magic links)
 
 ### Authentication System
 
@@ -87,12 +82,11 @@ Magic link (passwordless) authentication:
 - Single active magic link per user (UPSERT pattern)
 - Form-based logout (CSRF protection)
 
-### Component Library (`app/components/`)
-TailwindUI-inspired components using forwardRef pattern for polymorphism:
-- Components accept `href` prop to render as Link, otherwise render as Button
-- Use `clsx` for conditional class merging
-- Define styles as objects with base/variant/color arrays
-- Example: `<Button color="cyan">` or `<Button href="/path">` or `<Button outline>`
+### Component Library (`components/`)
+Three-layer architecture (see `docs/component-architecture.mdx`):
+- `components/ui/` — Layer 1: shadcn/ui primitives, themed to Court palette
+- `components/` — Layer 2: Composites (Card, DataList, FormField, ResponsiveDialog, etc.)
+- `components/domain/` — Layer 3: Domain-specific (PyramidGrid, MatchRow, EventItem, etc.)
 
 ### Challenge Rules (Business Logic)
 In `app/pyramid.tsx`:
@@ -103,13 +97,14 @@ In `app/pyramid.tsx`:
 
 ### Data Structures
 ```typescript
-// Player in standings
-{ id, name, challangable, available, won, lost }
+// Team in standings (teams are uniform — 1-person for individual, multi-person for doubles)
+{ id, name, opted_out }
 
-// Match
-{ player1, player2, status, winner_id, scores: [[p1_set_score, p2_set_score], ...] }
+// Match (always references teams, not players directly)
+{ team1_id, team2_id, status, winner_team_id, team1_score: int[], team2_score: int[] }
 
-// Event types: challenge, result, withdrawal, new_player, season_start, season_end
+// Event types: challenge, challenged, result, result_entered, withdrawal, forfeit,
+//   date_proposed, date_accepted, new_player, season_start, season_end, unavailable, announcement, ...
 ```
 
 ## Design System & Frontend
