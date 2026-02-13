@@ -1,0 +1,137 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Framework Gotchas" />
+
+# Framework Gotchas & Patterns
+
+Lessons learned from implementation — framework-specific pitfalls and the patterns we use to work around them. **Read when debugging unexpected behavior or before using an unfamiliar API.**
+
+---
+
+## Next.js
+
+### `searchParams` is a Promise (Next.js 15+)
+
+In server components, `searchParams` must be `await`ed. This was a breaking change in Next.js 15.
+
+```tsx
+// page.tsx (server component)
+type Props = { searchParams: Promise<{ code?: string }> };
+
+export default async function Page({ searchParams }: Props) {
+  const { code } = await searchParams; // Must await!
+  return <ClientComponent code={code} />;
+}
+```
+
+### Middleware `PUBLIC_ROUTES` uses prefix matching
+
+Routes in `PUBLIC_ROUTES` are matched with `pathname.startsWith(route)`. Adding `"/join"` matches both `/join` and `/join?code=X`. Be aware this also matches `/join-something` — if that becomes an issue, switch to exact matching or regex.
+
+### Server Actions with `useActionState` (React 19)
+
+For multi-step forms, use `useActionState` with a state machine pattern. Each action returns the next step:
+
+```tsx
+const [state, action, isPending] = useActionState(serverAction, initialState);
+```
+
+The state object carries `step`, `error`, and any data needed by the next step. This replaces the older `useFormState` API.
+
+### `redirect()` throws (not returns)
+
+Next.js `redirect()` from `next/navigation` works by throwing a special error. It must be called **outside** of try/catch blocks, or the catch will swallow the redirect. In server actions, call it after all DB work completes.
+
+### Middleware deprecation warning
+
+Next.js 16 shows `"middleware" file convention is deprecated. Please use "proxy" instead.` — this is informational. The middleware still works. We'll migrate to the proxy convention in a future slice.
+
+---
+
+## JSON / i18n
+
+### Typographic quotes break JSON parsing
+
+German typographic quotes `„"` (U+201E opening, U+201C closing) look similar to ASCII `"` (U+0022) but are different characters. JSON parsers can confuse the closing `"` (U+201C) with a string terminator.
+
+**Fix:** Use Unicode escapes in JSON files:
+
+```json
+{
+  "confirmJoin": "Möchtest du \u201E{club}\u201C beitreten?"
+}
+```
+
+This renders identically (`Möchtest du „{club}" beitreten?`) but doesn't confuse the parser.
+
+---
+
+## postgres.js
+
+### Transactions with `sql.begin()`
+
+Use `sql.begin()` for multi-statement transactions. The callback receives a transaction-scoped `tx` object:
+
+```ts
+await sql.begin(async (tx) => {
+  await joinClub(tx, playerId, clubId);
+  await autoEnrollInActiveSeasons(tx, playerId, clubId);
+  await createNewPlayerEvent(tx, clubId, playerId, {});
+});
+```
+
+All repository functions accept `Sql | TransactionSql` so they work both standalone and inside transactions.
+
+### Advisory locks for concurrent modifications
+
+For operations like modifying standings arrays where concurrent writes could cause lost updates, use `pg_advisory_xact_lock`:
+
+```sql
+SELECT pg_advisory_xact_lock($seasonId);
+```
+
+This serializes concurrent modifications per season within the transaction scope.
+
+---
+
+## Security Patterns
+
+### Open redirect protection for `returnTo`
+
+When accepting a `returnTo` parameter from query strings (e.g., after magic link verification), validate it to prevent open redirects:
+
+```ts
+function isValidReturnTo(returnTo: string): boolean {
+  return (
+    returnTo.startsWith("/") &&   // Must be relative
+    !returnTo.startsWith("//") && // Block protocol-relative (//evil.com)
+    !returnTo.includes(":")       // Block javascript: and data: schemes
+  );
+}
+```
+
+### Email enumeration protection
+
+When handling actions that involve looking up users by email (login, join requests), always return the same response regardless of whether the email exists:
+
+```ts
+// Always return check-email, even if no player found
+const player = await getPlayerByEmail(email);
+if (player) {
+  await sendMagicLinkEmail(email, player.name, token);
+}
+return { step: "check-email" }; // Same response either way
+```
+
+### Idempotent join with UPSERT
+
+`joinClub` uses `ON CONFLICT DO NOTHING` to handle double-submissions gracefully. The `RETURNING` clause tells us if the insert actually happened:
+
+```sql
+INSERT INTO club_members (player_id, club_id, role, created)
+VALUES ($1, $2, $3, NOW())
+ON CONFLICT (player_id, club_id) DO NOTHING
+RETURNING player_id
+```
+
+`rows.length === 0` means the player was already a member.

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/app/lib/auth";
 import { updatePlayerProfile } from "@/app/lib/db/auth";
+import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";
 
 export type OnboardingState = {
@@ -27,5 +28,6 @@ export async function completeOnboarding(
 
   await updatePlayerProfile(sql, session.playerId, { name, phoneNumber });
 
-  redirect("/");
+  const clubs = await getPlayerClubs(sql, session.playerId);
+  redirect(clubs.length === 0 ? "/join" : "/");
 }

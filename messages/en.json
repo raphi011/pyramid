@@ -105,7 +105,19 @@
     "joinTitle": "Join club",
     "joinDesc": "Enter the invite code you received from your club.",
     "codePlaceholder": "Enter code...",
-    "join": "Join"
+    "join": "Join",
+    "confirmJoin": "Join \"{club}\"?",
+    "confirmJoinDesc": "You will be automatically enrolled in all active seasons.",
+    "alreadyMember": "You are already a member of {club}",
+    "goHome": "Go to home",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "name@example.com",
+    "emailDesc": "Enter the email address you registered with.",
+    "submitEmail": "Continue",
+    "checkEmail": "Check your email",
+    "checkEmailDesc": "If an account with this email exists, we've sent you a login link.",
+    "invalidCode": "Invalid invite code",
+    "clubDisabled": "This club is not accepting new members at this time"
   },
   "season": {
     "archived": "(Archive)",

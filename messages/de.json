@@ -105,7 +105,19 @@
     "joinTitle": "Verein beitreten",
     "joinDesc": "Gib den Einladungscode ein, den du von deinem Verein erhalten hast.",
     "codePlaceholder": "Code eingeben...",
-    "join": "Beitreten"
+    "join": "Beitreten",
+    "confirmJoin": "Möchtest du \u201E{club}\u201C beitreten?",
+    "confirmJoinDesc": "Du wirst automatisch in alle aktiven Saisons eingetragen.",
+    "alreadyMember": "Du bist bereits Mitglied von {club}",
+    "goHome": "Zur Startseite",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "name@beispiel.de",
+    "emailDesc": "Gib die E-Mail-Adresse ein, mit der du registriert bist.",
+    "submitEmail": "Weiter",
+    "checkEmail": "Prüfe deine E-Mails",
+    "checkEmailDesc": "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Login-Link geschickt.",
+    "invalidCode": "Ungültiger Einladungscode",
+    "clubDisabled": "Dieser Verein nimmt derzeit keine Mitglieder auf"
   },
   "season": {
     "archived": "(Archiv)",

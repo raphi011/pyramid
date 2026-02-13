@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "./lib/auth";
+import { getPlayerClubs } from "./lib/db/club";
+import { sql } from "./lib/db";
 import { LogoutButton } from "./logout-button";
 
 export default async function Home() {
@@ -12,6 +14,12 @@ export default async function Home() {
   // Redirect to onboarding if profile incomplete
   if (!currentPlayer.name.trim()) {
     redirect("/onboarding");
+  }
+
+  // Redirect to join if not a member of any club
+  const clubs = await getPlayerClubs(sql, currentPlayer.id);
+  if (clubs.length === 0) {
+    redirect("/join");
   }
 
   return (

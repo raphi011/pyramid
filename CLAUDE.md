@@ -17,6 +17,7 @@ All docs are MDX files hosted in Storybook (`bun storybook` → "Docs" sidebar g
 - `docs/user-stories.mdx` — All user stories: flows, preconditions, steps, edge cases. **Read before implementing features or writing e2e tests.**
 - `docs/component-architecture.mdx` — Three-layer component architecture, import rules, composition patterns.
 - `docs/testing-strategy.mdx` — Four-layer testing approach: unit tests, DB integration, Storybook interaction, Playwright e2e. **Read before writing tests.**
+- `docs/gotchas.mdx` — Framework-specific pitfalls: Next.js, postgres.js, JSON/i18n, security patterns. **Read when debugging unexpected behavior.**
 
 ## Development Commands
 
@@ -167,6 +168,16 @@ Vercel auto-detects Next.js settings. No `vercel.json` needed. Environment varia
 
 - **`TEXT` over `VARCHAR`** — no length-limited string columns
 - **`NOT NULL DEFAULT ''` over nullable strings** — where no semantic difference between `NULL` and `''`, prefer `NOT NULL DEFAULT ''` to avoid null checks in app code
+
+## Framework Gotchas (Quick Reference)
+
+See `docs/gotchas.mdx` for full details. Key pitfalls:
+
+- **`searchParams` is a `Promise`** (Next.js 15+) — must `await` in server components
+- **Typographic quotes in JSON** — use `\u201E` / `\u201C` for German `„"` quotes, not raw characters
+- **`redirect()` throws** — don't call inside try/catch or it gets swallowed
+- **`returnTo` validation** — must start with `/`, block `//` and `:` to prevent open redirects
+- **Repo functions accept `Sql | TransactionSql`** — pass `tx` inside `sql.begin()` callbacks
 
 ## Environment Variables
 
