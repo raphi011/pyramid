@@ -27,6 +27,16 @@ export type TeamEnrollment = {
   seasonName: string;
 };
 
+export type RankedPlayer = {
+  teamId: number;
+  playerId: number;
+  name: string;
+  rank: number;
+  photoData: Buffer | null;
+};
+
+export type WinsLosses = { wins: number; losses: number };
+
 // ── Helpers ────────────────────────────────────────────
 
 export function isIndividualSeason(season: Season): boolean {
@@ -172,6 +182,146 @@ export async function createNewPlayerEvent(
   `;
 
   return row.id as number;
+}
+
+// ── Rankings queries ──────────────────────────────────
+
+export async function getStandingsWithPlayers(
+  sql: Sql,
+  seasonId: number,
+): Promise<{ players: RankedPlayer[]; previousResults: number[] | null }> {
+  // Fetch the two most recent standings (current + previous for movement)
+  const snapshots = await sql`
+    SELECT id, results
+    FROM season_standings
+    WHERE season_id = ${seasonId}
+    ORDER BY id DESC
+    LIMIT 2
+  `;
+
+  if (snapshots.length === 0) {
+    return { players: [], previousResults: null };
+  }
+
+  const currentResults = snapshots[0].results as number[];
+  const previousResults =
+    snapshots.length > 1 ? (snapshots[1].results as number[]) : null;
+
+  if (currentResults.length === 0) {
+    return { players: [], previousResults };
+  }
+
+  // Batch-fetch team → player info for all team IDs
+  const teamPlayerRows = await sql`
+    SELECT
+      t.id AS "teamId",
+      p.id AS "playerId",
+      p.name,
+      p.photo_data AS "photoData"
+    FROM teams t
+    JOIN team_players tp ON tp.team_id = t.id
+    JOIN player p ON p.id = tp.player_id
+    WHERE t.id = ANY(${currentResults})
+  `;
+
+  // Index by teamId for fast lookup
+  const teamMap = new Map<
+    number,
+    { playerId: number; name: string; photoData: Buffer | null }
+  >();
+  for (const row of teamPlayerRows) {
+    teamMap.set(row.teamId as number, {
+      playerId: row.playerId as number,
+      name: row.name as string,
+      photoData: row.photoData as Buffer | null,
+    });
+  }
+
+  // Map results array position → rank (1-based)
+  const players: RankedPlayer[] = [];
+  for (let i = 0; i < currentResults.length; i++) {
+    const teamId = currentResults[i];
+    const info = teamMap.get(teamId);
+    if (!info) continue;
+
+    players.push({
+      teamId,
+      playerId: info.playerId,
+      name: info.name,
+      rank: i + 1,
+      photoData: info.photoData,
+    });
+  }
+
+  return { players, previousResults };
+}
+
+export async function getTeamWinsLosses(
+  sql: Sql,
+  seasonId: number,
+): Promise<Map<number, WinsLosses>> {
+  const rows = await sql`
+    SELECT team_id AS "teamId", wins, losses
+    FROM (
+      SELECT
+        team_id,
+        COUNT(*) FILTER (WHERE is_winner) AS wins,
+        COUNT(*) FILTER (WHERE NOT is_winner) AS losses
+      FROM (
+        SELECT team1_id AS team_id, (winner_team_id = team1_id) AS is_winner
+        FROM season_matches
+        WHERE season_id = ${seasonId} AND status = 'completed'
+        UNION ALL
+        SELECT team2_id AS team_id, (winner_team_id = team2_id) AS is_winner
+        FROM season_matches
+        WHERE season_id = ${seasonId} AND status = 'completed'
+      ) matches
+      GROUP BY team_id
+    ) stats
+  `;
+
+  const map = new Map<number, WinsLosses>();
+  for (const row of rows) {
+    map.set(row.teamId as number, {
+      wins: Number(row.wins),
+      losses: Number(row.losses),
+    });
+  }
+  return map;
+}
+
+export function computeMovement(
+  teamId: number,
+  currentResults: number[],
+  previousResults: number[] | null,
+): "up" | "down" | "none" {
+  if (!previousResults) return "none";
+
+  const currentIdx = currentResults.indexOf(teamId);
+  const previousIdx = previousResults.indexOf(teamId);
+
+  // New player (wasn't in previous standings)
+  if (previousIdx === -1) return "none";
+
+  // Lower index = better rank → moved up if previousIdx > currentIdx
+  if (previousIdx > currentIdx) return "up";
+  if (previousIdx < currentIdx) return "down";
+  return "none";
+}
+
+export async function getPlayerTeamId(
+  sql: Sql,
+  playerId: number,
+  seasonId: number,
+): Promise<number | null> {
+  const rows = await sql`
+    SELECT t.id
+    FROM teams t
+    JOIN team_players tp ON tp.team_id = t.id
+    WHERE tp.player_id = ${playerId} AND t.season_id = ${seasonId}
+    LIMIT 1
+  `;
+  return rows.length > 0 ? (rows[0].id as number) : null;
 }
 
 export async function autoEnrollInActiveSeasons(

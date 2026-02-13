@@ -46,6 +46,22 @@ Next.js `redirect()` from `next/navigation` works by throwing a special error. I
 
 Next.js 16 shows `"middleware" file convention is deprecated. Please use "proxy" instead.` — this is informational. The middleware still works. We'll migrate to the proxy convention in a future slice.
 
+### Pyramid challenge formula boundary error
+
+The challenge formula from the database docs (`maxRank = r + 1 - floor((1 + sqrt(8r - 7)) / 2)`) simplifies to `r - (row - 1)`, which is correct for most ranks but **overcounts** for the first position of rows >= 4. The issue: it allows challenging the entire previous row, but geometrically each player can only reach up to 2 diagonal positions above.
+
+**Fix:** Use row/position-based computation instead:
+
+```ts
+const row = pyramidRow(rank);
+const position = rank - (row * (row - 1)) / 2 - 1;
+const rowAboveRemaining = row - 1 - position;
+const numTargets = position + Math.min(2, rowAboveRemaining);
+const maxRank = rank - numTargets;
+```
+
+Example: rank 7 (row 4, position 0) — formula gives maxRank=4, correct answer is 5.
+
 ---
 
 ## JSON / i18n

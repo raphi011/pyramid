@@ -7,6 +7,7 @@ import {
   seedSeason,
   seedTeam,
   seedStandings,
+  seedMatch,
 } from "./seed";
 import {
   getActiveSeasons,
@@ -18,6 +19,10 @@ import {
   addTeamToStandings,
   createNewPlayerEvent,
   autoEnrollInActiveSeasons,
+  getStandingsWithPlayers,
+  getTeamWinsLosses,
+  computeMovement,
+  getPlayerTeamId,
 } from "./season";
 
 const db = withTestDb();
@@ -450,6 +455,172 @@ describe("autoEnrollInActiveSeasons", () => {
 
       // Teams should be different
       expect(team1).not.toBe(team2);
+    });
+  });
+});
+
+// ── getStandingsWithPlayers ──────────────────────────
+
+describe("getStandingsWithPlayers", () => {
+  it("returns ranked players in standings order", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "sp1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "sp2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+      await seedStandings(tx, seasonId, [t1, t2]);
+
+      const { players, previousResults } = await getStandingsWithPlayers(
+        tx,
+        seasonId,
+      );
+
+      expect(players).toHaveLength(2);
+      expect(players[0]).toEqual(
+        expect.objectContaining({
+          teamId: t1,
+          playerId: p1,
+          name: "Alice",
+          rank: 1,
+        }),
+      );
+      expect(players[1]).toEqual(
+        expect.objectContaining({
+          teamId: t2,
+          playerId: p2,
+          name: "Bob",
+          rank: 2,
+        }),
+      );
+      expect(previousResults).toBeNull();
+    });
+  });
+
+  it("returns previous standings for movement computation", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "mv1@example.com");
+      const p2 = await seedPlayer(tx, "mv2@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      await seedStandings(tx, seasonId, [t1, t2]);
+      await seedStandings(tx, seasonId, [t2, t1]); // Swapped
+
+      const { players, previousResults } = await getStandingsWithPlayers(
+        tx,
+        seasonId,
+      );
+
+      expect(players[0].teamId).toBe(t2);
+      expect(players[1].teamId).toBe(t1);
+      expect(previousResults).toEqual([t1, t2]);
+    });
+  });
+
+  it("returns empty when no standings", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+
+      const { players } = await getStandingsWithPlayers(tx, seasonId);
+      expect(players).toEqual([]);
+    });
+  });
+});
+
+// ── getTeamWinsLosses ────────────────────────────────
+
+describe("getTeamWinsLosses", () => {
+  it("counts wins and losses from completed matches", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "wl1@example.com");
+      const p2 = await seedPlayer(tx, "wl2@example.com");
+      const p3 = await seedPlayer(tx, "wl3@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+      const t3 = await seedTeam(tx, seasonId, [p3]);
+
+      // t1 beats t2
+      await seedMatch(tx, seasonId, t1, t2, { winnerTeamId: t1 });
+      // t1 beats t3
+      await seedMatch(tx, seasonId, t1, t3, { winnerTeamId: t1 });
+      // t3 beats t2
+      await seedMatch(tx, seasonId, t3, t2, { winnerTeamId: t3 });
+      // Non-completed match (should not count)
+      await seedMatch(tx, seasonId, t2, t3, { status: "challenged" });
+
+      const wl = await getTeamWinsLosses(tx, seasonId);
+
+      expect(wl.get(t1)).toEqual({ wins: 2, losses: 0 });
+      expect(wl.get(t2)).toEqual({ wins: 0, losses: 2 });
+      expect(wl.get(t3)).toEqual({ wins: 1, losses: 1 });
+    });
+  });
+
+  it("returns empty map when no matches", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+
+      const wl = await getTeamWinsLosses(tx, seasonId);
+      expect(wl.size).toBe(0);
+    });
+  });
+});
+
+// ── computeMovement ─────────────────────────────────
+
+describe("computeMovement", () => {
+  it("detects upward movement", () => {
+    expect(computeMovement(10, [10, 20], [20, 10])).toBe("up");
+  });
+
+  it("detects downward movement", () => {
+    expect(computeMovement(20, [10, 20], [20, 10])).toBe("down");
+  });
+
+  it("detects no movement", () => {
+    expect(computeMovement(10, [10, 20], [10, 20])).toBe("none");
+  });
+
+  it("returns none when no previous standings", () => {
+    expect(computeMovement(10, [10, 20], null)).toBe("none");
+  });
+
+  it("returns none for new player", () => {
+    expect(computeMovement(30, [10, 20, 30], [10, 20])).toBe("none");
+  });
+});
+
+// ── getPlayerTeamId ─────────────────────────────────
+
+describe("getPlayerTeamId", () => {
+  it("returns team id for enrolled player", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const playerId = await seedPlayer(tx, "tid@example.com");
+      const teamId = await seedTeam(tx, seasonId, [playerId]);
+
+      const result = await getPlayerTeamId(tx, playerId, seasonId);
+      expect(result).toBe(teamId);
+    });
+  });
+
+  it("returns null when not enrolled", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const playerId = await seedPlayer(tx, "notid@example.com");
+
+      const result = await getPlayerTeamId(tx, playerId, seasonId);
+      expect(result).toBeNull();
     });
   });
 });

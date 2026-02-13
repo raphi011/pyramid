@@ -94,6 +94,26 @@ export async function seedTeam(
   return teamId;
 }
 
+// ── Match ─────────────────────────────────────
+
+export async function seedMatch(
+  tx: Tx,
+  seasonId: number,
+  team1Id: number,
+  team2Id: number,
+  {
+    status = "completed",
+    winnerTeamId,
+  }: { status?: string; winnerTeamId?: number } = {},
+): Promise<number> {
+  const [row] = await tx`
+    INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, status, created)
+    VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${status}, NOW())
+    RETURNING id
+  `;
+  return row.id as number;
+}
+
 // ── Standings ─────────────────────────────────────────
 
 export async function seedStandings(
