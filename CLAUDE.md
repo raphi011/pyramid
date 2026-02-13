@@ -40,7 +40,7 @@ bun run db:seed       # Seed test data
 ### Local Database
 
 ```bash
-docker compose up -d  # Start Postgres 17 on port 5433
+docker-compose up -d  # Start Postgres 17 on port 5433
 bun run db:migrate    # Apply migrations
 ```
 
@@ -73,7 +73,7 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - `app/lib/auth.ts` - Authentication (magic links, sessions)
 - `app/lib/db.ts` - Database connection wrapper
 - `app/lib/email.ts` - Email sending via Nodemailer
-- `middleware.ts` - Route protection
+- `proxy.ts` - Route protection (Next.js 16 proxy convention, replaces middleware.ts)
 
 ### Database Schema
 
