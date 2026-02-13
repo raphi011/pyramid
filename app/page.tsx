@@ -17,8 +17,14 @@ export default async function Home() {
   }
 
   // Redirect to join if not a member of any club
-  const clubs = await getPlayerClubs(sql, currentPlayer.id);
-  if (clubs.length === 0) {
+  let hasClubs = true;
+  try {
+    const clubs = await getPlayerClubs(sql, currentPlayer.id);
+    hasClubs = clubs.length > 0;
+  } catch (error) {
+    console.error("Failed to check club membership:", error);
+  }
+  if (!hasClubs) {
     redirect("/join");
   }
 

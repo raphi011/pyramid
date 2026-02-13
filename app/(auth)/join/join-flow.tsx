@@ -26,19 +26,23 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
   );
   const [joinState, joinAction, isJoining] = useActionState(
     joinClubAction,
-    state,
+    initialState,
   );
   const [requestState, requestAction, isRequesting] = useActionState(
     requestJoinAction,
-    state,
+    initialState,
   );
   const [code, setCode] = useState(initialCode ?? "");
   const autoSubmitted = useRef(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Merge state: joinState/requestState errors override validateCode state
-  const currentState =
-    joinState.error ? joinState : requestState.error ? requestState : state;
+  // Actions return complete state, so a non-initial result takes priority
+  const currentState = (() => {
+    if (requestState.step !== "code-input" || requestState.error)
+      return requestState;
+    if (joinState.step !== "code-input" || joinState.error) return joinState;
+    return state;
+  })();
 
   // Auto-submit when initialCode is provided
   useEffect(() => {
@@ -95,13 +99,19 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
             </p>
           </div>
 
+          {currentState.error && (
+            <p className="text-center text-sm text-red-600" role="alert">
+              {currentState.error}
+            </p>
+          )}
+
           <form action={joinAction}>
-            <input type="hidden" name="clubId" value={currentState.clubId} />
-            <Button
-              type="submit"
-              className="w-full"
-              loading={isJoining}
-            >
+            <input
+              type="hidden"
+              name="inviteCode"
+              value={currentState.inviteCode}
+            />
+            <Button type="submit" className="w-full" loading={isJoining}>
               Beitreten
             </Button>
           </form>
@@ -129,11 +139,16 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
               name="inviteCode"
               value={currentState.inviteCode}
             />
+            <input
+              type="hidden"
+              name="clubName"
+              value={currentState.clubName}
+            />
             <FormField
               label="E-Mail-Adresse"
               type="email"
               placeholder="name@beispiel.de"
-              error={requestState.error}
+              error={currentState.error}
               inputProps={{
                 name: "email",
                 required: true,
@@ -141,11 +156,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
               }}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              loading={isRequesting}
-            >
+            <Button type="submit" className="w-full" loading={isRequesting}>
               Weiter
             </Button>
           </form>

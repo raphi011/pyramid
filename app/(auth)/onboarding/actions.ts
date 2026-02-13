@@ -28,6 +28,13 @@ export async function completeOnboarding(
 
   await updatePlayerProfile(sql, session.playerId, { name, phoneNumber });
 
-  const clubs = await getPlayerClubs(sql, session.playerId);
-  redirect(clubs.length === 0 ? "/join" : "/");
+  let hasClubs = false;
+  try {
+    const clubs = await getPlayerClubs(sql, session.playerId);
+    hasClubs = clubs.length > 0;
+  } catch (error) {
+    console.error("Failed to check clubs after onboarding:", error);
+  }
+
+  redirect(hasClubs ? "/" : "/join");
 }

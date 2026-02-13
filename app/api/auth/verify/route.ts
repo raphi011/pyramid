@@ -29,22 +29,26 @@ export async function GET(request: NextRequest) {
     const sessionToken = await createSession(result.playerId);
     await setSessionCookie(sessionToken);
 
-    // Redirect priority:
-    // 1. No name → onboarding
-    const player = await getPlayerById(sql, result.playerId);
-    if (!player || !player.name.trim()) {
-      return NextResponse.redirect(new URL("/onboarding", baseUrl));
-    }
+    // Post-login routing — failures here should not invalidate the login
+    try {
+      // 1. No name → onboarding
+      const player = await getPlayerById(sql, result.playerId);
+      if (!player || !player.name.trim()) {
+        return NextResponse.redirect(new URL("/onboarding", baseUrl));
+      }
 
-    // 2. Valid returnTo → go there
-    if (returnTo && isValidReturnTo(returnTo)) {
-      return NextResponse.redirect(new URL(returnTo, baseUrl));
-    }
+      // 2. Valid returnTo → go there
+      if (returnTo && isValidReturnTo(returnTo)) {
+        return NextResponse.redirect(new URL(returnTo, baseUrl));
+      }
 
-    // 3. 0 clubs → join page
-    const clubs = await getPlayerClubs(sql, result.playerId);
-    if (clubs.length === 0) {
-      return NextResponse.redirect(new URL("/join", baseUrl));
+      // 3. 0 clubs → join page
+      const clubs = await getPlayerClubs(sql, result.playerId);
+      if (clubs.length === 0) {
+        return NextResponse.redirect(new URL("/join", baseUrl));
+      }
+    } catch (routingError) {
+      console.error("Post-login routing failed:", routingError);
     }
 
     // 4. Default → home

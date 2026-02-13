@@ -16,7 +16,6 @@ export type JoinStep =
 
 export type JoinState = {
   step: JoinStep;
-  clubId?: number;
   clubName?: string;
   inviteCode?: string;
   error?: string;
@@ -32,47 +31,52 @@ export async function validateCode(
     return { step: "code-input", error: "Ungültiger Einladungscode" };
   }
 
-  const club = await getClubByInviteCode(sql, code);
+  try {
+    const club = await getClubByInviteCode(sql, code);
 
-  if (!club) {
-    return { step: "code-input", error: "Ungültiger Einladungscode" };
-  }
+    if (!club) {
+      return { step: "code-input", error: "Ungültiger Einladungscode" };
+    }
 
-  if (club.isDisabled) {
-    return {
-      step: "code-input",
-      error: "Dieser Verein nimmt derzeit keine Mitglieder auf",
-    };
-  }
-
-  const session = await getSession();
-
-  if (session) {
-    const isMember = await isClubMember(sql, session.playerId, club.id);
-
-    if (isMember) {
+    if (club.isDisabled) {
       return {
-        step: "already-member",
-        clubId: club.id,
+        step: "code-input",
+        error: "Dieser Verein nimmt derzeit keine Mitglieder auf",
+      };
+    }
+
+    const session = await getSession();
+
+    if (session) {
+      const isMember = await isClubMember(sql, session.playerId, club.id);
+
+      if (isMember) {
+        return {
+          step: "already-member",
+          clubName: club.name,
+          inviteCode: code,
+        };
+      }
+
+      return {
+        step: "confirm-join",
         clubName: club.name,
         inviteCode: code,
       };
     }
 
     return {
-      step: "confirm-join",
-      clubId: club.id,
+      step: "guest-email",
       clubName: club.name,
       inviteCode: code,
     };
+  } catch (error) {
+    console.error("validateCode failed:", error);
+    return {
+      step: "code-input",
+      error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    };
   }
-
-  return {
-    step: "guest-email",
-    clubId: club.id,
-    clubName: club.name,
-    inviteCode: code,
-  };
 }
 
 export async function joinClubAction(
@@ -84,17 +88,47 @@ export async function joinClubAction(
     redirect("/login");
   }
 
-  const clubId = Number(formData.get("clubId"));
-  if (!clubId) {
+  const inviteCode = (formData.get("inviteCode") as string)
+    ?.trim()
+    .toUpperCase();
+  if (!inviteCode || !/^[A-Z0-9]{6}$/.test(inviteCode)) {
     return { step: "code-input", error: "Ungültiger Einladungscode" };
   }
 
-  await sql.begin(async (tx) => {
-    await joinClub(tx, session.playerId, clubId);
-    await autoEnrollInActiveSeasons(tx, session.playerId, clubId);
-    await createNewPlayerEvent(tx, clubId, session.playerId, {});
-  });
+  let club;
+  try {
+    club = await getClubByInviteCode(sql, inviteCode);
+  } catch (error) {
+    console.error("joinClubAction lookup failed:", error);
+    return {
+      step: "code-input",
+      error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    };
+  }
 
+  if (!club || club.isDisabled) {
+    return { step: "code-input", error: "Ungültiger Einladungscode" };
+  }
+
+  try {
+    await sql.begin(async (tx) => {
+      const { alreadyMember } = await joinClub(tx, session.playerId, club.id);
+      if (!alreadyMember) {
+        await autoEnrollInActiveSeasons(tx, session.playerId, club.id);
+        await createNewPlayerEvent(tx, club.id, session.playerId, {});
+      }
+    });
+  } catch (error) {
+    console.error("joinClubAction transaction failed:", error);
+    return {
+      step: "confirm-join",
+      clubName: club.name,
+      inviteCode,
+      error: "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
+    };
+  }
+
+  // redirect() throws — must be outside try/catch
   redirect("/");
 }
 
@@ -103,25 +137,43 @@ export async function requestJoinAction(
   formData: FormData,
 ): Promise<JoinState> {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const inviteCode = formData.get("inviteCode") as string;
+  const inviteCode = (formData.get("inviteCode") as string)
+    ?.trim()
+    .toUpperCase();
+  const clubName = formData.get("clubName") as string;
+
+  if (!inviteCode || !/^[A-Z0-9]{6}$/.test(inviteCode)) {
+    return { step: "code-input", error: "Ungültiger Einladungscode" };
+  }
 
   if (!email || !email.includes("@")) {
     return {
       step: "guest-email",
-      clubId: _prev.clubId,
-      clubName: _prev.clubName,
+      clubName,
       inviteCode,
       error: "Bitte gib eine gültige E-Mail-Adresse ein",
     };
   }
 
   // Enumeration protection: always return check-email regardless of whether player exists
-  const player = await getPlayerByEmail(email);
+  try {
+    const player = await getPlayerByEmail(email);
 
-  if (player) {
-    const token = await createMagicLink(player.id);
-    const returnTo = `/join?code=${inviteCode}`;
-    await sendMagicLinkEmail(email, player.name, token, returnTo);
+    if (player) {
+      const token = await createMagicLink(player.id);
+      const returnTo = `/join?code=${inviteCode}`;
+      const { success, error: emailError } = await sendMagicLinkEmail(
+        email,
+        player.name,
+        token,
+        returnTo,
+      );
+      if (!success) {
+        console.error("Failed to send join magic link email:", emailError);
+      }
+    }
+  } catch (error) {
+    console.error("requestJoinAction failed:", error);
   }
 
   return { step: "check-email" };
