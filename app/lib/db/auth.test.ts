@@ -1,5 +1,6 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { withTestDb } from "./test-helpers";
+import { seedPlayer } from "./seed";
 import {
   getPlayerByEmail,
   getPlayerById,
@@ -15,27 +16,12 @@ const db = withTestDb();
 
 afterAll(() => db.cleanup());
 
-// ── Helper ─────────────────────────────────────────────
-
-async function insertPlayer(
-  tx: Parameters<Parameters<typeof db.withinTransaction>[0]>[0],
-  email: string,
-  name = "Test Player",
-) {
-  const [row] = await tx`
-    INSERT INTO player (name, email_address, created)
-    VALUES (${name}, ${email}, NOW())
-    RETURNING id
-  `;
-  return row.id as number;
-}
-
 // ── getPlayerByEmail ───────────────────────────────────
 
 describe("getPlayerByEmail", () => {
   it("returns player when email matches (case-insensitive)", async () => {
     await db.withinTransaction(async (tx) => {
-      await insertPlayer(tx, "Alice@Example.com", "Alice");
+      await seedPlayer(tx, "Alice@Example.com", "Alice");
       const player = await getPlayerByEmail(tx, "alice@example.com");
       expect(player).toEqual(
         expect.objectContaining({ name: "Alice", email: "Alice@Example.com" }),
@@ -56,7 +42,7 @@ describe("getPlayerByEmail", () => {
 describe("getPlayerById", () => {
   it("returns player when found", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "byid@example.com", "ById");
+      const id = await seedPlayer(tx, "byid@example.com", "ById");
       const player = await getPlayerById(tx, id);
       expect(player).toEqual(
         expect.objectContaining({ id, name: "ById", email: "byid@example.com" }),
@@ -77,7 +63,7 @@ describe("getPlayerById", () => {
 describe("updatePlayerProfile", () => {
   it("updates name and phone_number", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "update@example.com", "Old Name");
+      const id = await seedPlayer(tx, "update@example.com", "Old Name");
       await updatePlayerProfile(tx, id, {
         name: "New Name",
         phoneNumber: "+49 123",
@@ -90,7 +76,7 @@ describe("updatePlayerProfile", () => {
 
   it("leaves other fields unchanged", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "keep@example.com", "Keep");
+      const id = await seedPlayer(tx, "keep@example.com", "Keep");
       await updatePlayerProfile(tx, id, { name: "Updated" });
       const [row] = await tx`SELECT name, email_address, bio FROM player WHERE id = ${id}`;
       expect(row.name).toBe("Updated");
@@ -105,7 +91,7 @@ describe("updatePlayerProfile", () => {
 describe("magic links", () => {
   it("creates and verifies a magic link", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "magic@example.com");
+      const id = await seedPlayer(tx, "magic@example.com");
       const expires = new Date(Date.now() + 15 * 60 * 1000);
       await createMagicLink(tx, id, "token-abc", expires);
 
@@ -116,7 +102,7 @@ describe("magic links", () => {
 
   it("UPSERT replaces existing link for same player", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "upsert@example.com");
+      const id = await seedPlayer(tx, "upsert@example.com");
       const expires = new Date(Date.now() + 15 * 60 * 1000);
 
       await createMagicLink(tx, id, "token-first", expires);
@@ -134,7 +120,7 @@ describe("magic links", () => {
 
   it("returns null for expired token", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "expired@example.com");
+      const id = await seedPlayer(tx, "expired@example.com");
       const expired = new Date(Date.now() - 1000);
       await createMagicLink(tx, id, "token-expired", expired);
 
@@ -152,7 +138,7 @@ describe("magic links", () => {
 
   it("returns null on second call (replay protection)", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "replay@example.com");
+      const id = await seedPlayer(tx, "replay@example.com");
       const expires = new Date(Date.now() + 15 * 60 * 1000);
       await createMagicLink(tx, id, "token-replay", expires);
 
@@ -170,7 +156,7 @@ describe("magic links", () => {
 describe("sessions", () => {
   it("creates and retrieves a session", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "session@example.com");
+      const id = await seedPlayer(tx, "session@example.com");
       const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       await createSession(tx, id, "sess-token", expires);
 
@@ -181,7 +167,7 @@ describe("sessions", () => {
 
   it("returns null for expired session", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "sess-exp@example.com");
+      const id = await seedPlayer(tx, "sess-exp@example.com");
       const expired = new Date(Date.now() - 1000);
       await createSession(tx, id, "sess-expired", expired);
 
@@ -199,7 +185,7 @@ describe("sessions", () => {
 
   it("delete removes the session", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await insertPlayer(tx, "del-sess@example.com");
+      const id = await seedPlayer(tx, "del-sess@example.com");
       const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       await createSession(tx, id, "sess-delete", expires);
 
