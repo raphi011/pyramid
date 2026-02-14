@@ -27,8 +27,9 @@ Canonical reference for the Pyramid app database schema.
 | 11 | `events` | [Events & Notifications](#events) | Immutable activity feed |
 | 12 | `event_reads` | [Events & Notifications](#event_reads) | Per-player read watermark |
 | 13 | `notification_preferences` | [Events & Notifications](#notification_preferences) | Email notification settings |
-| 14 | `magic_links` | [Auth](#magic_links) | Passwordless login tokens |
-| 15 | `sessions` | [Auth](#sessions) | Database-backed sessions |
+| 14 | `images` | [Images](#images) | Shared image storage (avatars, logos, match photos) |
+| 15 | `magic_links` | [Auth](#magic_links) | Passwordless login tokens |
+| 16 | `sessions` | [Auth](#sessions) | Database-backed sessions |
 
 ---
 
@@ -62,7 +63,7 @@ Club definitions. Each club has an invite code for player self-registration.
 | `city` | `TEXT` | `NOT NULL DEFAULT ''` | |
 | `zip` | `TEXT` | `NOT NULL DEFAULT ''` | Postal / zip code |
 | `country` | `TEXT` | `NOT NULL DEFAULT ''` | |
-| `logo_data` | `BYTEA` | | Club logo stored as binary. Served via `/api/clubs/[id]/logo` with `Cache-Control` headers. Returns 404 if NULL — client falls back to initial-based avatar. |
+| `image_id` | `UUID` | `FK → images(id)` | Club logo. References shared `images` table. Served via `/api/images/{uuid}`. NULL → client falls back to initial-based avatar. |
 | `is_disabled` | `BOOL` | `NOT NULL DEFAULT false` | App admin can disable a club |
 | `created` | `TIMESTAMPTZ` | `NOT NULL` | |
 
@@ -76,7 +77,7 @@ Player accounts. Global across all clubs.
 | `name` | `TEXT` | `NOT NULL` | May be empty string on first invite (set during onboarding) |
 | `phone_number` | `TEXT` | `NOT NULL DEFAULT ''` | |
 | `email_address` | `TEXT` | `NOT NULL UNIQUE` | Login identifier |
-| `photo_data` | `BYTEA` | | Profile photo stored as binary (base64 in transit) |
+| `image_id` | `UUID` | `FK → images(id)` | Profile photo. References shared `images` table. Served via `/api/images/{uuid}`. |
 | `bio` | `TEXT` | `NOT NULL DEFAULT ''` | Free-text "about me" |
 | `language` | `TEXT` | `NOT NULL DEFAULT 'en'` | `'en'` or `'de'` — per-user i18n preference |
 | `theme` | `TEXT` | `NOT NULL DEFAULT 'auto'` | `'dark'`, `'light'`, or `'auto'` — per-user display preference |
@@ -86,7 +87,7 @@ Player accounts. Global across all clubs.
 | `unavailable_until` | `TIMESTAMPTZ` | | |
 | `unavailable_reason` | `TEXT` | `NOT NULL DEFAULT ''` | Private — never exposed to other players |
 
-**Avatar Serving:** `photo_data` is served via `/api/players/[id]/avatar` with `Content-Type: image/*` and `Cache-Control: public, max-age=86400`. Returns 404 if NULL — client falls back to initial-based avatar. The UI receives avatar URLs as strings, never raw binary. Same pattern applies to `clubs.logo_data` via `/api/clubs/[id]/logo`.
+**Image Serving:** All images (player avatars, club logos, match photos) are stored in the shared `images` table and served via a unified endpoint: `GET /api/images/{uuid}` with `Content-Type` from the stored `content_type` and `Cache-Control: public, max-age=86400`. Returns 404 if the UUID is unknown. The UI receives image URLs as `/api/images/{uuid}` strings, never raw binary. Images are uploaded via `POST /api/images` (multipart/form-data); the server resizes to 800×800 max and converts to WebP via `sharp`. The old per-entity endpoints (`/api/players/[id]/avatar`, `/api/clubs/[id]/logo`) are replaced by this unified pattern.
 
 #### `club_members`
 
@@ -179,6 +180,7 @@ Challenge and match records. Tracks the full lifecycle from challenge to result.
 | `status` | `TEXT` | `NOT NULL` | See enum below |
 | `challenge_text` | `TEXT` | `NOT NULL DEFAULT ''` | Optional message with the challenge |
 | `disputed_reason` | `TEXT` | `NOT NULL DEFAULT ''` | Reason if result was disputed |
+| `image_id` | `UUID` | `FK → images(id)` | Optional match photo. Served via `/api/images/{uuid}`. |
 | `game_at` | `TIMESTAMPTZ` | | Agreed match date/time |
 | `created` | `TIMESTAMPTZ` | `NOT NULL` | When the challenge was issued |
 
@@ -192,6 +194,7 @@ Comments on a match. Used for coordination between players.
 | `match_id` | `INT` | `NOT NULL, FK → season_matches(id)` | |
 | `player_id` | `INT` | `NOT NULL, FK → player(id)` | |
 | `comment` | `TEXT` | `NOT NULL` | |
+| `image_id` | `UUID` | `FK → images(id)` | Optional inline image. Served via `/api/images/{uuid}`. |
 | `created` | `TIMESTAMPTZ` | `NOT NULL` | |
 | `edited_at` | `TIMESTAMPTZ` | | NULL if never edited |
 
@@ -307,6 +310,28 @@ Per-player email notification settings. Controls which events trigger emails.
 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | |
 
 If `email_enabled = false`, no emails are sent regardless of other toggles.
+
+---
+
+### Images
+
+#### `images`
+
+Shared image storage for all binary image data (player avatars, club logos, match photos, comment images). Entities reference images via `image_id UUID` foreign keys.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | `UUID` | `PRIMARY KEY` | `gen_random_uuid()` default |
+| `data` | `BYTEA` | `NOT NULL` | Image binary data (WebP, resized to 800×800 max by server) |
+| `content_type` | `TEXT` | `NOT NULL` | MIME type, e.g. `image/webp` |
+| `width` | `INT` | `NOT NULL` | Width in pixels after resize |
+| `height` | `INT` | `NOT NULL` | Height in pixels after resize |
+| `size_bytes` | `INT` | `NOT NULL` | Size of `data` in bytes |
+| `created` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | |
+
+**Upload flow:** `POST /api/images` accepts multipart/form-data with an image file. The server validates the file type, resizes to 800×800 max via `sharp`, converts to WebP, and inserts into this table. Returns the UUID. The caller then stores the UUID as `image_id` on the relevant entity (`player`, `clubs`, `season_matches`, `match_comments`).
+
+**Serving:** `GET /api/images/{uuid}` returns the raw bytes with `Content-Type` from `content_type` and `Cache-Control: public, max-age=86400`.
 
 ---
 
@@ -433,6 +458,10 @@ These are enforced at the application layer (not as Postgres `ENUM` types) for f
 | `player` → `notification_preferences` | 1:1 | One settings row per player |
 | `player` → `magic_links` | 1:1 | One active link at a time (UNIQUE) |
 | `player` → `sessions` | 1:N | Multiple active sessions allowed |
+| `images` → `player` | 1:N | One image can be referenced by multiple players (rare) |
+| `images` → `clubs` | 1:N | One image can be referenced by multiple clubs (rare) |
+| `images` → `season_matches` | 1:N | Match photo |
+| `images` → `match_comments` | 1:N | Comment inline image |
 
 ### Foreign Key Cascade Rules
 
