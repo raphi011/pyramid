@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import preview from "#.storybook/preview";
-import { within, userEvent, expect, waitFor } from "storybook/test";
-import { ChallengeSheet } from "@/components/domain/challenge-sheet";
+import { within, userEvent, expect } from "storybook/test";
+import { ChallengeSheet, type Opponent } from "@/components/domain/challenge-sheet";
 import { Button } from "@/components/ui/button";
-import { annaSchmidt, tomWeber } from "../__fixtures__";
+
+const opponents: Opponent[] = [
+  { teamId: 1, name: "Julia Fischer", rank: 1 },
+  { teamId: 2, name: "Anna Schmidt", rank: 2 },
+  { teamId: 4, name: "Lisa Müller", rank: 4 },
+];
 
 const meta = preview.meta({
   title: "Domain/ChallengeSheet",
@@ -19,26 +24,24 @@ const meta = preview.meta({
 
 export default meta;
 
-function ChallengeDemo() {
+function DirectChallengeDemo() {
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
   return (
     <>
       <Button onClick={() => setOpen(true)}>Herausfordern</Button>
       <ChallengeSheet
         open={open}
         onClose={() => setOpen(false)}
-        onSubmit={() => setOpen(false)}
-        player={{ ...annaSchmidt, rank: 2 }}
-        message={message}
-        onMessageChange={setMessage}
+        target={opponents[1]}
+        opponents={opponents}
+        seasonId={1}
       />
     </>
   );
 }
 
-export const Default = meta.story({
-  render: () => <ChallengeDemo />,
+export const DirectChallenge = meta.story({
+  render: () => <DirectChallengeDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
@@ -46,11 +49,11 @@ export const Default = meta.story({
     // Open sheet
     await userEvent.click(canvas.getByRole("button", { name: /herausfordern/i }));
 
-    // Sheet should appear
+    // Sheet should appear with confirm step (direct target)
     const dialog = await body.findByRole("dialog");
     const dialogScope = within(dialog);
 
-    // Verify player info (use getAllByText to handle sr-only duplicates from Avatar)
+    // Verify opponent info
     const nameElements = dialogScope.getAllByText("Anna Schmidt");
     await expect(nameElements.length).toBeGreaterThanOrEqual(1);
     await expect(dialogScope.getByText(/Rang 2/)).toBeInTheDocument();
@@ -59,35 +62,67 @@ export const Default = meta.story({
     const textarea = dialogScope.getByRole("textbox");
     await userEvent.type(textarea, "Samstag 14 Uhr?");
     await expect(textarea).toHaveValue("Samstag 14 Uhr?");
-
-    // Submit
-    const submitButtons = dialogScope.getAllByRole("button");
-    const submitButton = submitButtons.find((b) => b.textContent?.includes("Herausfordern"));
-    await userEvent.click(submitButton!);
-
-    // Wait for transition to complete
-    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
   },
 });
 
-function WithMessageDemo() {
+function PickOpponentDemo() {
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("Hast du am Samstag Zeit?");
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Mit Nachricht</Button>
+      <Button onClick={() => setOpen(true)}>Gegner wählen</Button>
       <ChallengeSheet
         open={open}
         onClose={() => setOpen(false)}
-        onSubmit={() => setOpen(false)}
-        player={{ ...tomWeber, rank: 4 }}
-        message={message}
-        onMessageChange={setMessage}
+        opponents={opponents}
+        seasonId={1}
       />
     </>
   );
 }
 
-export const WithMessage = meta.story({
-  render: () => <WithMessageDemo />,
+export const PickOpponent = meta.story({
+  render: () => <PickOpponentDemo />,
+});
+
+function WithSeasonSelectDemo() {
+  const [open, setOpen] = useState(false);
+  const seasons = [
+    { id: 1, name: "Sommer 2026" },
+    { id: 2, name: "Winter 2025" },
+  ];
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Mit Saison</Button>
+      <ChallengeSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        opponents={opponents}
+        seasonId={1}
+        seasons={seasons}
+      />
+    </>
+  );
+}
+
+export const WithSeasonSelect = meta.story({
+  render: () => <WithSeasonSelectDemo />,
+});
+
+function EmptyOpponentsDemo() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Keine Gegner</Button>
+      <ChallengeSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        opponents={[]}
+        seasonId={1}
+      />
+    </>
+  );
+}
+
+export const EmptyOpponents = meta.story({
+  render: () => <EmptyOpponentsDemo />,
 });

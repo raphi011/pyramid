@@ -28,6 +28,11 @@ export default defineConfig({
         plugins: [
           storybookTest({ configDir: path.join(dirname, ".storybook") }),
         ],
+        resolve: {
+          alias: {
+            "@/app/lib/actions/challenge": path.join(dirname, ".storybook/mocks/challenge-action.ts"),
+          },
+        },
         test: {
           name: "storybook",
           browser: {

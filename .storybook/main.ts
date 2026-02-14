@@ -39,6 +39,9 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, ".."),
+      "next/cache": path.resolve(__dirname, "mocks/next-cache.ts"),
+      "next/headers": path.resolve(__dirname, "mocks/next-headers.ts"),
+      "@/app/lib/actions/challenge": path.resolve(__dirname, "mocks/challenge-action.ts"),
     };
     config.plugins = config.plugins || [];
     config.plugins.push(tailwindcss());

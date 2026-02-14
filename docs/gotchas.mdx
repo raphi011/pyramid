@@ -66,6 +66,28 @@ The state object carries `step`, `error`, and any data needed by the next step. 
 
 Next.js `redirect()` from `next/navigation` works by throwing a special error. It must be called **outside** of try/catch blocks, or the catch will swallow the redirect. In server actions, call it after all DB work completes.
 
+### Server actions crash Storybook Vitest (`process`/`Buffer` not defined)
+
+Components that import server actions (files with `"use server"`) will crash in Storybook's Vitest browser runner because the action's import chain pulls in Node.js-only modules (`next/cache`, `next/headers`, `postgres`, `crypto`).
+
+**Fix:** Mock the server action module in `vitest.config.ts` (scoped to the storybook project) and `.storybook/main.ts`:
+
+```ts
+// vitest.config.ts — storybook project
+resolve: {
+  alias: {
+    "@/app/lib/actions/challenge": path.join(dirname, ".storybook/mocks/challenge-action.ts"),
+  },
+},
+
+// .storybook/main.ts — viteFinal
+"next/cache": path.resolve(__dirname, "mocks/next-cache.ts"),
+"next/headers": path.resolve(__dirname, "mocks/next-headers.ts"),
+"@/app/lib/actions/challenge": path.resolve(__dirname, "mocks/challenge-action.ts"),
+```
+
+Mock the entire action module (not individual Node.js modules) to cut off the whole server import tree.
+
 ### Middleware deprecation warning
 
 Next.js 16 shows `"middleware" file convention is deprecated. Please use "proxy" instead.` — this is informational. The middleware still works. We'll migrate to the proxy convention in a future slice.
