@@ -22,20 +22,6 @@ type RankChartProps = {
 };
 
 function RankChart({ data, className }: RankChartProps) {
-  if (data.length === 0) {
-    return (
-      <div
-        className={cn(
-          "flex h-48 items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-          className,
-        )}
-      >
-        Keine Rangdaten vorhanden
-      </div>
-    );
-  }
-
-  const maxRank = Math.max(...data.map((d) => d.rank));
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -54,6 +40,21 @@ function RankChart({ data, className }: RankChartProps) {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  if (data.length === 0) {
+    return (
+      <div
+        className={cn(
+          "flex h-48 items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+          className,
+        )}
+      >
+        Keine Rangdaten vorhanden
+      </div>
+    );
+  }
+
+  const maxRank = Math.max(...data.map((d) => d.rank));
 
   return (
     <div ref={ref} className={cn("h-48", className)}>
