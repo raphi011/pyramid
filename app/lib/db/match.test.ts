@@ -19,6 +19,7 @@ import {
   getMatchById,
   getDateProposals,
   getMatchComments,
+  createMatchComment,
   createDateProposal,
   acceptDateProposal,
   declineDateProposal,
@@ -531,6 +532,75 @@ describe("getMatchComments", () => {
 
       const comments = await getMatchComments(tx, matchId);
       expect(comments).toEqual([]);
+    });
+  });
+});
+
+// ── createMatchComment ──────────────────────────
+
+describe("createMatchComment", () => {
+  it("inserts comment and returns it with player name", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "cc1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "cc2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const result = await createMatchComment(tx, matchId, p1, "Hello!");
+
+      expect(result.id).toBeGreaterThan(0);
+      expect(result.matchId).toBe(matchId);
+      expect(result.playerId).toBe(p1);
+      expect(result.playerName).toBe("Alice");
+      expect(result.comment).toBe("Hello!");
+      expect(result.created).toBeInstanceOf(Date);
+      expect(result.editedAt).toBeNull();
+    });
+  });
+
+  it("trims whitespace from comment", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "cc3@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "cc4@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const result = await createMatchComment(tx, matchId, p1, "  padded  ");
+      expect(result.comment).toBe("padded");
+    });
+  });
+
+  it("throws on empty comment", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "cc5@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "cc6@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      await expect(createMatchComment(tx, matchId, p1, "")).rejects.toThrow(
+        "Comment must not be empty",
+      );
+      await expect(createMatchComment(tx, matchId, p1, "   ")).rejects.toThrow(
+        "Comment must not be empty",
+      );
     });
   });
 });

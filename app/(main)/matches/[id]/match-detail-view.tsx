@@ -224,6 +224,9 @@ export function MatchDetailView({
           result = await postCommentAction(formData);
           if (result && "success" in result) setCommentText("");
           break;
+        default:
+          result = { error: "matchDetail.error.serverError" };
+          break;
       }
       if (result && "error" in result) {
         setError(t(`error.${result.error.split(".").pop()}`));
@@ -477,27 +480,27 @@ export function MatchDetailView({
           <CardTitle>{t("comments")}</CardTitle>
         </CardHeader>
         <CardContent>
-          {comments.length > 0 ? (
-            <div className="space-y-3">
-              {comments.map((c) => (
-                <div key={c.id} className="flex gap-2">
-                  <Avatar name={c.playerName} size="sm" />
-                  <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {c.comment}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {formatDateTime(c.created)}
-                    </p>
-                  </div>
+          <DataList
+            items={comments}
+            empty={{
+              title: t("noComments"),
+              description: t("noCommentsDesc"),
+            }}
+            renderItem={(c) => (
+              <div className="flex gap-2 py-2">
+                <Avatar name={c.playerName} size="sm" />
+                <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    {c.comment}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {formatDateTime(c.created)}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t("noCommentsDesc")}
-            </p>
-          )}
+              </div>
+            )}
+            keyExtractor={(c) => c.id}
+          />
 
           {isParticipant && (
             <>

@@ -370,21 +370,17 @@ export async function createMatchComment(
       id,
       match_id AS "matchId",
       player_id AS "playerId",
+      (SELECT name FROM player WHERE id = match_comments.player_id) AS "playerName",
       comment,
       created,
       edited_at AS "editedAt"
-  `;
-
-  // Fetch player name separately (consistent with getMatchComments)
-  const [player] = await sql`
-    SELECT name AS "playerName" FROM player WHERE id = ${playerId}
   `;
 
   return {
     id: row.id as number,
     matchId: row.matchId as number,
     playerId: row.playerId as number,
-    playerName: player.playerName as string,
+    playerName: row.playerName as string,
     comment: row.comment as string,
     created: row.created as Date,
     editedAt: (row.editedAt as Date) ?? null,

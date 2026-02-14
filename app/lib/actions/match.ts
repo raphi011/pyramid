@@ -355,7 +355,9 @@ export async function postCommentAction(
   }
 
   try {
-    await createMatchComment(sql, matchId, player.id, trimmed);
+    await sql.begin(async (tx) => {
+      await createMatchComment(tx, matchId, player.id, trimmed);
+    });
   } catch (e) {
     console.error("postCommentAction failed:", e);
     return { error: "matchDetail.error.serverError" };
