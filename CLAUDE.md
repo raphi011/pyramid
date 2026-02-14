@@ -17,6 +17,7 @@ All docs are MDX files hosted in Storybook (`bun storybook` → "Docs" sidebar g
 - `docs/user-stories.mdx` — All user stories: flows, preconditions, steps, edge cases. **Read before implementing features or writing e2e tests.**
 - `docs/component-architecture.mdx` — Three-layer component architecture, import rules, composition patterns.
 - `docs/testing-strategy.mdx` — Four-layer testing approach: unit tests, DB integration, Storybook interaction, Playwright e2e. **Read before writing tests.**
+- `docs/design-system-best-practices.mdx` — Design principles for polished UIs: hierarchy, color, typography, spacing, states, accessibility, with Pyramid audit.
 - `docs/gotchas.mdx` — Framework-specific pitfalls: Next.js, postgres.js, JSON/i18n, security patterns. **Read when debugging unexpected behavior.**
 
 ## Development Commands
