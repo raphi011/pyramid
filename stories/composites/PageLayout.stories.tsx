@@ -28,7 +28,9 @@ export const WithAction = meta.story({
     >
       <Card>
         <CardContent>
-          <p className="text-sm text-slate-500">Pyramide wird hier angezeigt...</p>
+          <p className="text-sm text-slate-500">
+            Pyramide wird hier angezeigt...
+          </p>
         </CardContent>
       </Card>
     </PageLayout>

@@ -14,11 +14,7 @@ export default defineConfig({
     coverage: {
       provider: "istanbul",
       include: ["components/**/*.tsx"],
-      exclude: [
-        "**/*.stories.tsx",
-        "**/*.test.tsx",
-        "**/*.test.ts",
-      ],
+      exclude: ["**/*.stories.tsx", "**/*.test.tsx", "**/*.test.ts"],
       reporter: ["text", "html", "json-summary"],
       reportsDirectory: "coverage",
     },
@@ -30,7 +26,10 @@ export default defineConfig({
         ],
         resolve: {
           alias: {
-            "@/app/lib/actions/challenge": path.join(dirname, ".storybook/mocks/challenge-action.ts"),
+            "@/app/lib/actions/challenge": path.join(
+              dirname,
+              ".storybook/mocks/challenge-action.ts",
+            ),
           },
         },
         test: {
@@ -49,9 +48,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "db",
-          include: [
-            "app/lib/**/*.test.ts",
-          ],
+          include: ["app/lib/**/*.test.ts"],
           environment: "node",
           pool: "forks",
           setupFiles: ["./app/lib/db/test-setup.ts"],

@@ -329,11 +329,7 @@ describe("autoEnrollInActiveSeasons", () => {
         status: "active",
       });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toHaveLength(1);
       expect(enrollments[0]).toEqual(
@@ -359,11 +355,7 @@ describe("autoEnrollInActiveSeasons", () => {
         maxTeamSize: 2,
       });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toEqual([]);
     });
@@ -376,11 +368,7 @@ describe("autoEnrollInActiveSeasons", () => {
       await seedClubMember(tx, playerId, clubId);
       await seedSeason(tx, clubId, { status: "draft" });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toEqual([]);
     });
@@ -430,11 +418,7 @@ describe("autoEnrollInActiveSeasons", () => {
         maxTeamSize: 2,
       });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toHaveLength(2);
 

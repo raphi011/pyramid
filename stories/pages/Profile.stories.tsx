@@ -18,7 +18,14 @@ const meta = preview.meta({
   title: "Pages/Profile",
   parameters: {
     layout: "fullscreen",
-    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+    a11y: {
+      config: {
+        rules: [
+          { id: "heading-order", enabled: false },
+          { id: "color-contrast", enabled: false },
+        ],
+      },
+    },
   },
 });
 
@@ -155,7 +162,9 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
                     Rang 5 · Sommer 2026
                   </p>
                 </div>
-                <Badge variant="win" size="sm">Aktiv</Badge>
+                <Badge variant="win" size="sm">
+                  Aktiv
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -166,7 +175,9 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
                     Rang 3 · Sommer 2026
                   </p>
                 </div>
-                <Badge variant="win" size="sm">Aktiv</Badge>
+                <Badge variant="win" size="sm">
+                  Aktiv
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -189,16 +200,26 @@ function StatsContent() {
       <CardContent>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">7</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              7
+            </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Siege</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">6</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Niederlagen</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              6
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Niederlagen
+            </p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">54%</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Siegquote</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              54%
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Siegquote
+            </p>
           </div>
         </div>
       </CardContent>

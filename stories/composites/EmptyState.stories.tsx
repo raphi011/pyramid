@@ -20,7 +20,8 @@ export const WithAction = meta.story({
   args: {
     icon: <TrophyIcon />,
     title: "Keine Rangliste",
-    description: "Es gibt noch keine aktive Saison. Erstelle eine neue Saison um loszulegen.",
+    description:
+      "Es gibt noch keine aktive Saison. Erstelle eine neue Saison um loszulegen.",
     action: { label: "Saison erstellen", onClick: fn() },
   },
 });

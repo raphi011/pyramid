@@ -28,7 +28,7 @@ const config: StorybookConfig = {
       },
     },
     "@storybook/addon-a11y",
-    "@storybook/addon-vitest"
+    "@storybook/addon-vitest",
   ],
   framework: {
     name: "@storybook/react-vite",

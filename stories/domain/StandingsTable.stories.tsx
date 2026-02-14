@@ -34,7 +34,9 @@ export const Default = meta.story({
     await expect(rows).toHaveLength(6);
 
     // First player (rank 1) is visible
-    await expect(canvas.getAllByText("Julia Fischer").length).toBeGreaterThan(0);
+    await expect(canvas.getAllByText("Julia Fischer").length).toBeGreaterThan(
+      0,
+    );
 
     // Click a row and verify callback fires with player data
     await userEvent.click(rows[2]);

@@ -20,13 +20,21 @@ function SheetDemo() {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Sheet öffnen</Button>
-      <Sheet open={open} onClose={() => setOpen(false)} title="Forderung senden">
+      <Sheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Forderung senden"
+      >
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Möchtest du diesen Spieler herausfordern? Du kannst eine optionale
           Nachricht hinzufügen.
         </p>
         <div className="mt-6 flex gap-3">
-          <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="flex-1"
+          >
             Abbrechen
           </Button>
           <Button onClick={() => setOpen(false)} className="flex-1">

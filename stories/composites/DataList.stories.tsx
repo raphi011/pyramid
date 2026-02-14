@@ -86,6 +86,8 @@ export const Empty = meta.story({
 
     // Empty state renders with title and action button
     await expect(canvas.getByText("Keine Spieler")).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: "Spieler einladen" })).toBeInTheDocument();
+    await expect(
+      canvas.getByRole("button", { name: "Spieler einladen" }),
+    ).toBeInTheDocument();
   },
 });

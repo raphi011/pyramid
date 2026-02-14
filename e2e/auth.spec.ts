@@ -98,7 +98,9 @@ test.describe("auth flow", () => {
 
   // LogoutButton component exists but is not wired into the app UI yet.
   // Re-enable once a logout action is accessible from the shell/settings page.
-  test.skip("logout clears session and redirects to /login", async ({ page }) => {
+  test.skip("logout clears session and redirects to /login", async ({
+    page,
+  }) => {
     const player = await createTestPlayer({ name: "Logout Tester" });
 
     try {

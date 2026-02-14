@@ -286,17 +286,13 @@ function EventDetail({ event }: { event: EventItemProps }) {
   switch (event.type) {
     case "result": {
       const winnerName =
-        event.winnerId === "player1"
-          ? event.player1.name
-          : event.player2.name;
+        event.winnerId === "player1" ? event.player1.name : event.player2.name;
 
       return (
         <p className="mt-1 text-xs">
           {event.scores.map(([s1, s2], i) => {
-            const winnerScore =
-              event.winnerId === "player1" ? s1 : s2;
-            const loserScore =
-              event.winnerId === "player1" ? s2 : s1;
+            const winnerScore = event.winnerId === "player1" ? s1 : s2;
+            const loserScore = event.winnerId === "player1" ? s2 : s1;
             const wonSet = winnerScore > loserScore;
 
             return (
@@ -422,13 +418,7 @@ function EventDetail({ event }: { event: EventItemProps }) {
 
 // ── Highlighted text ────────────────────────────
 
-function HighlightedText({
-  text,
-  name,
-}: {
-  text: string;
-  name?: string;
-}) {
+function HighlightedText({ text, name }: { text: string; name?: string }) {
   if (!name) return <>{text}</>;
   const index = text.indexOf(name);
   if (index === -1) return <>{text}</>;
@@ -487,7 +477,10 @@ function EventItem(props: EventItemProps) {
     "flex items-start gap-3 md:gap-6 rounded-xl px-3 py-3",
     unread && "bg-court-50/50 dark:bg-court-950/20",
     isAnnouncement && "bg-trophy-50/50 dark:bg-trophy-950/20",
-    personal && !isAnnouncement && !unread && "bg-court-50/30 dark:bg-court-950/20",
+    personal &&
+      !isAnnouncement &&
+      !unread &&
+      "bg-court-50/30 dark:bg-court-950/20",
     href &&
       "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150",
     className,

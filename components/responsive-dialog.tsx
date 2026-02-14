@@ -47,12 +47,7 @@ function ResponsiveDialog({
 
   if (isDesktop) {
     return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        title={title}
-        className={className}
-      >
+      <Dialog open={open} onClose={onClose} title={title} className={className}>
         {children}
       </Dialog>
     );

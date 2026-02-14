@@ -78,9 +78,7 @@ export async function createChallengeAction(
   }
 
   // Find challengee player ID for the event
-  const challengeePlayer = players.find(
-    (p) => p.teamId === challengeeTeamId,
-  );
+  const challengeePlayer = players.find((p) => p.teamId === challengeeTeamId);
   if (!challengeePlayer) {
     return { error: "challenge.error.invalidTarget" };
   }

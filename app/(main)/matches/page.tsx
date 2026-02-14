@@ -15,9 +15,7 @@ type MatchesPageProps = {
   searchParams: Promise<{ season?: string }>;
 };
 
-export default async function MatchesPage({
-  searchParams,
-}: MatchesPageProps) {
+export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const { season: seasonParam } = await searchParams;
 
   const player = await getCurrentPlayer();

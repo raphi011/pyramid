@@ -1,12 +1,6 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { withTestDb } from "./test-helpers";
-import {
-  seedPlayer,
-  seedClub,
-  seedSeason,
-  seedTeam,
-  seedMatch,
-} from "./seed";
+import { seedPlayer, seedClub, seedSeason, seedTeam, seedMatch } from "./seed";
 import {
   getTeamsWithOpenChallenge,
   getUnavailableTeamIds,
@@ -353,9 +347,9 @@ describe("getMatchesByTeam", () => {
       const teamIds = matches.flatMap((m) => [m.team1Id, m.team2Id]);
       expect(teamIds).toContain(t1);
       // Should not include t2 vs t3 match
-      expect(
-        matches.every((m) => m.team1Id === t1 || m.team2Id === t1),
-      ).toBe(true);
+      expect(matches.every((m) => m.team1Id === t1 || m.team2Id === t1)).toBe(
+        true,
+      );
     });
   });
 });
@@ -386,7 +380,9 @@ describe("getOpenMatches", () => {
 
       const matches = await getOpenMatches(tx, seasonId);
       expect(matches).toHaveLength(2);
-      expect(matches.every((m) => ["challenged", "date_set"].includes(m.status))).toBe(true);
+      expect(
+        matches.every((m) => ["challenged", "date_set"].includes(m.status)),
+      ).toBe(true);
     });
   });
 });

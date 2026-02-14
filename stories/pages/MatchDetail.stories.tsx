@@ -9,14 +9,24 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MatchScoreInput, type SetScore } from "@/components/domain/match-score-input";
+import {
+  MatchScoreInput,
+  type SetScore,
+} from "@/components/domain/match-score-input";
 import { FormField } from "@/components/form-field";
 
 const meta = preview.meta({
   title: "Pages/MatchDetail",
   parameters: {
     layout: "fullscreen",
-    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+    a11y: {
+      config: {
+        rules: [
+          { id: "heading-order", enabled: false },
+          { id: "color-contrast", enabled: false },
+        ],
+      },
+    },
   },
 });
 
@@ -93,12 +103,23 @@ function ChallengedPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {["Sa, 15.02. · 10:00", "So, 16.02. · 14:00", "Di, 18.02. · 18:00"].map((d) => (
-                <div key={d} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">{d}</p>
+              {[
+                "Sa, 15.02. · 10:00",
+                "So, 16.02. · 14:00",
+                "Di, 18.02. · 18:00",
+              ].map((d) => (
+                <div
+                  key={d}
+                  className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800"
+                >
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    {d}
+                  </p>
                   <div className="flex gap-1">
                     <Button size="sm">Annehmen</Button>
-                    <Button variant="ghost" size="sm">Ablehnen</Button>
+                    <Button variant="ghost" size="sm">
+                      Ablehnen
+                    </Button>
                   </div>
                 </div>
               ))}

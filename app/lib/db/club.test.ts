@@ -81,9 +81,7 @@ describe("getPlayerClubs", () => {
       await seedClubMember(tx, playerId, clubId, "player");
 
       const clubs = await getPlayerClubs(tx, playerId);
-      expect(clubs).toEqual([
-        { clubId, clubName: "My Club", role: "player" },
-      ]);
+      expect(clubs).toEqual([{ clubId, clubName: "My Club", role: "player" }]);
     });
   });
 

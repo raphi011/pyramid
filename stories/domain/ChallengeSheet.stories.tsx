@@ -3,7 +3,10 @@
 import { useState } from "react";
 import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
-import { ChallengeSheet, type Opponent } from "@/components/domain/challenge-sheet";
+import {
+  ChallengeSheet,
+  type Opponent,
+} from "@/components/domain/challenge-sheet";
 import { Button } from "@/components/ui/button";
 
 const opponents: Opponent[] = [
@@ -47,7 +50,9 @@ export const DirectChallenge = meta.story({
     const body = within(document.body);
 
     // Open sheet
-    await userEvent.click(canvas.getByRole("button", { name: /herausfordern/i }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: /herausfordern/i }),
+    );
 
     // Sheet should appear with confirm step (direct target)
     const dialog = await body.findByRole("dialog");

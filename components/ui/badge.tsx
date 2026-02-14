@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 const variants = {
   win: "bg-court-100 text-court-700 dark:bg-court-950 dark:text-court-400",
   loss: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400",
-  pending: "bg-trophy-100 text-trophy-600 dark:bg-trophy-500/10 dark:text-trophy-400",
+  pending:
+    "bg-trophy-100 text-trophy-600 dark:bg-trophy-500/10 dark:text-trophy-400",
   rank: "bg-trophy-500 text-white",
   info: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400",
   subtle:

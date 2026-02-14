@@ -15,7 +15,14 @@ const meta = preview.meta({
   title: "Pages/Settings",
   parameters: {
     layout: "fullscreen",
-    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+    a11y: {
+      config: {
+        rules: [
+          { id: "heading-order", enabled: false },
+          { id: "color-contrast", enabled: false },
+        ],
+      },
+    },
   },
 });
 
@@ -43,7 +50,11 @@ function SettingsPage() {
                 checked={darkMode}
                 onChange={setDarkMode}
               />
-              <FormField label="Sprache" type="select" inputProps={{ defaultValue: "de" }}>
+              <FormField
+                label="Sprache"
+                type="select"
+                inputProps={{ defaultValue: "de" }}
+              >
                 <option value="de">Deutsch</option>
                 <option value="en">English</option>
               </FormField>

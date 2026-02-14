@@ -41,21 +41,29 @@ export const Destructive = meta.story({
     const body = within(document.body);
 
     // Click trigger button
-    await userEvent.click(canvas.getByRole("button", { name: /spieler entfernen/i }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: /spieler entfernen/i }),
+    );
 
     // Dialog should appear (portaled to body)
     const dialog = await body.findByRole("dialog");
     const dialogScope = within(dialog);
 
     // Verify dialog content
-    await expect(dialogScope.getByText("Spieler entfernen?")).toBeInTheDocument();
+    await expect(
+      dialogScope.getByText("Spieler entfernen?"),
+    ).toBeInTheDocument();
     await expect(dialogScope.getByText(/Max Mustermann/)).toBeInTheDocument();
 
     // Click cancel to close
-    await userEvent.click(dialogScope.getByRole("button", { name: /abbrechen/i }));
+    await userEvent.click(
+      dialogScope.getByRole("button", { name: /abbrechen/i }),
+    );
 
     // Wait for Headless UI transition to complete
-    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(body.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   },
 });
 

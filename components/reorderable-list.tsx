@@ -73,9 +73,7 @@ function SortableRow<T extends ReorderableItem>({
       >
         <Bars3Icon className="size-5" />
       </button>
-      <div className="min-w-0 flex-1 py-2 pr-3">
-        {renderItem(item, index)}
-      </div>
+      <div className="min-w-0 flex-1 py-2 pr-3">{renderItem(item, index)}</div>
     </div>
   );
 }

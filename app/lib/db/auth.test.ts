@@ -45,7 +45,11 @@ describe("getPlayerById", () => {
       const id = await seedPlayer(tx, "byid@example.com", "ById");
       const player = await getPlayerById(tx, id);
       expect(player).toEqual(
-        expect.objectContaining({ id, name: "ById", email: "byid@example.com" }),
+        expect.objectContaining({
+          id,
+          name: "ById",
+          email: "byid@example.com",
+        }),
       );
     });
   });
@@ -68,7 +72,8 @@ describe("updatePlayerProfile", () => {
         name: "New Name",
         phoneNumber: "+49 123",
       });
-      const [row] = await tx`SELECT name, phone_number FROM player WHERE id = ${id}`;
+      const [row] =
+        await tx`SELECT name, phone_number FROM player WHERE id = ${id}`;
       expect(row.name).toBe("New Name");
       expect(row.phone_number).toBe("+49 123");
     });
@@ -78,7 +83,8 @@ describe("updatePlayerProfile", () => {
     await db.withinTransaction(async (tx) => {
       const id = await seedPlayer(tx, "keep@example.com", "Keep");
       await updatePlayerProfile(tx, id, { name: "Updated" });
-      const [row] = await tx`SELECT name, email_address, bio FROM player WHERE id = ${id}`;
+      const [row] =
+        await tx`SELECT name, email_address, bio FROM player WHERE id = ${id}`;
       expect(row.name).toBe("Updated");
       expect(row.email_address).toBe("keep@example.com");
       expect(row.bio).toBe("");

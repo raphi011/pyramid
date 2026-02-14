@@ -13,7 +13,13 @@ const meta = preview.meta({
   argTypes: {
     variant: {
       control: "select",
-      options: [undefined, "current", "challengeable", "challenged", "unavailable"],
+      options: [
+        undefined,
+        "current",
+        "challengeable",
+        "challenged",
+        "unavailable",
+      ],
     },
   },
 });
@@ -31,7 +37,9 @@ export const Default = meta.story({
     const canvas = within(canvasElement);
 
     // Player name is visible
-    await expect(canvas.getAllByText("Max Mustermann").length).toBeGreaterThan(0);
+    await expect(canvas.getAllByText("Max Mustermann").length).toBeGreaterThan(
+      0,
+    );
 
     // Click the card and verify callback fires
     await userEvent.click(canvas.getByRole("button"));
@@ -101,10 +109,35 @@ export const AllVariants = meta.story({
   render: () => (
     <div className="space-y-3 w-72">
       <PlayerCard name="Max Mustermann" rank={1} wins={12} losses={0} />
-      <PlayerCard name="Max Mustermann" rank={3} wins={5} losses={2} variant="current" />
-      <PlayerCard name="Anna Schmidt" rank={2} wins={8} losses={1} variant="challengeable" onClick={fn()} />
-      <PlayerCard name="Tom Weber" rank={4} wins={3} losses={4} variant="challenged" />
-      <PlayerCard name="Lisa Müller" rank={6} wins={2} losses={3} variant="unavailable" />
+      <PlayerCard
+        name="Max Mustermann"
+        rank={3}
+        wins={5}
+        losses={2}
+        variant="current"
+      />
+      <PlayerCard
+        name="Anna Schmidt"
+        rank={2}
+        wins={8}
+        losses={1}
+        variant="challengeable"
+        onClick={fn()}
+      />
+      <PlayerCard
+        name="Tom Weber"
+        rank={4}
+        wins={3}
+        losses={4}
+        variant="challenged"
+      />
+      <PlayerCard
+        name="Lisa Müller"
+        rank={6}
+        wins={2}
+        losses={3}
+        variant="unavailable"
+      />
     </div>
   ),
 });

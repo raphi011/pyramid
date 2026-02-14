@@ -11,7 +11,14 @@ const meta = preview.meta({
   title: "Pages/Feed",
   parameters: {
     layout: "fullscreen",
-    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+    a11y: {
+      config: {
+        rules: [
+          { id: "heading-order", enabled: false },
+          { id: "color-contrast", enabled: false },
+        ],
+      },
+    },
   },
 });
 
@@ -28,7 +35,11 @@ function FeedPage({
     <PageWrapper activeHref="/feed">
       <PageLayout title="Neuigkeiten">
         <div className="space-y-4">
-          <EventTimeline events={events} highlightName={currentPlayer.name} loading={loading} />
+          <EventTimeline
+            events={events}
+            highlightName={currentPlayer.name}
+            loading={loading}
+          />
           {events.length > 0 && !loading && (
             <Button variant="ghost" className="w-full">
               Mehr laden...
@@ -54,9 +65,7 @@ export const Empty = meta.story({
 
 export const AllRead = meta.story({
   render: () => (
-    <FeedPage
-      events={allEvents.map((e) => ({ ...e, unread: false }))}
-    />
+    <FeedPage events={allEvents.map((e) => ({ ...e, unread: false }))} />
   ),
 });
 
@@ -65,7 +74,10 @@ export const SingleClub = meta.story({
     <PageWrapper activeHref="/feed" singleClub>
       <PageLayout title="Neuigkeiten">
         <div className="space-y-4">
-          <EventTimeline events={allEvents} highlightName={currentPlayer.name} />
+          <EventTimeline
+            events={allEvents}
+            highlightName={currentPlayer.name}
+          />
         </div>
       </PageLayout>
     </PageWrapper>

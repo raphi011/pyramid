@@ -22,12 +22,7 @@ export default meta;
 
 export const AdminView = meta.story({
   render: () => (
-    <ClubJoinCard
-      mode="admin"
-      clubCode="ABC123"
-      onCopy={fn()}
-      onShare={fn()}
-    />
+    <ClubJoinCard mode="admin" clubCode="ABC123" onCopy={fn()} onShare={fn()} />
   ),
 });
 

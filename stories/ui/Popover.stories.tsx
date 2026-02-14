@@ -19,7 +19,8 @@ export const Default = meta.story({
           Pyramiden-Regeln
         </p>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Du kannst Spieler in der gleichen Reihe oder eine Reihe darüber herausfordern.
+          Du kannst Spieler in der gleichen Reihe oder eine Reihe darüber
+          herausfordern.
         </p>
       </div>
     </Popover>

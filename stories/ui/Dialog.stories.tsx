@@ -43,14 +43,22 @@ function FormDialogDemo() {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Mit Formular</Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Spieler einladen">
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Spieler einladen"
+      >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name" required>Name</Label>
+            <Label htmlFor="name" required>
+              Name
+            </Label>
             <Input id="name" placeholder="Max Mustermann" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="email" required>E-Mail</Label>
+            <Label htmlFor="email" required>
+              E-Mail
+            </Label>
             <Input id="email" type="email" placeholder="max@example.com" />
           </div>
         </div>

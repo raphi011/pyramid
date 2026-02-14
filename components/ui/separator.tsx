@@ -5,10 +5,7 @@ type SeparatorProps = {
   className?: string;
 };
 
-function Separator({
-  orientation = "horizontal",
-  className,
-}: SeparatorProps) {
+function Separator({ orientation = "horizontal", className }: SeparatorProps) {
   return (
     <div
       role="separator"

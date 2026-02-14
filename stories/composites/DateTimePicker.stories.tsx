@@ -30,7 +30,9 @@ export const DateOnly = meta.story({
     await userEvent.click(trigger);
 
     // Calendar should appear — month header visible in popover
-    const monthHeader = await body.findByText(/Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember/);
+    const monthHeader = await body.findByText(
+      /Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember/,
+    );
     await expect(monthHeader).toBeInTheDocument();
   },
 });

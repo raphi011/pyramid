@@ -79,7 +79,7 @@ export default async function RankingsPage({
   const currentTeamId = await getPlayerTeamId(sql, player.id, season.id);
   const currentPlayerRank =
     currentTeamId !== null
-      ? players.find((p) => p.teamId === currentTeamId)?.rank ?? null
+      ? (players.find((p) => p.teamId === currentTeamId)?.rank ?? null)
       : null;
 
   // Map to component shapes

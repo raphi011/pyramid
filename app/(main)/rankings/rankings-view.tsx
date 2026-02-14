@@ -6,7 +6,10 @@ import { useTranslations } from "next-intl";
 import { TrophyIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Tabs } from "@/components/ui/tabs";
-import { PyramidGrid, type PyramidPlayer } from "@/components/domain/pyramid-grid";
+import {
+  PyramidGrid,
+  type PyramidPlayer,
+} from "@/components/domain/pyramid-grid";
 import {
   StandingsTable,
   type StandingsPlayer,

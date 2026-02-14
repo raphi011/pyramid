@@ -85,7 +85,9 @@ function FormField(props: FormFieldProps) {
           type={props.type ?? "text"}
           placeholder={props.placeholder}
           value={props.value}
-          onChange={props.onChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
+          onChange={
+            props.onChange as (e: React.ChangeEvent<HTMLInputElement>) => void
+          }
           disabled={props.disabled}
           error={!!error}
           aria-describedby={errorId}

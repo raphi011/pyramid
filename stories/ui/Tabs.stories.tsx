@@ -43,23 +43,41 @@ export const TwoTabs = meta.story({
     const canvas = within(canvasElement);
 
     // First tab content visible
-    await expect(canvas.getByText("Pyramiden-Ansicht der aktuellen Rangliste.")).toBeInTheDocument();
+    await expect(
+      canvas.getByText("Pyramiden-Ansicht der aktuellen Rangliste."),
+    ).toBeInTheDocument();
 
     // Click second tab
     await userEvent.click(canvas.getByRole("tab", { name: "Tabelle" }));
 
     // Second tab content visible
-    await expect(canvas.getByText("Tabellarische Ansicht mit Statistiken.")).toBeInTheDocument();
+    await expect(
+      canvas.getByText("Tabellarische Ansicht mit Statistiken."),
+    ).toBeInTheDocument();
   },
 });
 
 export const FourTabs = meta.story({
   args: {
     items: [
-      { label: "Alle", content: <p className="text-sm text-slate-600">Alle Spiele</p> },
-      { label: "Offen", content: <p className="text-sm text-slate-600">Offene Forderungen</p> },
-      { label: "Laufend", content: <p className="text-sm text-slate-600">Laufende Spiele</p> },
-      { label: "Beendet", content: <p className="text-sm text-slate-600">Abgeschlossene Spiele</p> },
+      {
+        label: "Alle",
+        content: <p className="text-sm text-slate-600">Alle Spiele</p>,
+      },
+      {
+        label: "Offen",
+        content: <p className="text-sm text-slate-600">Offene Forderungen</p>,
+      },
+      {
+        label: "Laufend",
+        content: <p className="text-sm text-slate-600">Laufende Spiele</p>,
+      },
+      {
+        label: "Beendet",
+        content: (
+          <p className="text-sm text-slate-600">Abgeschlossene Spiele</p>
+        ),
+      },
     ],
   },
 });

@@ -7,12 +7,7 @@ type CardProps = {
   highlighted?: boolean;
 };
 
-function Card({
-  children,
-  className,
-  interactive,
-  highlighted,
-}: CardProps) {
+function Card({ children, className, interactive, highlighted }: CardProps) {
   return (
     <div
       className={cn(

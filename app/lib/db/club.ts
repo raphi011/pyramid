@@ -34,10 +34,7 @@ export async function getClubByInviteCode(
   return rows.length > 0 ? (rows[0] as Club) : null;
 }
 
-export async function getClubById(
-  sql: Sql,
-  id: number,
-): Promise<Club | null> {
+export async function getClubById(sql: Sql, id: number): Promise<Club | null> {
   const rows = await sql`
     SELECT id, name, invite_code AS "inviteCode", is_disabled AS "isDisabled"
     FROM clubs

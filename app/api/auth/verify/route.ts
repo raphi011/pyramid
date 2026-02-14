@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyMagicLink, createSession, setSessionCookie } from "@/app/lib/auth";
+import {
+  verifyMagicLink,
+  createSession,
+  setSessionCookie,
+} from "@/app/lib/auth";
 import { getPlayerById } from "@/app/lib/db/auth";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";
 import { getAppUrl } from "@/app/lib/email";
 
 function isValidReturnTo(returnTo: string): boolean {
-  return returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.includes(":");
+  return (
+    returnTo.startsWith("/") &&
+    !returnTo.startsWith("//") &&
+    !returnTo.includes(":")
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -15,14 +23,18 @@ export async function GET(request: NextRequest) {
   const baseUrl = getAppUrl();
 
   if (!token) {
-    return NextResponse.redirect(new URL("/login?error=missing_token", baseUrl));
+    return NextResponse.redirect(
+      new URL("/login?error=missing_token", baseUrl),
+    );
   }
 
   try {
     const result = await verifyMagicLink(token);
 
     if (!result) {
-      return NextResponse.redirect(new URL("/login?error=invalid_token", baseUrl));
+      return NextResponse.redirect(
+        new URL("/login?error=invalid_token", baseUrl),
+      );
     }
 
     // Create session and set cookie

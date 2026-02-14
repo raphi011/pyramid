@@ -2,12 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ClipboardDocumentIcon } from "@heroicons/react/20/solid";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -49,7 +44,12 @@ function ClubJoinCard(props: ClubJoinCardProps) {
                 {props.clubCode}
               </code>
               {props.onCopy && (
-                <Button variant="outline" size="sm" onClick={props.onCopy} aria-label={tCommon("copy")}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={props.onCopy}
+                  aria-label={tCommon("copy")}
+                >
                   <ClipboardDocumentIcon className="size-4" />
                 </Button>
               )}
@@ -93,9 +93,7 @@ function ClubJoinCard(props: ClubJoinCardProps) {
             error={!!props.error}
             className="text-center text-lg font-bold tracking-widest"
           />
-          {props.error && (
-            <p className="text-sm text-red-600">{props.error}</p>
-          )}
+          {props.error && <p className="text-sm text-red-600">{props.error}</p>}
           <Button
             className="w-full"
             onClick={props.onJoin}
