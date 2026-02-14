@@ -12,6 +12,7 @@ import {
 import {
   getTeamsWithOpenChallenge,
   getUnavailableTeamIds,
+  getMatchesBySeason,
 } from "@/app/lib/db/match";
 import { canChallenge, computeMovement } from "@/app/lib/pyramid";
 import { RankingsView } from "./rankings-view";
@@ -47,6 +48,8 @@ export default async function RankingsPage({
         standingsPlayers={[]}
         currentPlayerTeamId={null}
         hasOpenChallenge={false}
+        matches={[]}
+        currentTeamId={null}
       />
     );
   }
@@ -63,14 +66,20 @@ export default async function RankingsPage({
     season = seasons[0];
   }
 
-  // Fetch standings, wins/losses, open challenges, and unavailability in parallel
-  const [standingsData, winsLossesMap, openChallengeTeams, unavailableTeams] =
-    await Promise.all([
-      getStandingsWithPlayers(sql, season.id),
-      getTeamWinsLosses(sql, season.id),
-      getTeamsWithOpenChallenge(sql, season.id),
-      getUnavailableTeamIds(sql, season.id),
-    ]);
+  // Fetch standings, wins/losses, open challenges, unavailability, and matches in parallel
+  const [
+    standingsData,
+    winsLossesMap,
+    openChallengeTeams,
+    unavailableTeams,
+    dbMatches,
+  ] = await Promise.all([
+    getStandingsWithPlayers(sql, season.id),
+    getTeamWinsLosses(sql, season.id),
+    getTeamsWithOpenChallenge(sql, season.id),
+    getUnavailableTeamIds(sql, season.id),
+    getMatchesBySeason(sql, season.id),
+  ]);
 
   const { players, previousResults } = standingsData;
   const currentResults = players.map((p) => p.teamId);
@@ -135,6 +144,38 @@ export default async function RankingsPage({
     };
   });
 
+  // Map DB matches to MatchRow shape
+  const matches = dbMatches.map((m) => {
+    const scores: [number, number][] | undefined =
+      m.team1Score && m.team2Score
+        ? m.team1Score.map(
+            (s1, i) => [s1, m.team2Score![i]] as [number, number],
+          )
+        : undefined;
+
+    const winnerId: "player1" | "player2" | undefined = m.winnerTeamId
+      ? m.winnerTeamId === m.team1Id
+        ? "player1"
+        : "player2"
+      : undefined;
+
+    return {
+      id: m.id,
+      team1Id: m.team1Id,
+      team2Id: m.team2Id,
+      player1: { name: m.team1Name },
+      player2: { name: m.team2Name },
+      status: m.status,
+      winnerId,
+      scores,
+      date: m.created.toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+    };
+  });
+
   return (
     <RankingsView
       seasons={seasons.map((s) => ({ id: s.id, name: s.name }))}
@@ -146,6 +187,8 @@ export default async function RankingsPage({
       hasOpenChallenge={
         currentTeamId !== null && openChallengeTeams.has(currentTeamId)
       }
+      matches={matches}
+      currentTeamId={currentTeamId}
     />
   );
 }

@@ -98,7 +98,6 @@ export async function createChallengeAction(
     });
 
     revalidatePath("/rankings");
-    revalidatePath("/matches");
 
     return { success: true, matchId };
   } catch (e) {

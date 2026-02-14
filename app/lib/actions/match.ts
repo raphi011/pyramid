@@ -71,7 +71,7 @@ export async function proposeDateAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/matches");
+  revalidatePath("/rankings");
 
   return { success: true };
 }
@@ -129,7 +129,7 @@ export async function acceptDateAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/matches");
+  revalidatePath("/rankings");
 
   return { success: true };
 }
@@ -172,6 +172,7 @@ export async function declineDateAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/rankings");
 
   return { success: true };
 }
@@ -249,7 +250,7 @@ export async function enterResultAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/matches");
+  revalidatePath("/rankings");
 
   return { success: true };
 }
@@ -314,7 +315,6 @@ export async function confirmResultAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/matches");
   revalidatePath("/rankings");
 
   return { success: true };
