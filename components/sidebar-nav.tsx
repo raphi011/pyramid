@@ -46,7 +46,6 @@ function SidebarNav({
   fab,
   className,
 }: SidebarNavProps) {
-  const t = useTranslations("nav");
   const tCommon = useTranslations("common");
 
   return (
@@ -124,7 +123,7 @@ function SidebarNav({
             aria-current={activeHref === profile.href ? "page" : undefined}
           >
             <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
-            <span>{t("profile")}</span>
+            <span>{profile.name}</span>
           </button>
         </div>
       )}
