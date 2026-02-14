@@ -15,6 +15,7 @@ import {
   withdrawMatch,
   forfeitMatch,
   disputeMatchResult,
+  MatchStatusConflictError,
   createMatchComment,
   updateMatchImage,
   getMatchImageId,
@@ -362,6 +363,9 @@ export async function withdrawAction(
       );
     });
   } catch (e) {
+    if (e instanceof MatchStatusConflictError) {
+      return { error: "matchDetail.error.statusConflict" };
+    }
     console.error("withdrawAction transaction failed:", e);
     return { error: "matchDetail.error.serverError" };
   }
@@ -424,6 +428,9 @@ export async function forfeitAction(
       );
     });
   } catch (e) {
+    if (e instanceof MatchStatusConflictError) {
+      return { error: "matchDetail.error.statusConflict" };
+    }
     console.error("forfeitAction transaction failed:", e);
     return { error: "matchDetail.error.serverError" };
   }
@@ -460,7 +467,7 @@ export async function disputeAction(
 
   // Cannot dispute your own result entry
   if (match.resultEnteredBy === player.id) {
-    return { error: "matchDetail.error.cannotConfirmOwn" };
+    return { error: "matchDetail.error.cannotDisputeOwn" };
   }
 
   const isTeam1 = player.id === match.team1PlayerId;
@@ -484,6 +491,9 @@ export async function disputeAction(
       );
     });
   } catch (e) {
+    if (e instanceof MatchStatusConflictError) {
+      return { error: "matchDetail.error.statusConflict" };
+    }
     console.error("disputeAction transaction failed:", e);
     return { error: "matchDetail.error.serverError" };
   }

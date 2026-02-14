@@ -269,6 +269,8 @@
       "commentEmpty": "Please enter a message.",
       "commentTooLong": "Message is too long (max 2000 characters).",
       "notChallenger": "Only the challenger can withdraw a challenge.",
+      "cannotDisputeOwn": "You cannot dispute a result you entered yourself.",
+      "statusConflict": "This match was already updated. Please refresh the page.",
       "disputeReasonEmpty": "Please enter a reason.",
       "disputeReasonTooLong": "Reason is too long (max 500 characters).",
       "serverError": "An unexpected error occurred. Please try again."

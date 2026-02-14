@@ -76,6 +76,15 @@ export class ChallengeConflictError extends Error {
   }
 }
 
+export class MatchStatusConflictError extends Error {
+  constructor(matchId: number, operation: string) {
+    super(
+      `Match ${matchId} could not be ${operation} (status changed concurrently)`,
+    );
+    this.name = "MatchStatusConflictError";
+  }
+}
+
 // ── Shared SQL fragments ───────────────────────────────
 
 const MATCH_SELECT = `
@@ -652,9 +661,7 @@ export async function withdrawMatch(
   `;
 
   if (result.count === 0) {
-    throw new Error(
-      `Match ${matchId} could not be withdrawn (status may have changed concurrently)`,
-    );
+    throw new MatchStatusConflictError(matchId, "withdrawn");
   }
 
   // Public event: "withdrawal" (visible in club feed)
@@ -688,9 +695,7 @@ export async function forfeitMatch(
   `;
 
   if (rows.length === 0) {
-    throw new Error(
-      `Match ${matchId} could not be forfeited (status may have changed concurrently)`,
-    );
+    throw new MatchStatusConflictError(matchId, "forfeited");
   }
 
   // Public event: "forfeit" (visible in club feed)
@@ -723,9 +728,7 @@ export async function disputeMatchResult(
   `;
 
   if (result.count === 0) {
-    throw new Error(
-      `Match ${matchId} could not be disputed (status may have changed concurrently)`,
-    );
+    throw new MatchStatusConflictError(matchId, "disputed");
   }
 
   // Personal event: "result_disputed" (notification for opponent)

@@ -308,15 +308,25 @@ export function MatchDetailView({
         canEnterResult ? (
           <div className="flex items-center gap-3">
             {userRole === "team1" && (
-              <button
-                type="button"
-                className="text-sm text-slate-500 underline hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-500 dark:text-slate-400"
                 onClick={() => setShowWithdrawConfirm(true)}
                 disabled={isPending}
               >
                 {t("withdraw")}
-              </button>
+              </Button>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              onClick={() => setShowForfeitConfirm(true)}
+              disabled={isPending}
+            >
+              {t("forfeit")}
+            </Button>
             <Button size="sm" onClick={() => setShowEnterResultDialog(true)}>
               {t("enterResult")}
             </Button>
@@ -542,20 +552,6 @@ export function MatchDetailView({
               }}
               keyExtractor={(p) => p.id}
             />
-            {isParticipant && (
-              <>
-                <Separator className="my-3" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-slate-500 dark:text-slate-400"
-                  onClick={() => setShowForfeitConfirm(true)}
-                  disabled={isPending}
-                >
-                  {t("forfeit")}
-                </Button>
-              </>
-            )}
           </CardContent>
         </Card>
       )}

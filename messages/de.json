@@ -269,6 +269,8 @@
       "commentEmpty": "Bitte gib eine Nachricht ein.",
       "commentTooLong": "Nachricht ist zu lang (max. 2000 Zeichen).",
       "notChallenger": "Nur der Herausforderer kann eine Forderung zur\u00fcckziehen.",
+      "cannotDisputeOwn": "Du kannst ein von dir eingetragenes Ergebnis nicht selbst anfechten.",
+      "statusConflict": "Dieses Spiel wurde bereits aktualisiert. Bitte lade die Seite neu.",
       "disputeReasonEmpty": "Bitte gib eine Begr\u00fcndung ein.",
       "disputeReasonTooLong": "Begr\u00fcndung ist zu lang (max. 500 Zeichen).",
       "serverError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
