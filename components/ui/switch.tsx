@@ -17,7 +17,7 @@ function Switch({ className, label, disabled, ...props }: SwitchProps) {
     <HeadlessSwitch
       disabled={disabled}
       className={cn(
-        "group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full",
+        "group relative inline-flex h-6 w-11 shrink-0 items-center rounded-full",
         "bg-slate-200 transition-colors duration-150 ease-out",
         "data-[checked]:bg-court-500",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-court-500 focus-visible:ring-offset-2",

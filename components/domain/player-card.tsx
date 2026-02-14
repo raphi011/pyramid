@@ -57,7 +57,7 @@ function PlayerCard({
         className={cn(
           "flex items-center gap-2 rounded-xl px-3 py-2 text-left",
           "transition-shadow duration-150",
-          onClick && "cursor-pointer hover:shadow-sm",
+          onClick && "hover:shadow-sm",
           variantStyles[variant],
           className,
         )}
@@ -96,7 +96,7 @@ function PlayerCard({
       className={cn(
         "flex items-center gap-3 rounded-xl p-3 text-left",
         "transition-shadow duration-150",
-        onClick && "cursor-pointer hover:shadow-sm",
+        onClick && "hover:shadow-sm",
         variantStyles[variant],
         className,
       )}
