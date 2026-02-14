@@ -406,7 +406,7 @@ export async function createDateProposal(
 
   await tx`
     INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-    VALUES (${clubId}, ${seasonId}, ${matchId}, ${proposedBy}, ${opponentPlayerId}, 'date_proposed', ${tx.json({})}, NOW())
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${proposedBy}, ${opponentPlayerId}, 'date_proposed', ${tx.json({ proposedDatetime: proposedDatetime.toISOString() })}, NOW())
   `;
 
   return row.id as number;
@@ -449,9 +449,10 @@ export async function acceptDateProposal(
   `;
 
   // Create personal event for the proposer
+  const acceptedDatetime = accepted[0].proposed_datetime as Date;
   await tx`
     INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-    VALUES (${clubId}, ${seasonId}, ${matchId}, ${acceptedBy}, ${proposerPlayerId}, 'date_accepted', ${tx.json({})}, NOW())
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${acceptedBy}, ${proposerPlayerId}, 'date_accepted', ${tx.json({ acceptedDatetime: acceptedDatetime.toISOString() })}, NOW())
   `;
 }
 

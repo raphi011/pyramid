@@ -3,6 +3,7 @@ import { getCurrentPlayer } from "../lib/auth";
 import { getPlayerClubs } from "../lib/db/club";
 import { getActiveSeasons, getPlayerTeamId } from "../lib/db/season";
 import { getTeamsWithOpenChallenge } from "../lib/db/match";
+import { getUnreadCount } from "../lib/db/event";
 import { sql } from "../lib/db";
 import { AppShellWrapper } from "./app-shell-wrapper";
 
@@ -39,11 +40,16 @@ export default async function MainLayout({
     }
   }
 
+  // Fetch unread notification count
+  const clubIds = clubs.map((c) => c.clubId);
+  const unreadCount = await getUnreadCount(sql, player.id, clubIds);
+
   return (
     <AppShellWrapper
       player={{ id: player.id, name: player.name }}
       clubs={clubs.map((c) => ({ id: c.clubId, name: c.clubName }))}
       hasOpenChallenge={hasOpenChallenge}
+      unreadCount={unreadCount}
     >
       {children}
     </AppShellWrapper>

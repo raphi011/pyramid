@@ -18,6 +18,7 @@ type AppShellWrapperProps = {
   player: { id: number; name: string };
   clubs: [Club, ...Club[]];
   hasOpenChallenge: boolean;
+  unreadCount: number;
   children: React.ReactNode;
 };
 
@@ -25,6 +26,7 @@ export function AppShellWrapper({
   player,
   clubs,
   hasOpenChallenge,
+  unreadCount,
   children,
 }: AppShellWrapperProps) {
   const t = useTranslations("nav");
@@ -35,11 +37,12 @@ export function AppShellWrapper({
   const [fabToast, setFabToast] = useState<string | null>(null);
 
   const navItems = [
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: unreadCount },
     { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
   ];
 
   const sidebarItems = [
-    { icon: <BellIcon />, label: t("news"), href: "/feed" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: unreadCount },
     { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
     { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
   ];

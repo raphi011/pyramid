@@ -261,5 +261,18 @@
   "notifications": {
     "ariaLabel": "Benachrichtigungen",
     "ariaLabelWithCount": "{count} ungelesene Benachrichtigungen"
+  },
+  "feed": {
+    "title": "Neuigkeiten",
+    "notificationsTitle": "Benachrichtigungen",
+    "allClubs": "Alle Vereine",
+    "loadMore": "Mehr laden",
+    "new": "Neu",
+    "earlier": "Fr\u00fcher",
+    "markAllRead": "Alle als gelesen markieren",
+    "empty": "Noch keine Neuigkeiten",
+    "emptyDesc": "Aktivit\u00e4ten aus deinen Vereinen erscheinen hier.",
+    "notificationsEmpty": "Keine Benachrichtigungen",
+    "notificationsEmptyDesc": "Sobald etwas passiert, wirst du hier benachrichtigt."
   }
 }

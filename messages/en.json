@@ -251,5 +251,18 @@
   "notifications": {
     "ariaLabel": "Notifications",
     "ariaLabelWithCount": "{count} unread notifications"
+  },
+  "feed": {
+    "title": "News",
+    "notificationsTitle": "Notifications",
+    "allClubs": "All clubs",
+    "loadMore": "Load more",
+    "new": "New",
+    "earlier": "Earlier",
+    "markAllRead": "Mark all as read",
+    "empty": "No news yet",
+    "emptyDesc": "Activity from your clubs will appear here.",
+    "notificationsEmpty": "No notifications",
+    "notificationsEmptyDesc": "You'll be notified here when something happens."
   }
 }

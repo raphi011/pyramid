@@ -1,0 +1,204 @@
+import type postgres from "postgres";
+
+type Sql = postgres.Sql | postgres.TransactionSql;
+
+// ── Types ──────────────────────────────────────────────
+
+export type EventRow = {
+  id: number;
+  clubId: number;
+  seasonId: number | null;
+  matchId: number | null;
+  playerId: number | null;
+  targetPlayerId: number | null;
+  eventType: string;
+  metadata: Record<string, unknown>;
+  created: Date;
+  actorName: string | null;
+  targetName: string | null;
+  clubName: string;
+  team1Id: number | null;
+  team2Id: number | null;
+  winnerTeamId: number | null;
+  team1Score: number[] | null;
+  team2Score: number[] | null;
+  team1Name: string | null;
+  team2Name: string | null;
+};
+
+// ── Shared SQL fragments ───────────────────────────────
+
+const EVENT_SELECT = `
+  e.id,
+  e.club_id AS "clubId",
+  e.season_id AS "seasonId",
+  e.match_id AS "matchId",
+  e.player_id AS "playerId",
+  e.target_player_id AS "targetPlayerId",
+  e.event_type AS "eventType",
+  e.metadata,
+  e.created,
+  actor.name AS "actorName",
+  target.name AS "targetName",
+  c.name AS "clubName",
+  sm.team1_id AS "team1Id",
+  sm.team2_id AS "team2Id",
+  sm.winner_team_id AS "winnerTeamId",
+  sm.team1_score AS "team1Score",
+  sm.team2_score AS "team2Score",
+  mp1.name AS "team1Name",
+  mp2.name AS "team2Name"
+`;
+
+const EVENT_JOIN = `
+  FROM events e
+  JOIN clubs c ON c.id = e.club_id
+  LEFT JOIN player actor ON actor.id = e.player_id
+  LEFT JOIN player target ON target.id = e.target_player_id
+  LEFT JOIN season_matches sm ON sm.id = e.match_id
+  LEFT JOIN teams mt1 ON mt1.id = sm.team1_id
+  LEFT JOIN team_players mtp1 ON mtp1.team_id = mt1.id
+  LEFT JOIN player mp1 ON mp1.id = mtp1.player_id
+  LEFT JOIN teams mt2 ON mt2.id = sm.team2_id
+  LEFT JOIN team_players mtp2 ON mtp2.team_id = mt2.id
+  LEFT JOIN player mp2 ON mp2.id = mtp2.player_id
+`;
+
+function toEventRow(row: Record<string, unknown>): EventRow {
+  return {
+    id: row.id as number,
+    clubId: row.clubId as number,
+    seasonId: (row.seasonId as number) ?? null,
+    matchId: (row.matchId as number) ?? null,
+    playerId: (row.playerId as number) ?? null,
+    targetPlayerId: (row.targetPlayerId as number) ?? null,
+    eventType: row.eventType as string,
+    metadata: (row.metadata as Record<string, unknown>) ?? {},
+    created: row.created as Date,
+    actorName: (row.actorName as string) ?? null,
+    targetName: (row.targetName as string) ?? null,
+    clubName: row.clubName as string,
+    team1Id: (row.team1Id as number) ?? null,
+    team2Id: (row.team2Id as number) ?? null,
+    winnerTeamId: (row.winnerTeamId as number) ?? null,
+    team1Score: (row.team1Score as number[]) ?? null,
+    team2Score: (row.team2Score as number[]) ?? null,
+    team1Name: (row.team1Name as string) ?? null,
+    team2Name: (row.team2Name as string) ?? null,
+  };
+}
+
+// ── Queries ────────────────────────────────────────────
+
+export async function getFeedEvents(
+  sql: Sql,
+  clubIds: number[],
+  cursor: Date | null,
+  limit: number,
+): Promise<EventRow[]> {
+  if (clubIds.length === 0) return [];
+
+  const cursorClause = cursor
+    ? `AND e.created < $2 ORDER BY e.created DESC LIMIT $3`
+    : `ORDER BY e.created DESC LIMIT $2`;
+
+  const params = cursor ? [clubIds, cursor, limit] : [clubIds, limit];
+
+  const rows = await sql.unsafe(
+    `SELECT ${EVENT_SELECT}
+     ${EVENT_JOIN}
+     WHERE e.club_id = ANY($1)
+       AND e.target_player_id IS NULL
+       ${cursorClause}`,
+    params,
+  );
+
+  return rows.map(toEventRow);
+}
+
+export async function getNotifications(
+  sql: Sql,
+  playerId: number,
+  clubIds: number[],
+  cursor: Date | null,
+  limit: number,
+): Promise<EventRow[]> {
+  if (clubIds.length === 0) return [];
+
+  const cursorClause = cursor
+    ? `AND e.created < $3 ORDER BY e.created DESC LIMIT $4`
+    : `ORDER BY e.created DESC LIMIT $3`;
+
+  const params = cursor
+    ? [playerId, clubIds, cursor, limit]
+    : [playerId, clubIds, limit];
+
+  const rows = await sql.unsafe(
+    `SELECT ${EVENT_SELECT}
+     ${EVENT_JOIN}
+     WHERE e.target_player_id = $1
+       AND e.club_id = ANY($2)
+       ${cursorClause}`,
+    params,
+  );
+
+  return rows.map(toEventRow);
+}
+
+export async function getUnreadCount(
+  sql: Sql,
+  playerId: number,
+  clubIds: number[],
+): Promise<number> {
+  if (clubIds.length === 0) return 0;
+
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM events e
+    LEFT JOIN event_reads er
+      ON er.player_id = ${playerId} AND er.club_id = e.club_id
+    WHERE e.club_id = ANY(${clubIds})
+      AND (e.target_player_id IS NULL OR e.target_player_id = ${playerId})
+      AND (er.last_read_at IS NULL OR e.created > er.last_read_at)
+  `;
+
+  return (rows[0].count as number) ?? 0;
+}
+
+export async function getEventReadWatermarks(
+  sql: Sql,
+  playerId: number,
+  clubIds: number[],
+): Promise<Map<number, Date>> {
+  if (clubIds.length === 0) return new Map();
+
+  const rows = await sql`
+    SELECT club_id AS "clubId", last_read_at AS "lastReadAt"
+    FROM event_reads
+    WHERE player_id = ${playerId}
+      AND club_id = ANY(${clubIds})
+  `;
+
+  const map = new Map<number, Date>();
+  for (const row of rows) {
+    map.set(row.clubId as number, row.lastReadAt as Date);
+  }
+  return map;
+}
+
+export async function markAsRead(
+  sql: Sql,
+  playerId: number,
+  clubIds: number[],
+): Promise<void> {
+  if (clubIds.length === 0) return;
+
+  for (const clubId of clubIds) {
+    await sql`
+      INSERT INTO event_reads (player_id, club_id, last_read_at)
+      VALUES (${playerId}, ${clubId}, NOW())
+      ON CONFLICT (player_id, club_id)
+      DO UPDATE SET last_read_at = NOW()
+    `;
+  }
+}
