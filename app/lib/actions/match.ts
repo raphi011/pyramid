@@ -9,6 +9,7 @@ import {
   createDateProposal,
   acceptDateProposal,
   declineDateProposal,
+  removeDateProposal,
   enterMatchResult,
   confirmMatchResult,
   updateStandingsAfterResult,
@@ -176,6 +177,49 @@ export async function declineDateAction(
     });
   } catch (e) {
     console.error("declineDateAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/rankings");
+
+  return { success: true };
+}
+
+// ── Remove Date Proposal ─────────────────────────────
+
+export async function removeDateProposalAction(
+  formData: FormData,
+): Promise<MatchActionResult> {
+  const proposalId = Number(formData.get("proposalId"));
+  const matchId = Number(formData.get("matchId"));
+
+  if (!proposalId || !matchId) {
+    return { error: "matchDetail.error.proposalNotFound" };
+  }
+
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  if (match.status !== "challenged" && match.status !== "date_set") {
+    return { error: "matchDetail.error.invalidStatus" };
+  }
+
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  try {
+    await sql.begin(async (tx) => {
+      await removeDateProposal(tx, proposalId, matchId, player.id);
+    });
+  } catch (e) {
+    console.error("removeDateProposalAction transaction failed:", e);
     return { error: "matchDetail.error.serverError" };
   }
 

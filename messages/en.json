@@ -224,6 +224,7 @@
     "submitProposal": "Submit proposal",
     "accept": "Accept",
     "decline": "Decline",
+    "removeProposal": "Withdraw",
     "noProposals": "No date proposals yet",
     "noProposalsDesc": "Propose a date to schedule this match.",
     "proposedBy": "Proposed by {name}",

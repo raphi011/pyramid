@@ -528,6 +528,24 @@ export async function declineDateProposal(
   }
 }
 
+export async function removeDateProposal(
+  tx: postgres.TransactionSql,
+  proposalId: number,
+  matchId: number,
+  playerId: number,
+): Promise<void> {
+  const result = await tx`
+    DELETE FROM date_proposals
+    WHERE id = ${proposalId} AND match_id = ${matchId} AND proposed_by = ${playerId} AND status = 'pending'
+  `;
+
+  if (result.count === 0) {
+    throw new Error(
+      `Proposal ${proposalId} not found, not pending, not owned by player ${playerId}, or does not belong to match ${matchId}`,
+    );
+  }
+}
+
 export async function enterMatchResult(
   tx: postgres.TransactionSql,
   matchId: number,

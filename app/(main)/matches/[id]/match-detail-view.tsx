@@ -21,6 +21,7 @@ import {
   proposeDateAction,
   acceptDateAction,
   declineDateAction,
+  removeDateProposalAction,
   enterResultAction,
   confirmResultAction,
   withdrawAction,
@@ -190,6 +191,7 @@ export function MatchDetailView({
     match.resultEnteredBy !== currentPlayerId;
   const isResultEnterer =
     isPendingConfirmation && match.resultEnteredBy === currentPlayerId;
+  const hasScores = !!(match.team1Score && match.team2Score);
 
   // Status line
   const { variant: statusVariant, key: statusKey } = getStatusBadge(
@@ -224,6 +226,9 @@ export function MatchDetailView({
           break;
         case "declineDate":
           result = await declineDateAction(formData);
+          break;
+        case "removeProposal":
+          result = await removeDateProposalAction(formData);
           break;
         case "enterResult":
           result = await enterResultAction(formData);
@@ -346,9 +351,13 @@ export function MatchDetailView({
 
       {/* Match Header */}
       <Card>
-        <CardContent className="mt-0 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <CardContent className="mt-0">
+          <div
+            className={`flex justify-between ${hasScores ? "items-end" : "items-center"}`}
+          >
+            <div
+              className={`flex gap-3 ${hasScores ? "items-end" : "items-center"}`}
+            >
               <Avatar name={match.team1Name} size="lg" />
               <div>
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -362,11 +371,49 @@ export function MatchDetailView({
               </div>
             </div>
 
-            <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
-              vs
-            </span>
+            {hasScores ? (
+              <div className="flex items-center gap-5">
+                <div className="flex flex-col items-end gap-0.5">
+                  {match.team1Score!.map((s1, i) => {
+                    const s2 = match.team2Score![i];
+                    const won = s1 > s2;
+                    return (
+                      <span
+                        key={i}
+                        className={`text-base font-semibold tabular-nums ${won ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}
+                      >
+                        {s1}
+                      </span>
+                    );
+                  })}
+                </div>
+                <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
+                  :
+                </span>
+                <div className="flex flex-col items-start gap-0.5">
+                  {match.team2Score!.map((s2, i) => {
+                    const s1 = match.team1Score![i];
+                    const won = s2 > s1;
+                    return (
+                      <span
+                        key={i}
+                        className={`text-base font-semibold tabular-nums ${won ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}
+                      >
+                        {s2}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
+                vs
+              </span>
+            )}
 
-            <div className="flex items-center gap-3">
+            <div
+              className={`flex gap-3 ${hasScores ? "items-end" : "items-center"}`}
+            >
               <div className="text-right">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
                   {match.team2Name}
@@ -385,45 +432,28 @@ export function MatchDetailView({
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {dateLine}
             </p>
-            <Badge variant={statusVariant}>{tMatch(statusKey)}</Badge>
+            {!isPendingConfirmation && (
+              <Badge variant={statusVariant}>{tMatch(statusKey)}</Badge>
+            )}
           </div>
+          {(match.winnerTeamId || isPendingConfirmation) && (
+            <div className="mt-2 text-center">
+              {match.winnerTeamId ? (
+                <Badge variant="win">
+                  {t("winnerLine", {
+                    name:
+                      match.winnerTeamId === match.team1Id
+                        ? match.team1Name
+                        : match.team2Name,
+                  })}
+                </Badge>
+              ) : (
+                <Badge variant={statusVariant}>{tMatch(statusKey)}</Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Score Section (pending_confirmation or completed) */}
-      {(isPendingConfirmation || isCompleted) &&
-        match.team1Score &&
-        match.team2Score && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("result")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MatchScoreInput
-                sets={match.team1Score.map((s, i) => ({
-                  player1: String(s),
-                  player2: String(match.team2Score![i]),
-                }))}
-                onChange={() => {}}
-                readOnly
-                player1Name={match.team1Name}
-                player2Name={match.team2Name}
-              />
-              {match.winnerTeamId && (
-                <div className="mt-3 text-center">
-                  <Badge variant="win">
-                    {t("winnerLine", {
-                      name:
-                        match.winnerTeamId === match.team1Id
-                          ? match.team1Name
-                          : match.team2Name,
-                    })}
-                  </Badge>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
       {/* Result Confirmation */}
       {canConfirm && (
@@ -458,8 +488,12 @@ export function MatchDetailView({
         <Card>
           <CardHeader>
             <CardTitle>{t("dateProposals")}</CardTitle>
-            {isParticipant && (
-              <Button size="sm" onClick={() => setShowProposeDateDialog(true)}>
+            {isParticipant && proposals.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowProposeDateDialog(true)}
+              >
                 {t("proposeDate")}
               </Button>
             )}
@@ -470,12 +504,22 @@ export function MatchDetailView({
               empty={{
                 title: t("noProposals"),
                 description: t("noProposalsDesc"),
+                ...(isParticipant && {
+                  action: {
+                    label: t("proposeDate"),
+                    onClick: () => setShowProposeDateDialog(true),
+                  },
+                }),
               }}
               renderItem={(proposal) => {
                 const { variant, key } = getProposalBadge(proposal.status);
                 const canRespond =
                   isParticipant &&
                   proposal.proposedBy !== currentPlayerId &&
+                  proposal.status === "pending";
+                const canRemove =
+                  isParticipant &&
+                  proposal.proposedBy === currentPlayerId &&
                   proposal.status === "pending";
 
                 return (
@@ -509,6 +553,7 @@ export function MatchDetailView({
                             />
                             <Button
                               type="submit"
+                              variant="outline"
                               size="sm"
                               disabled={isPending}
                             >
@@ -541,6 +586,32 @@ export function MatchDetailView({
                             </Button>
                           </form>
                         </>
+                      ) : canRemove ? (
+                        <form action={handleAction}>
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="removeProposal"
+                          />
+                          <input
+                            type="hidden"
+                            name="proposalId"
+                            value={proposal.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="matchId"
+                            value={match.id}
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isPending}
+                          >
+                            {t("removeProposal")}
+                          </Button>
+                        </form>
                       ) : (
                         <Badge variant={variant} size="sm">
                           {t(key)}
@@ -634,6 +705,7 @@ export function MatchDetailView({
                 />
                 <Button
                   type="submit"
+                  variant="outline"
                   size="md"
                   disabled={isPending || !commentText.trim()}
                 >

@@ -224,6 +224,7 @@
     "submitProposal": "Vorschlag senden",
     "accept": "Annehmen",
     "decline": "Ablehnen",
+    "removeProposal": "Zur\u00fcckziehen",
     "noProposals": "Noch keine Terminvorschl\u00e4ge",
     "noProposalsDesc": "Schlage einen Termin vor, um das Spiel zu planen.",
     "proposedBy": "Vorgeschlagen von {name}",
