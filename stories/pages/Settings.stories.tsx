@@ -9,6 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ThemeProvider, useTheme } from "@/components/theme-provider";
+import type { Theme } from "@/app/lib/db/auth";
 import { currentPlayer } from "./_mock-data";
 
 const meta = preview.meta({
@@ -28,8 +30,24 @@ const meta = preview.meta({
 
 export default meta;
 
+function ThemeSelect() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <FormField
+      label="Farbschema"
+      type="select"
+      value={theme}
+      onChange={(e) => setTheme(e.target.value as Theme)}
+    >
+      <option value="auto">Automatisch</option>
+      <option value="light">Hell</option>
+      <option value="dark">Dunkel</option>
+    </FormField>
+  );
+}
+
 function SettingsPage() {
-  const [darkMode, setDarkMode] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [emailResults, setEmailResults] = useState(true);
   const [emailChallenges, setEmailChallenges] = useState(true);
@@ -45,11 +63,7 @@ function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <Switch
-                label="Dunkler Modus"
-                checked={darkMode}
-                onChange={setDarkMode}
-              />
+              <ThemeSelect />
               <FormField
                 label="Sprache"
                 type="select"
@@ -182,5 +196,11 @@ function SettingsPage() {
 }
 
 export const Default = meta.story({
-  render: () => <SettingsPage />,
+  render: function SettingsStory() {
+    return (
+      <ThemeProvider initialTheme="auto">
+        <SettingsPage />
+      </ThemeProvider>
+    );
+  },
 });

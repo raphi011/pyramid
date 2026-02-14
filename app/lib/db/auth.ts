@@ -2,6 +2,8 @@ import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 
+export type Theme = "auto" | "light" | "dark";
+
 export type Player = {
   id: number;
   firstName: string;
@@ -137,6 +139,27 @@ export async function updatePlayerImage(
     UPDATE player
     SET image_id = ${imageId}
     WHERE id = ${playerId}
+  `;
+  return result.count;
+}
+
+export async function getPlayerTheme(
+  sql: Sql,
+  playerId: number,
+): Promise<Theme> {
+  const [row] = await sql`
+    SELECT theme FROM player WHERE id = ${playerId}
+  `;
+  return (row?.theme as Theme) ?? "auto";
+}
+
+export async function updatePlayerTheme(
+  sql: Sql,
+  playerId: number,
+  theme: Theme,
+): Promise<number> {
+  const result = await sql`
+    UPDATE player SET theme = ${theme} WHERE id = ${playerId}
   `;
   return result.count;
 }
