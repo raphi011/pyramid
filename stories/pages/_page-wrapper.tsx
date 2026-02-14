@@ -28,13 +28,13 @@ export function PageWrapper({ activeHref, isAdmin, singleClub, children }: PageW
   const displayClubs = singleClub ? [clubs[0]] : clubs;
 
   const navItems = [
-    { icon: <TrophyIcon />, label: t("ranking"), href: "/rangliste" },
-    { icon: <BellIcon />, label: t("news"), href: "/neuigkeiten", badge: 3 },
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
   ];
 
   const sidebarItems = [
-    { icon: <BellIcon />, label: t("news"), href: "/neuigkeiten", badge: 3 },
-    { icon: <TrophyIcon />, label: t("ranking"), href: "/rangliste" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
     { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
   ];
 

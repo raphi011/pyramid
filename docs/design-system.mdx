@@ -186,7 +186,7 @@ Key animations:
 
 ### Mobile (default)
 
-- **Bottom navigation bar**: 4 items (Rangliste, Spiele, Neuigkeiten, Profil)
+- **Bottom navigation bar**: 2 items (Rankings, Feed) + center FAB
 - Full-width cards, `px-4` page padding
 - Bottom sheet for dialogs (not centered modal)
 - Scroll-based views, no pagination
@@ -224,10 +224,10 @@ Mobile:                          Desktop (lg+):
 
 | Icon | Label | Route | Description |
 |------|-------|-------|-------------|
-| Trophy | Rangliste | `/` | Pyramid view |
-| Swords | Spiele | `/matches` | Match list |
-| Bell | Neuigkeiten | `/events` | Event timeline |
-| User | Profil | `/profile` | Player profile |
+| Trophy | Rankings | `/rankings` | Pyramid view |
+| Bell | Feed | `/feed` | Event timeline |
+
+Profile is accessed via the sidebar (desktop) or avatar link, not as a bottom nav item.
 
 ---
 
@@ -376,7 +376,7 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 
 **PageLayout** — Wraps every page.
 ```tsx
-<PageLayout title="Rangliste" subtitle="Saison 2026" action={<Button>...</Button>}>
+<PageLayout title="Rankings" subtitle="Season 2026" action={<Button>...</Button>}>
   {children}
 </PageLayout>
 ```
@@ -391,8 +391,8 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 **BottomNav** — Fixed mobile navigation.
 ```tsx
 <BottomNav items={[
-  { icon: TrophyIcon, label: "Rangliste", href: "/" },
-  { icon: SwordsIcon, label: "Spiele", href: "/matches" },
+  { icon: TrophyIcon, label: "Rankings", href: "/rankings" },
+  { icon: SwordsIcon, label: "Matches", href: "/matches" },
   ...
 ]} />
 ```
@@ -402,7 +402,7 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 <DataList
   items={matches}
   loading={isLoading}
-  empty={<EmptyState icon={SwordsIcon} title="Keine Spiele" />}
+  empty={<EmptyState icon={SwordsIcon} title="No matches" />}
   renderItem={(match) => <MatchRow match={match} />}
 />
 ```
@@ -411,9 +411,9 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 ```tsx
 <EmptyState
   icon={TrophyIcon}
-  title="Noch keine Rangliste"
-  description="Der Admin muss die Saison starten."
-  action={<Button>Saison erstellen</Button>}
+  title="No rankings yet"
+  description="The admin needs to start the season."
+  action={<Button>Create season</Button>}
 />
 ```
 
@@ -432,7 +432,7 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 
 **ResponsiveDialog** — Dialog on desktop, Sheet on mobile. Single API.
 ```tsx
-<ResponsiveDialog open={open} onOpenChange={setOpen} title="Fordern">
+<ResponsiveDialog open={open} onClose={() => setOpen(false)} title="Fordern">
   {children}
 </ResponsiveDialog>
 ```
@@ -607,6 +607,6 @@ components/
 8. **Icons**: Heroicons 2 only, `size-5` (20px) for UI, `size-6` (24px) for nav.
 9. **Spacing between sections**: always `gap-6` or `space-y-6`.
 10. **No raw Tailwind color classes in domain/page code** — use semantic tokens (`court-*`, `trophy-*`, `slate-*`).
-11. **German UI text** — all user-facing labels in German.
+11. **User-facing text via `next-intl`** — German is the default locale. Code uses English translation keys; actual labels are resolved from `messages/de.json` at runtime.
 12. **Loading states**: every data-fetching view must show `Skeleton` components while loading.
 13. **Empty states**: every list must handle zero items with `EmptyState`.

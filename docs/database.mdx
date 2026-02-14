@@ -120,6 +120,7 @@ Season configuration per club. Multiple seasons can be active simultaneously (e.
 | `match_deadline_days` | `INT` | `NOT NULL DEFAULT 14` | Days before match is flagged overdue |
 | `reminder_after_days` | `INT` | `NOT NULL DEFAULT 7` | Days before reminder email if no date agreed |
 | `requires_result_confirmation` | `BOOL` | `NOT NULL DEFAULT false` | When true, entering a result sets status to `pending_confirmation` instead of `completed`. The opponent must confirm before standings update. |
+| `open_enrollment` | `BOOL` | `NOT NULL DEFAULT true` | When true, players can self-enroll in the season. When false, only admins can add players. |
 | `status` | `TEXT` | `NOT NULL DEFAULT 'draft'` | See enum below |
 | `started_at` | `TIMESTAMPTZ` | | Set when admin starts the season |
 | `ended_at` | `TIMESTAMPTZ` | | Set when admin ends the season |

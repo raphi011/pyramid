@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { getSession, createMagicLink, getPlayerByEmail } from "@/app/lib/auth";
 import { getClubByInviteCode, isClubMember, joinClub } from "@/app/lib/db/club";
-import { autoEnrollInActiveSeasons, createNewPlayerEvent } from "@/app/lib/db/season";
 import { sendMagicLinkEmail } from "@/app/lib/email";
 import { sql } from "@/app/lib/db";
 
@@ -111,13 +110,7 @@ export async function joinClubAction(
   }
 
   try {
-    await sql.begin(async (tx) => {
-      const { alreadyMember } = await joinClub(tx, session.playerId, club.id);
-      if (!alreadyMember) {
-        await autoEnrollInActiveSeasons(tx, session.playerId, club.id);
-        await createNewPlayerEvent(tx, club.id, session.playerId, {});
-      }
-    });
+    await joinClub(sql, session.playerId, club.id);
   } catch (error) {
     console.error("joinClubAction transaction failed:", error);
     return {

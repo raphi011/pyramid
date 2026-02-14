@@ -18,7 +18,7 @@ function Demo({ length, initial = "" }: { length?: number; initial?: string }) {
   return (
     <div className="space-y-2">
       <CharacterInput length={length} value={value} onChange={setValue} />
-      <p className="text-center text-xs text-slate-500">Wert: "{value}"</p>
+      <p className="text-center text-xs text-slate-500">Value: &quot;{value}&quot;</p>
     </div>
   );
 }
@@ -35,11 +35,13 @@ export const Full = meta.story({
   render: () => <Demo initial="ABC123" />,
 });
 
+function WithErrorDemo() {
+  const [value, setValue] = useState("XYZ99");
+  return <CharacterInput value={value} onChange={setValue} error />;
+}
+
 export const WithError = meta.story({
-  render: () => {
-    const [value, setValue] = useState("XYZ99");
-    return <CharacterInput value={value} onChange={setValue} error />;
-  },
+  render: () => <WithErrorDemo />,
 });
 
 export const FourCharacters = meta.story({

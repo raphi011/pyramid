@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import preview from "#.storybook/preview";
+import { useTranslations } from "next-intl";
 import {
   TrophyIcon,
   PlusIcon,
@@ -24,23 +25,30 @@ const meta = preview.meta({
 
 export default meta;
 
-const navItems = [
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-];
-
-const sidebarItems = [
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-  { icon: <Cog6ToothIcon />, label: "Einstellungen", href: "/settings" },
-];
-
-const adminItems = [
-  { icon: <ShieldCheckIcon />, label: "Club verwalten", href: "/admin/club/1" },
-];
+function useNavItems() {
+  const t = useTranslations("nav");
+  return {
+    navItems: [
+      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+      { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+    ],
+    sidebarItems: [
+      { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+      { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+    ],
+    adminItems: [
+      { icon: <ShieldCheckIcon />, label: t("manageClub"), href: "/admin/club/1" },
+    ],
+    fabLabel: t("challenge"),
+  };
+}
 
 function AppShellDemo() {
-  const [active, setActive] = useState("/rangliste");
+  const { navItems, sidebarItems, fabLabel } = useNavItems();
+  const t = useTranslations("ranking");
+  const tChallenge = useTranslations("challenge");
+  const [active, setActive] = useState("/rankings");
   return (
     <AppShell
       navItems={navItems}
@@ -49,7 +57,7 @@ function AppShellDemo() {
       onNavigate={setActive}
       fab={{
         icon: <PlusIcon />,
-        label: "Fordern",
+        label: fabLabel,
         onClick: () => {},
       }}
       clubSwitcher={
@@ -59,9 +67,9 @@ function AppShellDemo() {
       }
     >
       <PageLayout
-        title="Rangliste"
-        subtitle="Saison 2026 — TC Musterstadt"
-        action={<Button size="sm">Herausfordern</Button>}
+        title={t("title")}
+        subtitle={t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" })}
+        action={<Button size="sm">{tChallenge("title")}</Button>}
       >
         <Card>
           <CardContent>
@@ -88,6 +96,8 @@ export const Default = meta.story({
 });
 
 function AppShellWithMessages() {
+  const { navItems, sidebarItems, fabLabel } = useNavItems();
+  const t = useTranslations("ranking");
   const [messages, setMessages] = useState<AdminMessage[]>([
     {
       id: "1",
@@ -108,14 +118,14 @@ function AppShellWithMessages() {
     <AppShell
       navItems={navItems}
       sidebarItems={sidebarItems}
-      activeHref="/rangliste"
+      activeHref="/rankings"
       messages={messages}
       onDismissMessage={(id) =>
         setMessages((prev) => prev.filter((m) => m.id !== id))
       }
       fab={{
         icon: <PlusIcon />,
-        label: "Fordern",
+        label: fabLabel,
         onClick: () => {},
       }}
       clubSwitcher={
@@ -124,7 +134,7 @@ function AppShellWithMessages() {
         </div>
       }
     >
-      <PageLayout title="Rangliste" subtitle="Saison 2026 — TC Musterstadt">
+      <PageLayout title={t("title")} subtitle={t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" })}>
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -141,8 +151,10 @@ export const WithMessages = meta.story({
   render: () => <AppShellWithMessages />,
 });
 
-export const WithAdmin = meta.story({
-  render: () => (
+function AppShellWithAdmin() {
+  const { navItems, sidebarItems, adminItems, fabLabel } = useNavItems();
+  const t = useTranslations("nav");
+  return (
     <AppShell
       navItems={navItems}
       sidebarItems={sidebarItems}
@@ -150,7 +162,7 @@ export const WithAdmin = meta.story({
       activeHref="/admin/club/1"
       fab={{
         icon: <PlusIcon />,
-        label: "Fordern",
+        label: fabLabel,
         onClick: () => {},
       }}
       clubSwitcher={
@@ -159,7 +171,7 @@ export const WithAdmin = meta.story({
         </div>
       }
     >
-      <PageLayout title="Club verwalten" subtitle="TC Musterstadt">
+      <PageLayout title={t("manageClub")} subtitle="TC Musterstadt">
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -169,5 +181,9 @@ export const WithAdmin = meta.story({
         </Card>
       </PageLayout>
     </AppShell>
-  ),
+  );
+}
+
+export const WithAdmin = meta.story({
+  render: () => <AppShellWithAdmin />,
 });

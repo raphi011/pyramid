@@ -31,18 +31,20 @@ export const AdminView = meta.story({
   ),
 });
 
+function PlayerViewDemo() {
+  const [code, setCode] = useState("");
+  return (
+    <ClubJoinCard
+      mode="player"
+      code={code}
+      onCodeChange={setCode}
+      onJoin={fn()}
+    />
+  );
+}
+
 export const PlayerView = meta.story({
-  render: () => {
-    const [code, setCode] = useState("");
-    return (
-      <ClubJoinCard
-        mode="player"
-        code={code}
-        onCodeChange={setCode}
-        onJoin={fn()}
-      />
-    );
-  },
+  render: () => <PlayerViewDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
@@ -59,17 +61,19 @@ export const PlayerView = meta.story({
   },
 });
 
+function PlayerWithErrorDemo() {
+  const [code, setCode] = useState("XYZ999");
+  return (
+    <ClubJoinCard
+      mode="player"
+      code={code}
+      onCodeChange={setCode}
+      onJoin={fn()}
+      error="Ungültiger Einladungscode."
+    />
+  );
+}
+
 export const PlayerWithError = meta.story({
-  render: () => {
-    const [code, setCode] = useState("XYZ999");
-    return (
-      <ClubJoinCard
-        mode="player"
-        code={code}
-        onCodeChange={setCode}
-        onJoin={fn()}
-        error="Ungültiger Einladungscode."
-      />
-    );
-  },
+  render: () => <PlayerWithErrorDemo />,
 });

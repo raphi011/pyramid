@@ -49,6 +49,7 @@ function Avatar({ src, name, size = "md", status, className }: AvatarProps) {
       )}
     >
       {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- avatars load from arbitrary external URLs; next/image would require enumerating all possible domains in remotePatterns
         <img
           src={src}
           alt={name}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { Sheet } from "@/components/ui/sheet";
 
@@ -12,22 +12,28 @@ type ResponsiveDialogProps = {
   className?: string;
 };
 
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
+function subscribeToDesktop(callback: () => void) {
+  const mql = window.matchMedia(DESKTOP_QUERY);
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
+function getDesktopSnapshot() {
+  return window.matchMedia(DESKTOP_QUERY).matches;
+}
+
+function getDesktopServerSnapshot() {
+  return false;
+}
+
 function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mql.matches);
-
-    function handleChange(e: MediaQueryListEvent) {
-      setIsDesktop(e.matches);
-    }
-
-    mql.addEventListener("change", handleChange);
-    return () => mql.removeEventListener("change", handleChange);
-  }, []);
-
-  return isDesktop;
+  return useSyncExternalStore(
+    subscribeToDesktop,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot,
+  );
 }
 
 function ResponsiveDialog({

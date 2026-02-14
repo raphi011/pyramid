@@ -9,7 +9,7 @@ test.describe("smoke", () => {
   test("login page renders", async ({ page }) => {
     await page.goto("/login");
     await expect(
-      page.getByRole("button", { name: /anmelden/i }),
+      page.getByRole("button", { name: /login-link anfordern/i }),
     ).toBeVisible();
   });
 });

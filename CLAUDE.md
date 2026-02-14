@@ -53,7 +53,7 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - **Config:** `eslint.config.mjs` — imports `eslint-config-next` (flat config array)
 - **Command:** `bun run lint` (runs `eslint .`)
 - **ESLint version:** 9.x — do **not** upgrade to ESLint 10; `eslint-plugin-react` is incompatible with ESLint 10 (`getFilename` API removed). Track [jsx-eslint/eslint-plugin-react#3977](https://github.com/jsx-eslint/eslint-plugin-react/issues/3977) for updates.
-- **Known pre-existing warnings:** `react-hooks/rules-of-hooks` in some Storybook stories (using `useState` in CSF `render` functions) — harmless, Storybook pattern.
+- **Storybook hooks rule:** Stories that need hooks must use named function components in `render` — do not regress to inline arrow functions with hooks in CSF `render` fields.
 
 ## Architecture
 
@@ -65,9 +65,9 @@ Next.js 16 removed `next lint`. Linting uses ESLint 9 directly via `eslint.confi
 - Vercel deployment (Analytics/Speed Insights integrated)
 
 ### Key Files
-- `app/page.tsx` - Home page with mock data (standings, matches, events)
-- `app/pyramid.tsx` - Core pyramid visualization and challenge logic
-- `app/navigation.tsx` - Main layout with sidebar
+- `app/page.tsx` - Root redirect to `/rankings`
+- `app/lib/pyramid.ts` - Pyramid row calculation and challenge logic
+- `app/(main)/app-shell-wrapper.tsx` - Client-side app shell with navigation
 - `db/migrations/001_initial_schema.sql` - Full database schema (15 tables)
 - `db/migrate.ts` - Migration runner
 - `app/lib/auth.ts` - Authentication (magic links, sessions)
@@ -136,18 +136,19 @@ Key rules (always enforce):
 - **Never use `gray-*` or `zinc-*`** — always `slate-*`
 - **Never use `border`** — use `ring-1 ring-slate-200` (no layout shift)
 - **Component library**: shadcn/ui primitives (`components/ui/`) → composites (`components/`) → domain (`components/domain/`)
-- **Pages only import from `components/domain/` and `components/`** — never from `components/ui/` directly
-- **Every list** uses `DataList` with `loading` + `empty` props — no bare `.map()`
-- **Every modal** uses `ResponsiveDialog` — never raw `Dialog` or `Sheet`
-- **Every form** uses `FormField` — never raw `Label` + `Input`
-- **Destructive actions** always use `ConfirmDialog`
+- **Use composites where they exist** — pages and domain components may import leaf primitives (`Button`, `Badge`, `Avatar`, etc.) directly from `components/ui/`, but must use composites when a composite wraps that primitive with added behavior:
+  - **Every list** uses `DataList` with `loading` + `empty` props — no bare `.map()`
+  - **Every modal** uses `ResponsiveDialog` — never raw `Dialog` or `Sheet`
+  - **Every form** uses `FormField` — never raw `Label` + `Input`
+  - **Destructive actions** always use `ConfirmDialog`
 - Mobile-first: bottom sheet on mobile, centered dialog on desktop
 - `rounded-xl` for interactive elements, `rounded-2xl` for cards
 
 ## Code Conventions
 
+- **English everywhere in code**: all identifiers (variables, functions, types), route paths, table/column names, comments, documentation, and file names must be in English
+- **User-facing text** (UI labels, headings, button text) is German, served through `next-intl` — translation keys and locale files are the only place German text belongs
 - "use client" directive on interactive components
-- German UI text (e.g., "Fordern" = Challenge, "Abmelden" = Logout)
 - Accessibility: 44x44px touch targets, aria-hidden, sr-only
 - TypeScript errors currently ignored in build (`next.config.mjs`)
 - **Colocated tests**: test files live next to the module they test (e.g. `auth.ts` + `auth.test.ts`), not in `__tests__/` directories
@@ -171,8 +172,11 @@ Vercel auto-detects Next.js settings. No `vercel.json` needed. Environment varia
 
 ## Framework Gotchas (Quick Reference)
 
-See `docs/gotchas.mdx` for full details. Key pitfalls:
+See `docs/gotchas.mdx` for full details. **When you encounter a framework-specific pitfall, document it in `docs/gotchas.mdx`** so it's captured for future reference.
 
+Key pitfalls:
+
+- **`"use client"` ≠ browser-only** — client components still SSR; never access `window`/`document` outside `useEffect`
 - **`searchParams` is a `Promise`** (Next.js 15+) — must `await` in server components
 - **Typographic quotes in JSON** — use `\u201E` / `\u201C` for German `„"` quotes, not raw characters
 - **`redirect()` throws** — don't call inside try/catch or it gets swallowed

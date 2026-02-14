@@ -33,11 +33,13 @@ The component library is organized in three layers. Each layer has strict import
 |-----------|---------|
 | Pages → Domain (`components/domain/`) | Yes |
 | Pages → Composites (`components/`) | Yes |
-| Pages → Primitives (`components/ui/`) | **No** |
+| Pages → Primitives (`components/ui/`) | Yes (leaf primitives like `Button`, `Badge`, `Avatar`) |
 | Domain → Composites | Yes |
 | Domain → Primitives | Yes |
 | Composites → Primitives | Yes |
 | Primitives → anything | **No** (leaf nodes) |
+
+**Key rule:** When a composite wraps a primitive with added behavior, always use the composite. Never use raw `Dialog`/`Sheet` (use `ResponsiveDialog`), raw `Label`+`Input` (use `FormField`), or bare `.map()` (use `DataList`).
 
 ## Composition Patterns
 

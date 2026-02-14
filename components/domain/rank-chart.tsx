@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
-  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
@@ -22,6 +22,25 @@ type RankChartProps = {
 };
 
 function RankChart({ data, className }: RankChartProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) {
+        setSize({
+          width: Math.floor(entry.contentRect.width),
+          height: Math.floor(entry.contentRect.height),
+        });
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   if (data.length === 0) {
     return (
       <div
@@ -38,9 +57,14 @@ function RankChart({ data, className }: RankChartProps) {
   const maxRank = Math.max(...data.map((d) => d.rank));
 
   return (
-    <div className={cn("h-48", className)}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+    <div ref={ref} className={cn("h-48", className)}>
+      {size.width > 0 && size.height > 0 && (
+        <LineChart
+          width={size.width}
+          height={size.height}
+          data={data}
+          margin={{ top: 8, right: 8, bottom: 0, left: -16 }}
+        >
           <CartesianGrid
             strokeDasharray="3 3"
             stroke="currentColor"
@@ -78,7 +102,7 @@ function RankChart({ data, className }: RankChartProps) {
             activeDot={{ r: 6 }}
           />
         </LineChart>
-      </ResponsiveContainer>
+      )}
     </div>
   );
 }

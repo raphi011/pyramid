@@ -24,6 +24,30 @@ export default async function Page({ searchParams }: Props) {
 }
 ```
 
+### `"use client"` does not mean browser-only
+
+`"use client"` tells the bundler to include the component in the client bundle — but Next.js still **executes** client components on the server during SSR to produce initial HTML. Only `useEffect` / `useLayoutEffect` callbacks are skipped during SSR. Never access browser globals (`window`, `document`, `navigator`) outside of `useEffect`:
+
+```tsx
+// WRONG — crashes during SSR with ReferenceError
+const [isDesktop, setIsDesktop] = useState(
+  () => window.matchMedia("(min-width: 1024px)").matches,
+);
+
+// CORRECT — useSyncExternalStore handles SSR via getServerSnapshot
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(min-width: 1024px)");
+      mql.addEventListener("change", cb);
+      return () => mql.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => false, // server snapshot — no window on server
+  );
+}
+```
+
 ### Middleware `PUBLIC_ROUTES` uses prefix matching
 
 Routes in `PUBLIC_ROUTES` are matched with `pathname.startsWith(route)`. Adding `"/join"` matches both `/join` and `/join?code=X`. Be aware this also matches `/join-something` — if that becomes an issue, switch to exact matching or regex.
@@ -41,6 +65,28 @@ The state object carries `step`, `error`, and any data needed by the next step. 
 ### `redirect()` throws (not returns)
 
 Next.js `redirect()` from `next/navigation` works by throwing a special error. It must be called **outside** of try/catch blocks, or the catch will swallow the redirect. In server actions, call it after all DB work completes.
+
+### Server actions crash Storybook Vitest (`process`/`Buffer` not defined)
+
+Components that import server actions (files with `"use server"`) will crash in Storybook's Vitest browser runner because the action's import chain pulls in Node.js-only modules (`next/cache`, `next/headers`, `postgres`, `crypto`).
+
+**Fix:** Mock the server action module in `vitest.config.ts` (scoped to the storybook project) and `.storybook/main.ts`:
+
+```ts
+// vitest.config.ts — storybook project
+resolve: {
+  alias: {
+    "@/app/lib/actions/challenge": path.join(dirname, ".storybook/mocks/challenge-action.ts"),
+  },
+},
+
+// .storybook/main.ts — viteFinal
+"next/cache": path.resolve(__dirname, "mocks/next-cache.ts"),
+"next/headers": path.resolve(__dirname, "mocks/next-headers.ts"),
+"@/app/lib/actions/challenge": path.resolve(__dirname, "mocks/challenge-action.ts"),
+```
+
+Mock the entire action module (not individual Node.js modules) to cut off the whole server import tree.
 
 ### Middleware deprecation warning
 

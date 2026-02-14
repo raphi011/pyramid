@@ -28,10 +28,10 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-AUTH-02](#us-auth-02-check-email-confirmation) | Check email confirmation | Player | P0 | Auth | ✅ |
 | [US-AUTH-03](#us-auth-03-verify-magic-link) | Verify magic link | Player | P0 | Auth | ✅ |
 | [US-AUTH-04](#us-auth-04-expired-magic-link) | Expired magic link | Player | P0 | Auth | ✅ |
-| [US-AUTH-05](#us-auth-05-complete-onboarding) | Complete onboarding | Player | P0 | Auth | |
-| [US-AUTH-06](#us-auth-06-join-club-via-invite-code) | Join club via invite code | Player | P0 | Auth | |
+| [US-AUTH-05](#us-auth-05-complete-onboarding) | Complete onboarding | Player | P0 | Auth | ✅ |
+| [US-AUTH-06](#us-auth-06-join-club-via-invite-code) | Join club via invite code | Player | P0 | Auth | ✅ |
 | [US-AUTH-07](#us-auth-07-join-club-via-qr-code) | Join club via QR code | Player | P1 | Auth | |
-| [US-AUTH-08](#us-auth-08-auto-enrollment-in-active-seasons) | Auto-enrollment in active seasons | Player | P0 | Auth | |
+| [US-AUTH-08](#us-auth-08-season-enrollment) | Season enrollment | Player | P0 | Auth | |
 | [US-AUTH-09](#us-auth-09-logout) | Logout | Player | P0 | Auth | ✅ |
 | [US-AUTH-10](#us-auth-10-session-expiry) | Session expiry | Player | P0 | Auth | ✅ |
 | [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | |
@@ -209,21 +209,20 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Preconditions**: Player authenticated but `player.name` is null/empty (first login after admin invite).
 
 **Steps**:
-1. User is redirected to `/onboarding` → System shows welcome message, avatar upload (optional), name input (required), phone input (optional).
+1. User is redirected to `/onboarding` → System shows welcome message, avatar (initials preview), name input (required), phone input (optional).
 2. User enters name (required) → "Continue" button becomes enabled.
-3. User optionally uploads a profile photo → System stores in `player.photo_data` as binary.
-4. User clicks "Continue" → System updates `player.name` (and optionally `phone_number`, `photo_data`).
-5. System checks club membership: 0 clubs → redirects to `/join`. 1+ clubs → redirects to `/`.
+3. User clicks "Continue" → System updates `player.name` (and optionally `phone_number`).
+4. System checks club membership: 0 clubs → redirects to `/join`. 1+ clubs → redirects to `/`.
 
 **Postconditions**:
 - `player.name` is set (no longer empty).
-- `player.photo_data` set if photo uploaded.
 
 **Edge cases**:
 - Name field left empty → Submit button disabled / inline validation.
 - Player already has a name (direct navigation to `/onboarding`) → Should redirect to `/`.
+- Profile photo upload is handled separately on the profile page (→ US-PROF-03).
 
-**Cross-refs**: → US-AUTH-06, → US-PROF-02
+**Cross-refs**: → US-AUTH-06, → US-PROF-02, → US-PROF-03
 
 ---
 
@@ -234,18 +233,15 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Preconditions**: Player is authenticated, has completed onboarding, has 0 clubs (or navigates manually from settings).
 
 **Steps**:
-1. User navigates to `/join` → System shows invite code input (6-char, spaced), "Join Club" button, and "Scan QR code" option.
+1. User navigates to `/join` → System shows invite code input (6-char, spaced) and "Join Club" button.
 2. User enters 6-character code and clicks "Join Club" → System validates code against `clubs.invite_code`.
-3. Code valid → System shows confirmation dialog: club name, member count, "Join" / "Cancel" buttons.
+3. Code valid → System shows confirmation dialog: club name, "Join" / "Cancel" buttons.
 4. User clicks "Join" → System creates `club_members` row (role = `player`).
-5. System auto-enrolls player in all active seasons (→ US-AUTH-08).
-6. System generates `new_player` event in `events` table.
-7. System redirects to `/` (feed).
+5. System redirects to `/` (rankings).
 
 **Postconditions**:
 - `club_members` row created.
-- `teams` row(s) created for active individual seasons.
-- `new_player` event in `events`.
+- Player can self-enroll in active seasons (→ US-AUTH-08).
 
 **Edge cases**:
 - Invalid code → Inline error "Code not found".
@@ -260,44 +256,51 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P1
 
-**Preconditions**: Player is authenticated, on `/join` page, device has camera.
+**Preconditions**: Club admin has shared a QR code that encodes the join URL (e.g. `https://app.example.com/join?code=ABC123`).
 
 **Steps**:
-1. User taps "Scan QR code" → System requests camera permission and opens scanner.
-2. User scans QR code containing the club invite code → System extracts code and validates.
-3. Same flow as US-AUTH-06 step 3 onwards.
+1. User scans QR code with any camera app (iOS Camera, Android Camera, third-party scanner).
+2. Camera app opens the URL → Browser navigates to `/join?code=ABC123`.
+3. If user is authenticated → `/join` page auto-submits the code (→ US-AUTH-06 step 2 onwards).
+4. If user is not authenticated → `/join` page shows the guest email flow, then redirects back to `/join?code=...` after login.
 
 **Postconditions**: Same as US-AUTH-06.
 
 **Edge cases**:
-- Camera permission denied → Error "Camera access required to scan QR codes".
-- QR code doesn't contain a valid invite code → Error "Invalid QR code".
+- QR code contains an expired/regenerated invite code → "Code not found" error on `/join`.
+- User has no account → Guest email flow sends magic link with `returnTo=/join?code=...`.
 
-**Cross-refs**: → US-AUTH-06
+**Cross-refs**: → US-AUTH-06, → US-ADMIN-01, → US-ADMIN-13
 
 ---
 
-### US-AUTH-08: Auto-enrollment in active seasons
+### US-AUTH-08: Season enrollment
 
 **Role**: Player | **Priority**: P0
 
-**Preconditions**: Player just joined a club that has active seasons.
+**Preconditions**: Player is a club member. Club has active seasons.
 
 **Steps**:
-1. System finds all `seasons` with `status = 'active'` for the joined club.
-2. For each individual season (`max_team_size = 1`): System creates a `teams` row (1-person team) and a `team_players` row linking the player.
-3. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
-4. System creates a standings snapshot in `season_standings`.
+1. Player sees available seasons on the rankings page (or a dedicated section).
+2. If `seasons.open_enrollment = true` → "Join" button is shown. If `false` → message "Contact your admin to join" (or similar).
+3. Player taps "Join" on an individual season (`max_team_size = 1`) → System creates a `teams` row (1-person team) and a `team_players` row.
+4. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
+5. System creates a standings snapshot in `season_standings`.
+6. System generates a `new_player` event.
 
 **Postconditions**:
-- `teams` + `team_players` rows created per active individual season.
+- `teams` + `team_players` rows created.
 - Player appears at bottom of standings.
+- `new_player` event created.
 
 **Edge cases**:
-- Team seasons → Player is NOT auto-enrolled (admin assigns teams manually → US-ADMIN-07).
-- No active seasons → No enrollment, no error.
+- `open_enrollment = false` → Player cannot self-enroll; admin must add them (→ US-ADMIN-07).
+- Team seasons → Player cannot self-enroll regardless of `open_enrollment` (admin assigns teams manually → US-ADMIN-07).
+- No active seasons → No enrollment options shown.
+- Player already enrolled → "Join" button not shown for that season.
+- Admin can always add/remove players regardless of `open_enrollment` (→ US-ADMIN-02, → US-ADMIN-07).
 
-**Cross-refs**: → US-AUTH-06, → US-ADMIN-07
+**Cross-refs**: → US-AUTH-06, → US-ADMIN-02, → US-ADMIN-04, → US-ADMIN-07
 
 ---
 
@@ -511,7 +514,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Steps**:
 1. User taps a notification → System navigates based on event type:
    - `challenged` / `challenge_accepted` / `challenge_withdrawn` / `date_proposed` / `date_accepted` / `date_reminder` / `result_entered` / `result_confirmed` / `result_disputed` / `forfeit` / `deadline_exceeded` → `/matches/[match_id]`
-   - `announcement` → Admin announcement detail or stays on notifications.
+   - `announcement` (club-scoped) → stays on notifications (no detail page).
+   - `announcement` (season-scoped) → `/rankings?season=[season_id]` or stays on notifications.
 
 **Postconditions**: User is on the relevant detail page.
 
@@ -1580,7 +1584,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
    - Quick stats: player count, season count, open challenges count.
    - Active seasons: list of `status = 'active'` seasons with player/team count, open challenges, overdue warnings.
    - Overdue matches: matches where `created + match_deadline_days < NOW()` and `status IN ('challenged', 'date_set')`.
-   - Actions: "Manage members", "Create new season", "Send announcement", "Club settings".
+   - Actions: "Manage members", "Create new season", "Send announcement" (club-wide), "Club settings".
+   - Each active season card also has a "Send announcement" action (season-scoped).
    - Invite link section: join code, Copy/Share/QR buttons, "Regenerate code" option.
 
 **Postconditions**: Dashboard rendered with live data.
@@ -1606,8 +1611,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
    - Scoring: best of (1, 3, 5, 7...).
    - Deadlines: match deadline days (default 14), reminder after days (default 7).
    - Result confirmation: toggle for `requires_result_confirmation`.
+   - Enrollment: toggle for `open_enrollment` (default: on). When on, players can self-enroll. When off, only admins can add players.
    - Starting ranks: empty (manual), from previous season (keep/shuffle/invert).
-   - Players: all club members auto-enrolled, checkboxes to remove before start.
 3. Admin fills form and taps "Create Season" → System creates `seasons` row (`status = 'draft'`).
 4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season.
 
@@ -1662,7 +1667,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Steps**:
 1. Admin navigates to `/admin/club/[id]/season/[id]` → System shows season config form.
-2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation.
+2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation, open_enrollment.
 3. Admin taps "Save changes" → System updates `seasons` row.
 
 **Postconditions**: `seasons` row updated.
@@ -1846,23 +1851,32 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Club Admin | **Priority**: P1
 
-**Preconditions**: Admin is on announcements page.
+**Preconditions**: Admin is on the club dashboard or a season management page.
 
 **Steps**:
-1. Admin navigates to `/admin/club/[id]/announcements` → System shows announcement form and past announcements.
-2. Admin types message, optionally checks "Send as email".
-3. Admin taps "Send" → System creates personal `announcement` events for all club members (one `events` row per member with `target_player_id` set).
-4. If "Send as email" checked → System sends email to all members (respecting `notification_preferences.email_enabled`).
+1. **Club announcement**: Admin navigates to `/admin/club/[id]/announcements` → System shows announcement form (scope: "All members") and past announcements.
+2. **Season announcement**: Admin navigates to `/admin/club/[id]/season/[id]` and taps "Send announcement" → System shows announcement form (scope: season participants only).
+3. Admin types message, optionally checks "Send as email".
+4. Admin selects scope (if accessed from club level):
+   - "All members" → targets all `club_members`.
+   - A specific season → targets only players enrolled in that season.
+5. Admin taps "Send" → System creates personal `announcement` events (one `events` row per target player with `target_player_id` set).
+   - Club-scoped: `season_id = NULL`, targets all club members.
+   - Season-scoped: `season_id` set, targets only season participants.
+6. If "Send as email" checked → System sends email to all targets (respecting `notification_preferences.email_enabled`).
 
 **Postconditions**:
-- `announcement` events created (one per member).
+- `announcement` events created (one per target player).
+- `events.season_id` set for season-scoped announcements, NULL for club-scoped.
 - Emails sent (if opted in and checkbox checked).
 
 **Edge cases**:
 - Empty message → Submit button disabled.
 - Large club (100+ members) → Bulk insert for events, batched email sends.
+- Season has 0 enrolled players → Warning "No players enrolled in this season".
+- Season-scoped announcement also visible in the club-wide feed (filtered by season context).
 
-**Cross-refs**: → US-FEED-07
+**Cross-refs**: → US-FEED-07, → US-FEED-02
 
 ---
 

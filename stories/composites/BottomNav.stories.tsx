@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import preview from "#.storybook/preview";
+import { useTranslations } from "next-intl";
 import {
   TrophyIcon,
   PlusIcon,
@@ -21,17 +22,17 @@ const meta = preview.meta({
 
 export default meta;
 
-const navItems = [
-  { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-  { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 3 },
-];
-
 function BottomNavDemo() {
-  const [active, setActive] = useState("/neuigkeiten");
+  const t = useTranslations("nav");
+  const [active, setActive] = useState("/feed");
+  const navItems = [
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+  ];
   return (
     <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
       <div className="p-4">
-        <p className="text-sm text-slate-500">Aktiver Tab: {active}</p>
+        <p className="text-sm text-slate-500">Active tab: {active}</p>
       </div>
       <BottomNav
         items={navItems}
@@ -39,7 +40,7 @@ function BottomNavDemo() {
         onNavigate={setActive}
         fab={{
           icon: <PlusIcon />,
-          label: "Fordern",
+          label: t("challenge"),
           onClick: () => {},
         }}
       />
@@ -51,41 +52,53 @@ export const Default = meta.story({
   render: () => <BottomNavDemo />,
 });
 
-export const WithBadge = meta.story({
-  render: () => {
-    const itemsWithBadge = [
-      { icon: <TrophyIcon />, label: "Rangliste", href: "/rangliste" },
-      { icon: <BellIcon />, label: "Neuigkeiten", href: "/neuigkeiten", badge: 5 },
-    ];
-    return (
-      <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
-        <BottomNav
-          items={itemsWithBadge}
-          activeHref="/rangliste"
-          fab={{
-            icon: <PlusIcon />,
-            label: "Fordern",
-            onClick: () => {},
-          }}
-        />
-      </div>
-    );
-  },
-});
-
-export const FABDisabled = meta.story({
-  render: () => (
+function BottomNavWithBadge() {
+  const t = useTranslations("nav");
+  const navItems = [
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 5 },
+  ];
+  return (
     <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
       <BottomNav
         items={navItems}
-        activeHref="/neuigkeiten"
+        activeHref="/rankings"
         fab={{
           icon: <PlusIcon />,
-          label: "Fordern",
+          label: t("challenge"),
+          onClick: () => {},
+        }}
+      />
+    </div>
+  );
+}
+
+export const WithBadge = meta.story({
+  render: () => <BottomNavWithBadge />,
+});
+
+function BottomNavFABDisabled() {
+  const t = useTranslations("nav");
+  const navItems = [
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+  ];
+  return (
+    <div className="relative h-[600px] bg-slate-50 dark:bg-slate-950">
+      <BottomNav
+        items={navItems}
+        activeHref="/feed"
+        fab={{
+          icon: <PlusIcon />,
+          label: t("challenge"),
           onClick: () => {},
           disabled: true,
         }}
       />
     </div>
-  ),
+  );
+}
+
+export const FABDisabled = meta.story({
+  render: () => <BottomNavFABDisabled />,
 });

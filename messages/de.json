@@ -20,14 +20,29 @@
     "ranking": "Rangliste",
     "news": "Neuigkeiten",
     "manageClub": "Club verwalten",
-    "challenge": "Fordern"
+    "challenge": "Fordern",
+    "matches": "Spiele"
   },
   "challenge": {
     "title": "Herausfordern",
     "rank": "Rang {rank}",
     "messageLabel": "Nachricht (optional)",
     "messagePlaceholder": "z.B. Hast du am Samstag Zeit?",
-    "submit": "Herausfordern"
+    "submit": "Herausfordern",
+    "selectSeason": "Welche Saison?",
+    "selectOpponent": "Wen m\u00f6chtest du herausfordern?",
+    "challengeableHeading": "Spieler, die du herausfordern kannst:",
+    "noOpponents": "Niemand verf\u00fcgbar?",
+    "noOpponentsDesc": "Spieler sind evtl. im Urlaub oder haben bereits eine offene Forderung.",
+    "confirmTitle": "{name} herausfordern?",
+    "fabDisabledMessage": "Du hast bereits eine offene Forderung in dieser Saison.",
+    "error": {
+      "notActive": "Diese Saison ist nicht mehr aktiv.",
+      "notEnrolled": "Du bist nicht in dieser Saison eingeschrieben.",
+      "invalidTarget": "Du kannst diesen Spieler nicht herausfordern.",
+      "openChallenge": "Einer von euch hat bereits eine offene Forderung.",
+      "unavailable": "Dieser Spieler ist derzeit nicht verf\u00fcgbar."
+    }
   },
   "match": {
     "statusChallenged": "Offen",
@@ -35,13 +50,33 @@
     "statusCompleted": "Beendet",
     "statusWithdrawn": "Zurückgezogen",
     "statusForfeited": "Aufgegeben",
-    "statusDisputed": "Offen",
-    "statusPendingConfirmation": "Geplant",
+    "statusDisputed": "Angefochten",
+    "statusPendingConfirmation": "Ausstehende Bestätigung",
     "addSet": "Satz hinzufügen",
     "setAriaLabel": "Satz {set} {player}",
     "removeSetAriaLabel": "Satz {set} entfernen",
     "player1Default": "Spieler 1",
-    "player2Default": "Spieler 2"
+    "player2Default": "Spieler 2",
+    "timeJustNow": "gerade eben",
+    "timeMinutes": "vor {minutes}m",
+    "timeHours": "vor {hours}h",
+    "timeDays": "vor {days}T"
+  },
+  "matches": {
+    "title": "Spiele",
+    "tabMy": "Meine",
+    "tabAll": "Alle",
+    "tabOpen": "Offen",
+    "sectionOpen": "Offene Forderungen",
+    "sectionCompleted": "Abgeschlossen",
+    "noMatches": "Keine Spiele",
+    "noMatchesDesc": "Fordere einen Spieler heraus, um loszulegen.",
+    "noMyMatches": "Noch keine Spiele",
+    "noMyMatchesDesc": "Deine Spiele erscheinen hier.",
+    "noOpenMatches": "Keine offenen Forderungen",
+    "noOpenMatchesDesc": "Alle Forderungen wurden abgeschlossen.",
+    "challenger": "Herausforderer",
+    "vs": "vs"
   },
   "ranking": {
     "title": "Rangliste",
@@ -107,7 +142,7 @@
     "codePlaceholder": "Code eingeben...",
     "join": "Beitreten",
     "confirmJoin": "Möchtest du \u201E{club}\u201C beitreten?",
-    "confirmJoinDesc": "Du wirst automatisch in alle aktiven Saisons eingetragen.",
+    "confirmJoinDesc": "Du kannst dich danach für aktive Saisons anmelden.",
     "alreadyMember": "Du bist bereits Mitglied von {club}",
     "goHome": "Zur Startseite",
     "emailLabel": "E-Mail-Adresse",
@@ -128,6 +163,16 @@
     "title": "Etwas ist schiefgelaufen",
     "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "retry": "Erneut versuchen"
+  },
+  "onboarding": {
+    "welcome": "Willkommen!",
+    "subtitle": "Vervollständige dein Profil",
+    "nameLabel": "Name",
+    "namePlaceholder": "Max Mustermann",
+    "nameRequired": "Name ist erforderlich",
+    "phoneLabel": "Telefon",
+    "phonePlaceholder": "+49 170 1234567",
+    "submit": "Weiter"
   },
   "notifications": {
     "ariaLabel": "Benachrichtigungen",

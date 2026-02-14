@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { completeOnboarding, type OnboardingState } from "./actions";
 const initialState: OnboardingState = {};
 
 export function OnboardingForm() {
+  const t = useTranslations("onboarding");
   const [state, formAction, isPending] = useActionState(
     completeOnboarding,
     initialState,
@@ -21,10 +23,10 @@ export function OnboardingForm() {
       <CardContent className="mt-0 space-y-6 p-6">
         <div className="text-center">
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            Willkommen!
+            {t("welcome")}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Vervollständige dein Profil
+            {t("subtitle")}
           </p>
         </div>
 
@@ -34,8 +36,8 @@ export function OnboardingForm() {
 
         <form action={formAction} className="space-y-4">
           <FormField
-            label="Name"
-            placeholder="Max Mustermann"
+            label={t("nameLabel")}
+            placeholder={t("namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             error={state.error}
@@ -43,9 +45,9 @@ export function OnboardingForm() {
             inputProps={{ name: "name" }}
           />
           <FormField
-            label="Telefon"
+            label={t("phoneLabel")}
             type="tel"
-            placeholder="+49 170 1234567"
+            placeholder={t("phonePlaceholder")}
             inputProps={{ name: "phone" }}
           />
 
@@ -55,7 +57,7 @@ export function OnboardingForm() {
             disabled={!name.trim()}
             loading={isPending}
           >
-            Weiter
+            {t("submit")}
           </Button>
         </form>
       </CardContent>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { allEvents, currentPlayer } from "./_mock-data";
 
 const meta = preview.meta({
-  title: "Pages/Neuigkeiten",
+  title: "Pages/Feed",
   parameters: {
     layout: "fullscreen",
     a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
@@ -17,7 +17,7 @@ const meta = preview.meta({
 
 export default meta;
 
-function NeuigkeitenPage({
+function FeedPage({
   events = allEvents,
   loading = false,
 }: {
@@ -25,7 +25,7 @@ function NeuigkeitenPage({
   loading?: boolean;
 }) {
   return (
-    <PageWrapper activeHref="/neuigkeiten">
+    <PageWrapper activeHref="/feed">
       <PageLayout title="Neuigkeiten">
         <div className="space-y-4">
           <EventTimeline events={events} highlightName={currentPlayer.name} loading={loading} />
@@ -41,20 +41,20 @@ function NeuigkeitenPage({
 }
 
 export const Default = meta.story({
-  render: () => <NeuigkeitenPage />,
+  render: () => <FeedPage />,
 });
 
 export const Loading = meta.story({
-  render: () => <NeuigkeitenPage events={[]} loading />,
+  render: () => <FeedPage events={[]} loading />,
 });
 
 export const Empty = meta.story({
-  render: () => <NeuigkeitenPage events={[]} />,
+  render: () => <FeedPage events={[]} />,
 });
 
 export const AllRead = meta.story({
   render: () => (
-    <NeuigkeitenPage
+    <FeedPage
       events={allEvents.map((e) => ({ ...e, unread: false }))}
     />
   ),
@@ -62,7 +62,7 @@ export const AllRead = meta.story({
 
 export const SingleClub = meta.story({
   render: () => (
-    <PageWrapper activeHref="/neuigkeiten" singleClub>
+    <PageWrapper activeHref="/feed" singleClub>
       <PageLayout title="Neuigkeiten">
         <div className="space-y-4">
           <EventTimeline events={allEvents} highlightName={currentPlayer.name} />

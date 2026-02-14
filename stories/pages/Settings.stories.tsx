@@ -43,7 +43,7 @@ function SettingsPage() {
                 checked={darkMode}
                 onChange={setDarkMode}
               />
-              <FormField label="Sprache" type="select" value="de">
+              <FormField label="Sprache" type="select" inputProps={{ defaultValue: "de" }}>
                 <option value="de">Deutsch</option>
                 <option value="en">English</option>
               </FormField>
