@@ -151,7 +151,7 @@ Key rules (always enforce):
 - **User-facing text** (UI labels, headings, button text) is German, served through `next-intl` — translation keys and locale files are the only place German text belongs
 - "use client" directive on interactive components
 - Accessibility: 44x44px touch targets, aria-hidden, sr-only
-- TypeScript errors currently ignored in build (`next.config.mjs`)
+- TypeScript strict mode enforced in build and CI (`bunx tsc --noEmit`)
 - **Colocated tests**: test files live next to the module they test (e.g. `auth.ts` + `auth.test.ts`), not in `__tests__/` directories
 
 ## Deployment

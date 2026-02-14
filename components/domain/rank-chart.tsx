@@ -98,10 +98,9 @@ function RankChart({
               border: "none",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
             }}
-            formatter={(value: number) => [
-              `${tooltipLabel} ${value}`,
-              tooltipLabel,
-            ]}
+            formatter={(value) =>
+              [`${tooltipLabel} ${value}`, tooltipLabel] as [string, string]
+            }
           />
           <Line
             type="monotone"

@@ -34,10 +34,14 @@ export const postgresImageStorage: ImageStorage = {
     `;
     if (rows.length === 0) return null;
     const row = rows[0];
+    const contentType = row.contentType as string;
+    if (contentType !== "image/webp") {
+      throw new Error(`Unexpected image content type: ${contentType}`);
+    }
     return {
       id: row.id as string,
       data: row.data as Buffer,
-      contentType: row.contentType as string,
+      contentType,
       width: row.width as number,
       height: row.height as number,
       sizeBytes: row.sizeBytes as number,

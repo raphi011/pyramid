@@ -21,6 +21,18 @@ export async function confirmResultAction(): Promise<MatchActionResult> {
   return { success: true };
 }
 
+export async function withdrawAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function forfeitAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function disputeAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
 export async function postCommentAction(): Promise<MatchActionResult> {
   return { success: true };
 }

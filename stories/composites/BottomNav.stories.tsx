@@ -5,6 +5,7 @@ import preview from "#.storybook/preview";
 import { useTranslations } from "next-intl";
 import { TrophyIcon, PlusIcon, BellIcon } from "@heroicons/react/24/outline";
 import { BottomNav } from "@/components/bottom-nav";
+import { mobileViewport } from "../viewports";
 
 const meta = preview.meta({
   title: "Composites/BottomNav",
@@ -12,7 +13,7 @@ const meta = preview.meta({
   tags: ["autodocs"],
   parameters: {
     layout: "fullscreen",
-    viewport: { defaultViewport: "iPhoneSE" },
+    ...mobileViewport,
   },
 });
 

@@ -19,6 +19,7 @@ import {
   getUnavailableTeamIds,
 } from "@/app/lib/db/match";
 import { canChallenge, computeMovement } from "@/app/lib/pyramid";
+import type { SeasonStatsScope } from "../shared";
 import { PlayerDetailView } from "./player-detail-view";
 
 type PlayerPageProps = {
@@ -49,11 +50,11 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   const clubId = sharedClub.clubId;
 
   // Default stats
-  let seasonStats = {
+  let seasonStats: SeasonStatsScope = {
     rank: 0,
     wins: 0,
     losses: 0,
-    trend: "none" as const,
+    trend: "none",
     trendValue: "",
   };
   let rankHistory: { date: string; rank: number }[] = [];

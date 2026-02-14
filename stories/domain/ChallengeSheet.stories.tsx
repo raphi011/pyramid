@@ -8,6 +8,7 @@ import {
   type Opponent,
 } from "@/components/domain/challenge-sheet";
 import { Button } from "@/components/ui/button";
+import { mobileViewport } from "../viewports";
 
 const opponents: Opponent[] = [
   { teamId: 1, name: "Julia Fischer", rank: 1 },
@@ -21,7 +22,7 @@ const meta = preview.meta({
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
-    viewport: { defaultViewport: "iPhoneSE" },
+    ...mobileViewport,
   },
 });
 

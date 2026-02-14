@@ -76,6 +76,15 @@ export class ChallengeConflictError extends Error {
   }
 }
 
+export class MatchStatusConflictError extends Error {
+  constructor(matchId: number, operation: string) {
+    super(
+      `Match ${matchId} could not be ${operation} (status changed concurrently)`,
+    );
+    this.name = "MatchStatusConflictError";
+  }
+}
+
 // ── Shared SQL fragments ───────────────────────────────
 
 const MATCH_SELECT = `
@@ -631,6 +640,101 @@ export async function updateStandingsAfterResult(
   await tx`
     INSERT INTO season_standings (season_id, match_id, results, created)
     VALUES (${seasonId}, ${matchId}, ${results}, NOW())
+  `;
+}
+
+// ── Withdraw / Forfeit / Dispute ──────────────────
+
+export async function withdrawMatch(
+  tx: postgres.TransactionSql,
+  matchId: number,
+  playerId: number,
+  clubId: number,
+  seasonId: number,
+  opponentPlayerId: number,
+): Promise<void> {
+  const result = await tx`
+    UPDATE season_matches
+    SET status = 'withdrawn'
+    WHERE id = ${matchId}
+      AND status IN ('challenged', 'date_set')
+  `;
+
+  if (result.count === 0) {
+    throw new MatchStatusConflictError(matchId, "withdrawn");
+  }
+
+  // Public event: "withdrawal" (visible in club feed)
+  await tx`
+    INSERT INTO events (club_id, season_id, match_id, player_id, event_type, metadata, created)
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${playerId}, 'withdrawal', ${tx.json({})}, NOW())
+  `;
+
+  // Personal event: "challenge_withdrawn" (notification for opponent)
+  await tx`
+    INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${playerId}, ${opponentPlayerId}, 'challenge_withdrawn', ${tx.json({})}, NOW())
+  `;
+}
+
+export async function forfeitMatch(
+  tx: postgres.TransactionSql,
+  matchId: number,
+  playerId: number,
+  clubId: number,
+  seasonId: number,
+  opponentPlayerId: number,
+  opponentTeamId: number,
+): Promise<{ winnerTeamId: number; team1Id: number; team2Id: number }> {
+  const rows = await tx`
+    UPDATE season_matches
+    SET status = 'forfeited', winner_team_id = ${opponentTeamId}
+    WHERE id = ${matchId}
+      AND status IN ('challenged', 'date_set')
+    RETURNING team1_id AS "team1Id", team2_id AS "team2Id", winner_team_id AS "winnerTeamId"
+  `;
+
+  if (rows.length === 0) {
+    throw new MatchStatusConflictError(matchId, "forfeited");
+  }
+
+  // Public event: "forfeit" (visible in club feed)
+  await tx`
+    INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${playerId}, ${opponentPlayerId}, 'forfeit', ${tx.json({})}, NOW())
+  `;
+
+  return {
+    winnerTeamId: rows[0].winnerTeamId as number,
+    team1Id: rows[0].team1Id as number,
+    team2Id: rows[0].team2Id as number,
+  };
+}
+
+export async function disputeMatchResult(
+  tx: postgres.TransactionSql,
+  matchId: number,
+  playerId: number,
+  clubId: number,
+  seasonId: number,
+  opponentPlayerId: number,
+  reason: string,
+): Promise<void> {
+  const result = await tx`
+    UPDATE season_matches
+    SET status = 'disputed', disputed_reason = ${reason}
+    WHERE id = ${matchId}
+      AND status = 'pending_confirmation'
+  `;
+
+  if (result.count === 0) {
+    throw new MatchStatusConflictError(matchId, "disputed");
+  }
+
+  // Personal event: "result_disputed" (notification for opponent)
+  await tx`
+    INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${playerId}, ${opponentPlayerId}, 'result_disputed', ${tx.json({ reason })}, NOW())
   `;
 }
 

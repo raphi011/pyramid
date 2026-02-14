@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import postgres from "postgres";
+// Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
+import type { Sql as _Sql } from "../app/lib/db";
 
 const DATABASE_URL =
   process.env.DATABASE_URL ??
@@ -25,8 +27,9 @@ async function seed() {
     await tx`DELETE FROM club_members`;
     await tx`DELETE FROM notification_preferences`;
     await tx`DELETE FROM clubs`;
-    await tx`DELETE FROM player`;
+    await tx`UPDATE player SET image_id = NULL`; // break circular FK
     await tx`DELETE FROM images`;
+    await tx`DELETE FROM player`;
 
     // ── Club ──────────────────────────────────────────
     const [club] = await tx`

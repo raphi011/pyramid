@@ -46,7 +46,7 @@ export async function getPlayerClubs(
   sql: Sql,
   playerId: number,
 ): Promise<ClubMembership[]> {
-  const rows = await sql`
+  const rows = await sql<ClubMembership[]>`
     SELECT c.id AS "clubId", c.name AS "clubName", cm.role
     FROM club_members cm
     JOIN clubs c ON c.id = cm.club_id

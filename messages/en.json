@@ -202,6 +202,16 @@
     "description": "An unexpected error occurred. Please try again.",
     "retry": "Try again"
   },
+  "onboarding": {
+    "welcome": "Welcome!",
+    "subtitle": "Complete your profile",
+    "nameLabel": "Name",
+    "namePlaceholder": "John Doe",
+    "nameRequired": "Name is required",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "+1 555 1234567",
+    "submit": "Continue"
+  },
   "matchDetail": {
     "title": "Match Details",
     "openSince": "Open since {date}",
@@ -232,6 +242,14 @@
     "forfeit": "Forfeit",
     "withdraw": "Withdraw",
     "comingSoon": "Coming soon",
+    "withdrawConfirmTitle": "Withdraw challenge?",
+    "withdrawConfirmDesc": "The challenge will be withdrawn. This has no effect on the rankings.",
+    "forfeitConfirmTitle": "Forfeit?",
+    "forfeitConfirmDesc": "The match will be counted as a loss and the rankings will be updated.",
+    "disputeTitle": "Dispute Result",
+    "disputeReasonLabel": "Reason",
+    "disputeReasonPlaceholder": "Describe why you are disputing this result...",
+    "submitDispute": "Dispute",
     "comments": "Comments",
     "noComments": "No comments yet",
     "noCommentsDesc": "Be the first to write a message.",
@@ -250,6 +268,11 @@
       "invalidInput": "Invalid input.",
       "commentEmpty": "Please enter a message.",
       "commentTooLong": "Message is too long (max 2000 characters).",
+      "notChallenger": "Only the challenger can withdraw a challenge.",
+      "cannotDisputeOwn": "You cannot dispute a result you entered yourself.",
+      "statusConflict": "This match was already updated. Please refresh the page.",
+      "disputeReasonEmpty": "Please enter a reason.",
+      "disputeReasonTooLong": "Reason is too long (max 500 characters).",
       "serverError": "An unexpected error occurred. Please try again."
     }
   },
