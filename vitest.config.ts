@@ -30,7 +30,26 @@ export default defineConfig({
               dirname,
               ".storybook/mocks/challenge-action.ts",
             ),
+            "@/app/lib/actions/match": path.join(
+              dirname,
+              ".storybook/mocks/match-action.ts",
+            ),
           },
+        },
+        optimizeDeps: {
+          include: [
+            "@dnd-kit/core",
+            "@dnd-kit/sortable",
+            "@dnd-kit/utilities",
+            "@headlessui/react",
+            "@heroicons/react/24/outline",
+            "@heroicons/react/20/solid",
+            "clsx",
+            "framer-motion",
+            "qrcode.react",
+            "recharts",
+            "storybook/test",
+          ],
         },
         test: {
           name: "storybook",

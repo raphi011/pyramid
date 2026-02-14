@@ -516,6 +516,7 @@ export function MatchDetailView({
           </CardHeader>
           <CardContent>
             {match.imageSrc && (
+              // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
               <img
                 src={match.imageSrc}
                 alt={t("matchPhoto")}
