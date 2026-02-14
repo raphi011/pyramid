@@ -13,6 +13,7 @@ import {
   confirmMatchResult,
   updateStandingsAfterResult,
   createMatchComment,
+  updateMatchImage,
 } from "@/app/lib/db/match";
 import { validateScores } from "@/app/lib/validate-scores";
 
@@ -318,6 +319,36 @@ export async function confirmResultAction(
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/rankings");
 
+  return { success: true };
+}
+
+// ── Upload Match Image ───────────────────────────────
+
+export async function uploadMatchImageAction(
+  matchId: number,
+  imageId: string | null,
+): Promise<MatchActionResult> {
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  // Must be a participant
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  try {
+    await updateMatchImage(sql, matchId, imageId);
+  } catch (e) {
+    console.error("uploadMatchImageAction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
   return { success: true };
 }
 

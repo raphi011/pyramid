@@ -44,6 +44,8 @@ function makeMatch(overrides: Partial<MockMatch> = {}): MockMatch {
     team2PlayerId: 2,
     seasonBestOf: 3,
     clubId: 1,
+    imageId: null,
+    imageSrc: null,
     ...overrides,
   };
 }
@@ -67,6 +69,8 @@ type MockMatch = {
   team2PlayerId: number;
   seasonBestOf: number;
   clubId: number;
+  imageId: string | null;
+  imageSrc: string | null;
 };
 
 const mockProposals = [

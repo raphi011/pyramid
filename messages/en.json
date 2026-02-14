@@ -237,6 +237,8 @@
     "noCommentsDesc": "Be the first to write a message.",
     "commentPlaceholder": "Write a message...",
     "send": "Send",
+    "matchPhoto": "Match photo",
+    "uploadPhoto": "Upload photo",
     "error": {
       "notParticipant": "You are not a participant in this match.",
       "invalidStatus": "This action is not available for the current match status.",

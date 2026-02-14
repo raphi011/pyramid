@@ -38,6 +38,7 @@ export type MatchDetail = Match & {
   team2PlayerId: number;
   seasonBestOf: number;
   clubId: number;
+  imageId: string | null;
 };
 
 export type DateProposal = {
@@ -129,7 +130,8 @@ const MATCH_DETAIL_SELECT = `
   tp1.player_id AS "team1PlayerId",
   tp2.player_id AS "team2PlayerId",
   s.best_of AS "seasonBestOf",
-  s.club_id AS "clubId"
+  s.club_id AS "clubId",
+  sm.image_id::text AS "imageId"
 `;
 
 const MATCH_DETAIL_JOIN = `
@@ -148,6 +150,7 @@ function toMatchDetail(row: Record<string, unknown>): MatchDetail {
     team2PlayerId: row.team2PlayerId as number,
     seasonBestOf: row.seasonBestOf as number,
     clubId: row.clubId as number,
+    imageId: (row.imageId as string) ?? null,
   };
 }
 
@@ -404,6 +407,21 @@ export async function createMatchComment(
     created: row.created as Date,
     editedAt: (row.editedAt as Date) ?? null,
   };
+}
+
+// ── Image ─────────────────────────────────────────────
+
+export async function updateMatchImage(
+  sql: Sql,
+  matchId: number,
+  imageId: string | null,
+): Promise<number> {
+  const result = await sql`
+    UPDATE season_matches
+    SET image_id = ${imageId}
+    WHERE id = ${matchId}
+  `;
+  return result.count;
 }
 
 // ── Mutations ─────────────────────────────────────────

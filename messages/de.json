@@ -247,6 +247,8 @@
     "noCommentsDesc": "Schreibe die erste Nachricht.",
     "commentPlaceholder": "Nachricht schreiben...",
     "send": "Senden",
+    "matchPhoto": "Matchfoto",
+    "uploadPhoto": "Foto hochladen",
     "error": {
       "notParticipant": "Du bist kein Teilnehmer dieses Spiels.",
       "invalidStatus": "Diese Aktion ist f\u00fcr den aktuellen Spielstatus nicht verf\u00fcgbar.",
