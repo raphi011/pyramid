@@ -40,7 +40,7 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
     <PageWrapper activeHref="/profile">
       <PageLayout title="Profil">
         <PlayerProfile
-          name={currentPlayer.name}
+          name={`${currentPlayer.firstName} ${currentPlayer.lastName}`}
           rank={currentPlayer.rank}
           wins={currentPlayer.wins}
           losses={currentPlayer.losses}

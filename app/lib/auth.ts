@@ -63,7 +63,8 @@ export async function getSession(): Promise<{ playerId: number } | null> {
 
 export async function getCurrentPlayer(): Promise<{
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 } | null> {
   const session = await getSession();
@@ -88,6 +89,11 @@ export async function deleteSession(): Promise<void> {
 
 export async function getPlayerByEmail(
   email: string,
-): Promise<{ id: number; name: string; email: string } | null> {
+): Promise<{
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+} | null> {
   return authRepo.getPlayerByEmail(sql, email);
 }

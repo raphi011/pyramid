@@ -19,7 +19,7 @@ export default async function MainLayout({
     redirect("/login");
   }
 
-  if (!player.name.trim()) {
+  if (!player.firstName.trim()) {
     redirect("/onboarding");
   }
 
@@ -54,7 +54,11 @@ export default async function MainLayout({
 
   return (
     <AppShellWrapper
-      player={{ id: player.id, name: player.name }}
+      player={{
+        id: player.id,
+        firstName: player.firstName,
+        lastName: player.lastName,
+      }}
       clubs={assertNonEmpty(
         clubs.map((c) => ({ id: c.clubId, name: c.clubName })),
       )}

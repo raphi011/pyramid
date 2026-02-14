@@ -9,10 +9,12 @@ import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { createChallengeAction } from "@/app/lib/actions/challenge";
+import { fullName } from "@/lib/utils";
 
 type Opponent = {
   teamId: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   rank: number;
   avatarSrc?: string | null;
 };
@@ -126,7 +128,9 @@ function ChallengeSheetInner({
       : step === "pick"
         ? t("selectOpponent")
         : selectedTarget
-          ? t("confirmTitle", { name: selectedTarget.name })
+          ? t("confirmTitle", {
+              name: fullName(selectedTarget.firstName, selectedTarget.lastName),
+            })
           : t("title");
 
   return (
@@ -169,12 +173,12 @@ function ChallengeSheetInner({
                 className="flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left ring-1 ring-slate-200 transition-shadow hover:shadow-sm dark:bg-slate-900 dark:ring-slate-800"
               >
                 <Avatar
-                  name={opponent.name}
+                  name={fullName(opponent.firstName, opponent.lastName)}
                   src={opponent.avatarSrc}
                   size="md"
                 />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 dark:text-white">
-                  {opponent.name}
+                  {fullName(opponent.firstName, opponent.lastName)}
                 </span>
                 <Badge variant="rank" size="sm">
                   {opponent.rank}
@@ -191,13 +195,13 @@ function ChallengeSheetInner({
           {/* Opponent info */}
           <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
             <Avatar
-              name={selectedTarget.name}
+              name={fullName(selectedTarget.firstName, selectedTarget.lastName)}
               src={selectedTarget.avatarSrc}
               size="md"
             />
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                {selectedTarget.name}
+                {fullName(selectedTarget.firstName, selectedTarget.lastName)}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {t("rank", { rank: selectedTarget.rank })}

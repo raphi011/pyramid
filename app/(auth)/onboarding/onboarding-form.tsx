@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { fullName } from "@/lib/utils";
 import { completeOnboarding, type OnboardingState } from "./actions";
 
 const initialState: OnboardingState = {};
@@ -16,7 +17,8 @@ export function OnboardingForm() {
     completeOnboarding,
     initialState,
   );
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   return (
     <Card>
@@ -31,18 +33,29 @@ export function OnboardingForm() {
         </div>
 
         <div className="flex justify-center">
-          <Avatar name={name || "?"} size="xl" />
+          <Avatar
+            name={firstName ? fullName(firstName, lastName) : "?"}
+            size="xl"
+          />
         </div>
 
         <form action={formAction} className="space-y-4">
           <FormField
-            label={t("nameLabel")}
-            placeholder={t("namePlaceholder")}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            label={t("firstNameLabel")}
+            placeholder={t("firstNamePlaceholder")}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             error={state.error}
             required
-            inputProps={{ name: "name" }}
+            inputProps={{ name: "firstName" }}
+          />
+          <FormField
+            label={t("lastNameLabel")}
+            placeholder={t("lastNamePlaceholder")}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            inputProps={{ name: "lastName" }}
           />
           <FormField
             label={t("phoneLabel")}
@@ -54,7 +67,7 @@ export function OnboardingForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={!name.trim()}
+            disabled={!firstName.trim() || !lastName.trim()}
             loading={isPending}
           >
             {t("submit")}

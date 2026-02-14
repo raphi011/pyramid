@@ -9,11 +9,12 @@ type Tx = postgres.TransactionSql;
 export async function seedPlayer(
   tx: Tx,
   email: string,
-  name = "Test Player",
+  firstName = "Test",
+  lastName = "Player",
 ): Promise<number> {
   const [row] = await tx`
-    INSERT INTO player (name, email_address, created)
-    VALUES (${name}, ${email}, NOW())
+    INSERT INTO player (first_name, last_name, email_address, created)
+    VALUES (${firstName}, ${lastName}, ${email}, NOW())
     RETURNING id
   `;
   return row.id as number;

@@ -36,8 +36,8 @@ const EVENT_SELECT = `
   e.event_type AS "eventType",
   e.metadata,
   e.created,
-  actor.name AS "actorName",
-  target.name AS "targetName",
+  (actor.first_name || ' ' || actor.last_name) AS "actorName",
+  (target.first_name || ' ' || target.last_name) AS "targetName",
   c.name AS "clubName",
   sm.team1_id AS "team1Id",
   sm.team2_id AS "team2Id",
@@ -57,12 +57,12 @@ const EVENT_JOIN = `
   LEFT JOIN player target ON target.id = e.target_player_id
   LEFT JOIN season_matches sm ON sm.id = e.match_id
   LEFT JOIN LATERAL (
-    SELECT string_agg(p.name, ' / ' ORDER BY p.id) AS name
+    SELECT string_agg(p.first_name || ' ' || p.last_name, ' / ' ORDER BY p.id) AS name
     FROM team_players tp JOIN player p ON p.id = tp.player_id
     WHERE tp.team_id = sm.team1_id
   ) t1names ON TRUE
   LEFT JOIN LATERAL (
-    SELECT string_agg(p.name, ' / ' ORDER BY p.id) AS name
+    SELECT string_agg(p.first_name || ' ' || p.last_name, ' / ' ORDER BY p.id) AS name
     FROM team_players tp JOIN player p ON p.id = tp.player_id
     WHERE tp.team_id = sm.team2_id
   ) t2names ON TRUE

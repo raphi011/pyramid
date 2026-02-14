@@ -67,26 +67,26 @@ function pick<T>(arr: T[]): T {
 // ── Seed data ────────────────────────────────────
 
 const PLAYERS = [
-  { name: "Anna Müller", email: "anna@example.com" },
-  { name: "Max Weber", email: "max@example.com" },
-  { name: "Lisa Schmidt", email: "lisa@example.com" },
-  { name: "Tom Fischer", email: "tom@example.com" },
-  { name: "Julia Braun", email: "julia@example.com" },
-  { name: "Felix Wagner", email: "felix@example.com" },
-  { name: "Sophie Becker", email: "sophie@example.com" },
-  { name: "Luca Hoffmann", email: "luca@example.com" },
-  { name: "Marie Schäfer", email: "marie@example.com" },
-  { name: "Jonas Koch", email: "jonas@example.com" },
-  { name: "Laura Bauer", email: "laura@example.com" },
-  { name: "David Richter", email: "david@example.com" },
-  { name: "Lena Klein", email: "lena@example.com" },
-  { name: "Niklas Wolf", email: "niklas@example.com" },
-  { name: "Emma Schröder", email: "emma@example.com" },
-  { name: "Paul Neumann", email: "paul@example.com" },
-  { name: "Mia Schwarz", email: "mia@example.com" },
-  { name: "Leon Zimmermann", email: "leon@example.com" },
-  { name: "Hannah Krüger", email: "hannah@example.com" },
-  { name: "Tim Hartmann", email: "tim@example.com" },
+  { firstName: "Anna", lastName: "Müller", email: "anna@example.com" },
+  { firstName: "Max", lastName: "Weber", email: "max@example.com" },
+  { firstName: "Lisa", lastName: "Schmidt", email: "lisa@example.com" },
+  { firstName: "Tom", lastName: "Fischer", email: "tom@example.com" },
+  { firstName: "Julia", lastName: "Braun", email: "julia@example.com" },
+  { firstName: "Felix", lastName: "Wagner", email: "felix@example.com" },
+  { firstName: "Sophie", lastName: "Becker", email: "sophie@example.com" },
+  { firstName: "Luca", lastName: "Hoffmann", email: "luca@example.com" },
+  { firstName: "Marie", lastName: "Schäfer", email: "marie@example.com" },
+  { firstName: "Jonas", lastName: "Koch", email: "jonas@example.com" },
+  { firstName: "Laura", lastName: "Bauer", email: "laura@example.com" },
+  { firstName: "David", lastName: "Richter", email: "david@example.com" },
+  { firstName: "Lena", lastName: "Klein", email: "lena@example.com" },
+  { firstName: "Niklas", lastName: "Wolf", email: "niklas@example.com" },
+  { firstName: "Emma", lastName: "Schröder", email: "emma@example.com" },
+  { firstName: "Paul", lastName: "Neumann", email: "paul@example.com" },
+  { firstName: "Mia", lastName: "Schwarz", email: "mia@example.com" },
+  { firstName: "Leon", lastName: "Zimmermann", email: "leon@example.com" },
+  { firstName: "Hannah", lastName: "Krüger", email: "hannah@example.com" },
+  { firstName: "Tim", lastName: "Hartmann", email: "tim@example.com" },
 ];
 
 const COMMENTS = [
@@ -137,8 +137,8 @@ async function seed() {
     const playerIds: number[] = [];
     for (const p of PLAYERS) {
       const [row] = await tx`
-        INSERT INTO player (name, email_address, created)
-        VALUES (${p.name}, ${p.email}, NOW())
+        INSERT INTO player (first_name, last_name, email_address, created)
+        VALUES (${p.firstName}, ${p.lastName}, ${p.email}, NOW())
         RETURNING id
       `;
       playerIds.push(row.id);
@@ -445,7 +445,10 @@ async function seed() {
         INSERT INTO magic_links (player_id, token, expires_at)
         VALUES (${playerIds[i]}, ${token}, ${expiresAt})
       `;
-      tokens.push({ name: PLAYERS[i].name, token });
+      tokens.push({
+        name: `${PLAYERS[i].firstName} ${PLAYERS[i].lastName}`,
+        token,
+      });
     }
 
     const appUrl = process.env.APP_URL ?? "http://localhost:3000";
@@ -457,7 +460,7 @@ async function seed() {
     );
     console.log(`\nLogin with any of these emails:`);
     for (const p of PLAYERS) {
-      console.log(`  ${p.email} (${p.name})`);
+      console.log(`  ${p.email} (${p.firstName} ${p.lastName})`);
     }
     console.log(`\nQuick login links:`);
     for (const t of tokens) {

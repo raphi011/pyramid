@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Tabs } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { cn, fullName } from "@/lib/utils";
 import { DataList } from "@/components/data-list";
 import {
   PyramidGrid,
@@ -140,7 +140,12 @@ export function RankingsView({
 
   const opponents: Opponent[] = pyramidPlayers
     .filter((p) => p.variant === "challengeable")
-    .map((p) => ({ teamId: p.id as number, name: p.name, rank: p.rank }));
+    .map((p) => ({
+      teamId: p.id as number,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      rank: p.rank,
+    }));
 
   function handleNavigateToPlayer(player: {
     id: string | number;

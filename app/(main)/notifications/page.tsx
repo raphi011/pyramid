@@ -54,7 +54,7 @@ export default async function NotificationsPage() {
       initialEvents={events}
       initialHasMore={hasMore}
       initialCursor={cursor}
-      playerName={player.name}
+      playerName={`${player.firstName} ${player.lastName}`}
       hasUnread={hasUnread}
     />
   );

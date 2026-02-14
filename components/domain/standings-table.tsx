@@ -8,12 +8,13 @@ import {
 } from "@heroicons/react/20/solid";
 import { Avatar } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn, fullName } from "@/lib/utils";
 
 type StandingsPlayer = {
   id: string | number;
   playerId?: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   rank: number;
   avatarSrc?: string | null;
   wins: number;
@@ -69,10 +70,14 @@ function StandingsTable({
             </span>
 
             {/* Avatar + name */}
-            <Avatar name={player.name} src={player.avatarSrc} size="sm" />
+            <Avatar
+              name={fullName(player.firstName, player.lastName)}
+              src={player.avatarSrc}
+              size="sm"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
-                {player.name}
+                {fullName(player.firstName, player.lastName)}
               </p>
             </div>
 

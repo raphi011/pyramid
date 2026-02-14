@@ -133,7 +133,8 @@
   "profile": {
     "title": "Profil",
     "editTitle": "Profil bearbeiten",
-    "nameLabel": "Name",
+    "firstNameLabel": "Vorname",
+    "lastNameLabel": "Nachname",
     "phoneLabel": "Telefon",
     "bioLabel": "Bio",
     "bioPlaceholder": "Erz\u00e4hle etwas \u00fcber dich\u2026",
@@ -205,9 +206,11 @@
   "onboarding": {
     "welcome": "Willkommen!",
     "subtitle": "Vervollständige dein Profil",
-    "nameLabel": "Name",
-    "namePlaceholder": "Max Mustermann",
-    "nameRequired": "Name ist erforderlich",
+    "firstNameLabel": "Vorname",
+    "firstNamePlaceholder": "Max",
+    "lastNameLabel": "Nachname",
+    "lastNamePlaceholder": "Mustermann",
+    "nameRequired": "Vor- und Nachname sind erforderlich",
     "phoneLabel": "Telefon",
     "phonePlaceholder": "+49 170 1234567",
     "submit": "Weiter"

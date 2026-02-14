@@ -4,13 +4,15 @@ import type { Sql } from "../db";
 
 export type Player = {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 };
 
 export type PlayerProfile = {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   bio: string;
@@ -26,12 +28,17 @@ export async function getPlayerByEmail(
   email: string,
 ): Promise<Player | null> {
   const rows = await sql`
-    SELECT id, name, email_address AS email FROM player
+    SELECT id, first_name AS "firstName", last_name AS "lastName", email_address AS email FROM player
     WHERE LOWER(email_address) = LOWER(${email})
   `;
 
   return rows.length > 0
-    ? { id: rows[0].id, name: rows[0].name, email: rows[0].email }
+    ? {
+        id: rows[0].id,
+        firstName: rows[0].firstName,
+        lastName: rows[0].lastName,
+        email: rows[0].email,
+      }
     : null;
 }
 
@@ -40,12 +47,17 @@ export async function getPlayerById(
   playerId: number,
 ): Promise<Player | null> {
   const rows = await sql`
-    SELECT id, name, email_address AS email FROM player
+    SELECT id, first_name AS "firstName", last_name AS "lastName", email_address AS email FROM player
     WHERE id = ${playerId}
   `;
 
   return rows.length > 0
-    ? { id: rows[0].id, name: rows[0].name, email: rows[0].email }
+    ? {
+        id: rows[0].id,
+        firstName: rows[0].firstName,
+        lastName: rows[0].lastName,
+        email: rows[0].email,
+      }
     : null;
 }
 
@@ -56,7 +68,8 @@ export async function getPlayerProfile(
   const rows = await sql`
     SELECT
       id,
-      name,
+      first_name AS "firstName",
+      last_name AS "lastName",
       email_address AS "email",
       phone_number AS "phoneNumber",
       bio,
@@ -72,7 +85,8 @@ export async function getPlayerProfile(
   const row = rows[0];
   return {
     id: row.id as number,
-    name: row.name as string,
+    firstName: row.firstName as string,
+    lastName: row.lastName as string,
     email: row.email as string,
     phoneNumber: row.phoneNumber as string,
     bio: row.bio as string,
@@ -86,15 +100,17 @@ export async function updatePlayerProfile(
   sql: Sql,
   playerId: number,
   {
-    name,
+    firstName,
+    lastName,
     phoneNumber,
     bio,
-  }: { name: string; phoneNumber: string; bio: string },
+  }: { firstName: string; lastName: string; phoneNumber: string; bio: string },
 ): Promise<number> {
   const result = await sql`
     UPDATE player
     SET
-      name = ${name},
+      first_name = ${firstName},
+      last_name = ${lastName},
       phone_number = ${phoneNumber},
       bio = ${bio}
     WHERE id = ${playerId}

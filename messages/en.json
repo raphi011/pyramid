@@ -133,7 +133,8 @@
   "profile": {
     "title": "Profile",
     "editTitle": "Edit Profile",
-    "nameLabel": "Name",
+    "firstNameLabel": "First name",
+    "lastNameLabel": "Last name",
     "phoneLabel": "Phone",
     "bioLabel": "Bio",
     "bioPlaceholder": "Tell us about yourself\u2026",
@@ -205,9 +206,11 @@
   "onboarding": {
     "welcome": "Welcome!",
     "subtitle": "Complete your profile",
-    "nameLabel": "Name",
-    "namePlaceholder": "John Doe",
-    "nameRequired": "Name is required",
+    "firstNameLabel": "First name",
+    "firstNamePlaceholder": "John",
+    "lastNameLabel": "Last name",
+    "lastNamePlaceholder": "Doe",
+    "nameRequired": "First and last name are required",
     "phoneLabel": "Phone",
     "phonePlaceholder": "+1 555 1234567",
     "submit": "Continue"

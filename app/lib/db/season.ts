@@ -41,7 +41,8 @@ export type PlayerSeasonTeam = {
 export type RankedPlayer = {
   teamId: number;
   playerId: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   imageId: string | null;
   rank: number;
 };
@@ -244,7 +245,8 @@ export async function getStandingsWithPlayers(
     SELECT
       t.id AS "teamId",
       p.id AS "playerId",
-      p.name,
+      p.first_name AS "firstName",
+      p.last_name AS "lastName",
       p.image_id::text AS "imageId"
     FROM teams t
     JOIN team_players tp ON tp.team_id = t.id
@@ -255,7 +257,12 @@ export async function getStandingsWithPlayers(
   // Index by teamId for fast lookup (individual seasons only — one player per team)
   const teamMap = new Map<
     number,
-    { playerId: number; name: string; imageId: string | null }
+    {
+      playerId: number;
+      firstName: string;
+      lastName: string;
+      imageId: string | null;
+    }
   >();
   for (const row of teamPlayerRows) {
     const teamId = row.teamId as number;
@@ -266,7 +273,8 @@ export async function getStandingsWithPlayers(
     }
     teamMap.set(teamId, {
       playerId: row.playerId as number,
-      name: row.name as string,
+      firstName: row.firstName as string,
+      lastName: row.lastName as string,
       imageId: (row.imageId as string) ?? null,
     });
   }
@@ -286,7 +294,8 @@ export async function getStandingsWithPlayers(
     players.push({
       teamId,
       playerId: info.playerId,
-      name: info.name,
+      firstName: info.firstName,
+      lastName: info.lastName,
       imageId: info.imageId,
       rank: i + 1,
     });

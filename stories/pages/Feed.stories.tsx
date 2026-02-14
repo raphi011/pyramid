@@ -37,7 +37,7 @@ function FeedPage({
         <div className="space-y-4">
           <EventTimeline
             events={events}
-            highlightName={currentPlayer.name}
+            highlightName={`${currentPlayer.firstName} ${currentPlayer.lastName}`}
             loading={loading}
           />
           {events.length > 0 && !loading && (
@@ -76,7 +76,7 @@ export const SingleClub = meta.story({
         <div className="space-y-4">
           <EventTimeline
             events={allEvents}
-            highlightName={currentPlayer.name}
+            highlightName={`${currentPlayer.firstName} ${currentPlayer.lastName}`}
           />
         </div>
       </PageLayout>

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     try {
       // 1. No name → onboarding
       const player = await getPlayerById(sql, result.playerId);
-      if (!player || !player.name.trim()) {
+      if (!player || !player.firstName.trim()) {
         return NextResponse.redirect(new URL("/onboarding", baseUrl));
       }
 

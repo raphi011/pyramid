@@ -5,6 +5,7 @@ import { getSession, createMagicLink, getPlayerByEmail } from "@/app/lib/auth";
 import { getClubByInviteCode, isClubMember, joinClub } from "@/app/lib/db/club";
 import { sendMagicLinkEmail } from "@/app/lib/email";
 import { sql } from "@/app/lib/db";
+import { fullName } from "@/lib/utils";
 
 export type JoinStep =
   | "code-input"
@@ -157,7 +158,7 @@ export async function requestJoinAction(
       const returnTo = `/join?code=${inviteCode}`;
       const { success, error: emailError } = await sendMagicLinkEmail(
         email,
-        player.name,
+        fullName(player.firstName, player.lastName),
         token,
         returnTo,
       );

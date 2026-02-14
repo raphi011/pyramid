@@ -20,16 +20,18 @@ export async function completeOnboarding(
     redirect("/login");
   }
 
-  const name = (formData.get("name") as string)?.trim();
+  const firstName = (formData.get("firstName") as string)?.trim();
+  const lastName = (formData.get("lastName") as string)?.trim();
   const phoneNumber = (formData.get("phone") as string)?.trim() ?? "";
 
-  if (!name) {
+  if (!firstName || !lastName) {
     const t = await getTranslations("onboarding");
     return { error: t("nameRequired") };
   }
 
   await updatePlayerProfile(sql, session.playerId, {
-    name,
+    firstName,
+    lastName,
     phoneNumber,
     bio: "",
   });

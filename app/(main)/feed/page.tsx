@@ -54,7 +54,7 @@ export default async function FeedPage() {
       initialHasMore={hasMore}
       initialCursor={cursor}
       clubs={clubs.map((c) => ({ id: c.clubId, name: c.clubName }))}
-      playerName={player.name}
+      playerName={`${player.firstName} ${player.lastName}`}
     />
   );
 }

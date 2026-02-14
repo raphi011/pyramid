@@ -56,7 +56,10 @@ export function PageWrapper({
       navItems={navItems}
       sidebarItems={sidebarItems}
       adminItems={isAdmin ? adminItems : undefined}
-      profile={{ name: currentPlayer.name, href: "/profile" }}
+      profile={{
+        name: `${currentPlayer.firstName} ${currentPlayer.lastName}`,
+        href: "/profile",
+      }}
       activeHref={active}
       onNavigate={setActive}
       fab={{

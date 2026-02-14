@@ -24,10 +24,18 @@ export const TenPlayers = meta.story({
 export const WithHighlights = meta.story({
   args: {
     players: [
-      { id: 1, name: "Julia Fischer", rank: 1, wins: 12, losses: 0 },
+      {
+        id: 1,
+        firstName: "Julia",
+        lastName: "Fischer",
+        rank: 1,
+        wins: 12,
+        losses: 0,
+      },
       {
         id: 2,
-        name: "Anna Schmidt",
+        firstName: "Anna",
+        lastName: "Schmidt",
         rank: 2,
         wins: 8,
         losses: 1,
@@ -35,7 +43,8 @@ export const WithHighlights = meta.story({
       },
       {
         id: 3,
-        name: "Tom Weber",
+        firstName: "Tom",
+        lastName: "Weber",
         rank: 3,
         wins: 5,
         losses: 2,
@@ -43,16 +52,25 @@ export const WithHighlights = meta.story({
       },
       {
         id: 4,
-        name: "Lisa Müller",
+        firstName: "Lisa",
+        lastName: "Müller",
         rank: 4,
         wins: 6,
         losses: 3,
         variant: "challenged" as const,
       },
-      { id: 5, name: "Max Braun", rank: 5, wins: 4, losses: 4 },
+      {
+        id: 5,
+        firstName: "Max",
+        lastName: "Braun",
+        rank: 5,
+        wins: 4,
+        losses: 4,
+      },
       {
         id: 6,
-        name: "Sarah Hoffmann",
+        firstName: "Sarah",
+        lastName: "Hoffmann",
         rank: 6,
         wins: 3,
         losses: 5,
@@ -65,9 +83,15 @@ export const WithHighlights = meta.story({
 export const SmallPyramid = meta.story({
   args: {
     players: [
-      { id: 1, name: "Julia Fischer", rank: 1 },
-      { id: 2, name: "Anna Schmidt", rank: 2 },
-      { id: 3, name: "Tom Weber", rank: 3, variant: "current" as const },
+      { id: 1, firstName: "Julia", lastName: "Fischer", rank: 1 },
+      { id: 2, firstName: "Anna", lastName: "Schmidt", rank: 2 },
+      {
+        id: 3,
+        firstName: "Tom",
+        lastName: "Weber",
+        rank: 3,
+        variant: "current" as const,
+      },
     ],
   },
 });
