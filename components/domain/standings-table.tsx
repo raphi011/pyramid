@@ -4,9 +4,9 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   MinusIcon,
+  TrophyIcon,
 } from "@heroicons/react/20/solid";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -81,11 +81,12 @@ function StandingsTable({
               {player.wins}S · {player.losses}N
             </span>
 
-            {/* Rank 1 badge */}
+            {/* Rank 1 trophy */}
             {player.rank === 1 && (
-              <Badge variant="rank" size="sm">
-                #1
-              </Badge>
+              <TrophyIcon
+                className="size-5 shrink-0 text-trophy-500"
+                aria-hidden="true"
+              />
             )}
           </button>
         </div>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { TrophyIcon } from "@heroicons/react/20/solid";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type PlayerCardVariant =
@@ -27,11 +27,12 @@ type PlayerCardProps = {
 const variantStyles: Record<PlayerCardVariant, string> = {
   default:
     "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
-  current: "bg-court-500 text-white ring-0",
+  current:
+    "bg-white ring-1 ring-slate-200 border-b-2 border-court-500 dark:bg-slate-900 dark:ring-slate-800 dark:border-court-400",
   challengeable:
     "bg-court-50/50 ring-1 ring-court-300 dark:bg-court-950/50 dark:ring-court-700",
   challenged:
-    "bg-orange-50 ring-2 ring-orange-400 dark:bg-orange-950 dark:ring-orange-500",
+    "bg-white ring-1 ring-slate-200 opacity-50 dark:bg-slate-900 dark:ring-slate-800",
   unavailable: "bg-slate-100 text-slate-500 opacity-60 dark:bg-slate-800",
 };
 
@@ -47,8 +48,6 @@ function PlayerCard({
   className,
 }: PlayerCardProps) {
   const t = useTranslations("ranking");
-  const isCurrent = variant === "current";
-
   if (compact) {
     return (
       <button
@@ -64,27 +63,26 @@ function PlayerCard({
       >
         <span
           className={cn(
-            "text-xs font-bold tabular-nums",
-            isCurrent ? "text-white/70" : "text-slate-500 dark:text-slate-400",
+            "text-xs font-bold tabular-nums text-slate-500 dark:text-slate-400",
           )}
         >
           {rank}
         </span>
-        <Avatar
-          name={name}
-          src={avatarSrc}
-          size="sm"
-          className={cn(isCurrent && "bg-white text-court-700")}
-        />
+        <Avatar name={name} src={avatarSrc} size="sm" />
         <span
           className={cn(
-            "truncate text-sm font-medium",
-            isCurrent ? "text-white" : "text-slate-900 dark:text-white",
+            "truncate text-sm font-medium text-slate-900 dark:text-white",
             variant === "unavailable" && "text-slate-500",
           )}
         >
           {name}
         </span>
+        {rank === 1 && (
+          <TrophyIcon
+            className="size-4 shrink-0 text-trophy-500"
+            aria-hidden="true"
+          />
+        )}
       </button>
     );
   }
@@ -101,25 +99,14 @@ function PlayerCard({
         className,
       )}
     >
-      <span
-        className={cn(
-          "w-6 text-center text-sm font-bold tabular-nums",
-          isCurrent ? "text-white/70" : "text-slate-500 dark:text-slate-400",
-        )}
-      >
+      <span className="w-6 text-center text-sm font-bold tabular-nums text-slate-500 dark:text-slate-400">
         {rank}
       </span>
-      <Avatar
-        name={name}
-        src={avatarSrc}
-        size="md"
-        className={cn(isCurrent && "bg-white text-court-700")}
-      />
+      <Avatar name={name} src={avatarSrc} size="md" />
       <div className="min-w-0 flex-1">
         <p
           className={cn(
-            "truncate text-sm font-semibold",
-            isCurrent ? "text-white" : "text-slate-900 dark:text-white",
+            "truncate text-sm font-semibold text-slate-900 dark:text-white",
             variant === "unavailable" && "text-slate-500",
           )}
         >
@@ -128,10 +115,7 @@ function PlayerCard({
         {(wins != null || losses != null) && (
           <p
             className={cn(
-              "text-xs",
-              isCurrent
-                ? "text-white/70"
-                : "text-slate-500 dark:text-slate-400",
+              "text-xs text-slate-500 dark:text-slate-400",
               variant === "unavailable" && "text-slate-300",
             )}
           >
@@ -140,9 +124,10 @@ function PlayerCard({
         )}
       </div>
       {rank === 1 && (
-        <Badge variant="rank" size="sm">
-          #1
-        </Badge>
+        <TrophyIcon
+          className="size-5 shrink-0 text-trophy-500"
+          aria-hidden="true"
+        />
       )}
     </button>
   );
