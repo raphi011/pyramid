@@ -7,6 +7,7 @@ import {
   getMatchComments,
 } from "@/app/lib/db/match";
 import { getStandingsWithPlayers } from "@/app/lib/db/season";
+import { getPlayerRole } from "@/app/lib/db/club";
 import { MatchDetailView } from "./match-detail-view";
 
 type MatchDetailPageProps = {
@@ -27,11 +28,14 @@ export default async function MatchDetailPage({
   const match = await getMatchById(sql, matchId);
   if (!match) notFound();
 
-  const [proposals, comments, standings] = await Promise.all([
+  const [proposals, comments, standings, clubRole] = await Promise.all([
     getDateProposals(sql, matchId),
     getMatchComments(sql, matchId),
     getStandingsWithPlayers(sql, match.seasonId),
+    getPlayerRole(sql, player.id, match.clubId),
   ]);
+
+  const isAdmin = clubRole === "admin";
 
   // Determine user role
   const isTeam1 = player.id === match.team1PlayerId;
@@ -93,6 +97,7 @@ export default async function MatchDetailPage({
       currentPlayerId={player.id}
       team1Rank={team1Rank}
       team2Rank={team2Rank}
+      isAdmin={isAdmin}
     />
   );
 }

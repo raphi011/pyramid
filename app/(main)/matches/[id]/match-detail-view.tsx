@@ -87,6 +87,7 @@ type MatchDetailViewProps = {
   currentPlayerId: number;
   team1Rank: number | null;
   team2Rank: number | null;
+  isAdmin: boolean;
 };
 
 // ── Status config (shared with match-card) ────────────
@@ -156,6 +157,7 @@ export function MatchDetailView({
   currentPlayerId,
   team1Rank,
   team2Rank,
+  isAdmin,
 }: MatchDetailViewProps) {
   const t = useTranslations("matchDetail");
   const tMatch = useTranslations("match");
@@ -175,6 +177,9 @@ export function MatchDetailView({
       player2: "",
     })),
   );
+
+  // Result photo state
+  const [resultPhoto, setResultPhoto] = useState<File | null>(null);
 
   // Confirm/dispute dialog state
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
@@ -233,8 +238,25 @@ export function MatchDetailView({
           result = await removeDateProposalAction(formData);
           break;
         case "enterResult":
+          if (resultPhoto) {
+            const uploadData = new FormData();
+            uploadData.append("file", resultPhoto);
+            const res = await fetch("/api/images", {
+              method: "POST",
+              body: uploadData,
+            });
+            if (!res.ok) {
+              result = { error: "matchDetail.error.serverError" };
+              break;
+            }
+            const { id: uploadedId } = await res.json();
+            formData.set("imageId", uploadedId);
+          }
           result = await enterResultAction(formData);
-          if ("success" in result) setShowEnterResultDialog(false);
+          if ("success" in result) {
+            setShowEnterResultDialog(false);
+            setResultPhoto(null);
+          }
           break;
         case "confirmResult":
           result = await confirmResultAction(formData);
@@ -502,8 +524,8 @@ export function MatchDetailView({
         </p>
       )}
 
-      {/* Date Proposals Section (open matches) */}
-      {isOpen && (
+      {/* Date Proposals Section (open matches, participants + admins only) */}
+      {isOpen && (isParticipant || isAdmin) && (
         <Card>
           <CardHeader>
             <CardTitle>{t("dateProposals")}</CardTitle>
@@ -647,38 +669,40 @@ export function MatchDetailView({
         </Card>
       )}
 
-      {/* Match Photo */}
-      {(match.imageId || isParticipant) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("matchPhoto")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {match.imageId && (
-              // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
-              <img
-                src={imageUrl(match.imageId)!}
-                alt={t("matchPhoto")}
-                className="w-full rounded-xl object-cover"
-              />
-            )}
-            {isParticipant && (
-              <label
-                className={`${match.imageId ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
-              >
-                {t("uploadPhoto")}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  onChange={handleMatchImageUpload}
-                  disabled={isPending}
+      {/* Match Photo (only after match concluded) */}
+      {(match.status === "completed" || match.status === "forfeited") &&
+        (match.imageId || isParticipant) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("matchPhoto")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {match.imageId && (
+                // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
+                <img
+                  src={imageUrl(match.imageId)!}
+                  alt={t("matchPhoto")}
+                  className="w-full rounded-xl object-cover"
                 />
-              </label>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              )}
+              {isParticipant && (
+                <label
+                  className={`${match.imageId ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
+                >
+                  {t("uploadPhoto")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleMatchImageUpload}
+                    disabled={isPending}
+                  />
+                </label>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Comments Section */}
       <Card>
@@ -791,7 +815,10 @@ export function MatchDetailView({
       {/* Enter Result Dialog */}
       <ResponsiveDialog
         open={showEnterResultDialog}
-        onClose={() => setShowEnterResultDialog(false)}
+        onClose={() => {
+          setShowEnterResultDialog(false);
+          setResultPhoto(null);
+        }}
         title={t("enterResultTitle")}
       >
         <form action={handleAction} className="space-y-4">
@@ -814,6 +841,44 @@ export function MatchDetailView({
             player1Name={match.team1Name}
             player2Name={match.team2Name}
           />
+          <div>
+            <p className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("resultPhotoLabel")}
+            </p>
+            {resultPhoto ? (
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800">
+                <span className="truncate text-sm text-slate-700 dark:text-slate-300">
+                  {resultPhoto.name}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setResultPhoto(null)}
+                >
+                  {t("removePhoto")}
+                </Button>
+              </div>
+            ) : (
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700">
+                {t("addPhoto")}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setResultPhoto(file);
+                  }}
+                  disabled={isPending}
+                />
+              </label>
+            )}
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {t("resultPhotoHint")}
+            </p>
+          </div>
           <Button type="submit" className="w-full" disabled={isPending}>
             {t("submitResult")}
           </Button>

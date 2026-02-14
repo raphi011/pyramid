@@ -263,6 +263,10 @@
     "send": "Senden",
     "matchPhoto": "Matchfoto",
     "uploadPhoto": "Foto hochladen",
+    "resultPhotoLabel": "Foto (optional)",
+    "resultPhotoHint": "Nimm ein Foto auf oder w\u00e4hle eines aus der Galerie.",
+    "addPhoto": "Foto hinzuf\u00fcgen",
+    "removePhoto": "Entfernen",
     "error": {
       "notParticipant": "Du bist kein Teilnehmer dieses Spiels.",
       "invalidStatus": "Diese Aktion ist f\u00fcr den aktuellen Spielstatus nicht verf\u00fcgbar.",

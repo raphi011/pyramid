@@ -271,6 +271,13 @@ export async function enterResultAction(
     return { error: "matchDetail.error.invalidScores" };
   }
 
+  const imageId = (formData.get("imageId") as string) || null;
+
+  if (imageId) {
+    const owned = await postgresImageStorage.isOwnedBy(sql, imageId, player.id);
+    if (!owned) return { error: "matchDetail.error.serverError" };
+  }
+
   // Determine winner
   let team1Wins = 0;
   let team2Wins = 0;
@@ -295,6 +302,9 @@ export async function enterResultAction(
         match.seasonId,
         opponentPlayerId,
       );
+      if (imageId) {
+        await updateMatchImage(tx, matchId, imageId);
+      }
     });
   } catch (e) {
     console.error("enterResultAction transaction failed:", e);

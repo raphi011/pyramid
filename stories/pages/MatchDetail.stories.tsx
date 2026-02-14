@@ -138,6 +138,7 @@ export const Challenged = meta.story({
           currentPlayerId={2}
           team1Rank={5}
           team2Rank={4}
+          isAdmin={false}
         />
       </PageWrapper>
     );
@@ -162,6 +163,7 @@ export const DateSet = meta.story({
           currentPlayerId={1}
           team1Rank={5}
           team2Rank={4}
+          isAdmin={false}
         />
       </PageWrapper>
     );
@@ -187,6 +189,7 @@ export const PendingConfirmation = meta.story({
           currentPlayerId={2}
           team1Rank={5}
           team2Rank={4}
+          isAdmin={false}
         />
       </PageWrapper>
     );
@@ -212,6 +215,7 @@ export const PendingConfirmationAsEnterer = meta.story({
           currentPlayerId={1}
           team1Rank={5}
           team2Rank={4}
+          isAdmin={false}
         />
       </PageWrapper>
     );
@@ -238,6 +242,7 @@ export const Completed = meta.story({
           currentPlayerId={1}
           team1Rank={4}
           team2Rank={5}
+          isAdmin={false}
         />
       </PageWrapper>
     );
@@ -256,6 +261,7 @@ export const WithDateProposals = meta.story({
           currentPlayerId={2}
           team1Rank={5}
           team2Rank={4}
+          isAdmin={false}
         />
       </PageWrapper>
     );
@@ -277,6 +283,7 @@ export const AsSpectator = meta.story({
           currentPlayerId={99}
           team1Rank={5}
           team2Rank={4}
+          isAdmin={false}
         />
       </PageWrapper>
     );

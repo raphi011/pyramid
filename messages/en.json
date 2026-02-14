@@ -263,6 +263,10 @@
     "send": "Send",
     "matchPhoto": "Match photo",
     "uploadPhoto": "Upload photo",
+    "resultPhotoLabel": "Photo (optional)",
+    "resultPhotoHint": "Take a photo or choose one from your gallery.",
+    "addPhoto": "Add photo",
+    "removePhoto": "Remove",
     "error": {
       "notParticipant": "You are not a participant in this match.",
       "invalidStatus": "This action is not available for the current match status.",
