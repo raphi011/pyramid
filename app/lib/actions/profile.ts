@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { updatePlayerProfile } from "@/app/lib/db/auth";
+import { updatePlayerProfile, updatePlayerImage } from "@/app/lib/db/auth";
 
 export type ProfileResult = { success: true } | { error: string };
 
@@ -38,6 +38,27 @@ export async function updateProfileAction(
   }
 
   revalidatePath("/profile");
+
+  return { success: true };
+}
+
+export async function updateProfileImageAction(
+  imageId: string | null,
+): Promise<ProfileResult> {
+  const player = await getCurrentPlayer();
+  if (!player) {
+    return { error: "profile.error.notAuthenticated" };
+  }
+
+  try {
+    await updatePlayerImage(sql, player.id, imageId);
+  } catch (e) {
+    console.error("updateProfileImageAction failed:", e);
+    return { error: "profile.error.serverError" };
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/rankings");
 
   return { success: true };
 }

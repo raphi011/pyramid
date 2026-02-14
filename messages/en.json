@@ -165,6 +165,8 @@
     "noClubsDesc": "You are not a member of any club yet.",
     "noRankData": "No rank data available",
     "rankTooltip": "Rank",
+    "changePhoto": "Change photo",
+    "uploading": "Uploading\u2026",
     "error": {
       "nameRequired": "Name is required",
       "notAuthenticated": "Not authenticated",

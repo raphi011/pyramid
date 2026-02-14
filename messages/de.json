@@ -165,6 +165,8 @@
     "noClubsDesc": "Du bist noch kein Mitglied in einem Verein.",
     "noRankData": "Keine Rangdaten vorhanden",
     "rankTooltip": "Rang",
+    "changePhoto": "Foto ändern",
+    "uploading": "Wird hochgeladen\u2026",
     "error": {
       "nameRequired": "Name ist erforderlich",
       "notAuthenticated": "Nicht angemeldet",

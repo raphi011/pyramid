@@ -23,7 +23,11 @@ import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { StatsCard } from "@/components/domain/stats-card";
-import { updateProfileAction } from "@/app/lib/actions/profile";
+import { Avatar } from "@/components/ui/avatar";
+import {
+  updateProfileAction,
+  updateProfileImageAction,
+} from "@/app/lib/actions/profile";
 import type { PlayerProfile as PlayerProfileType } from "@/app/lib/db/auth";
 import type { ClubMembership } from "@/app/lib/db/club";
 import type { HeadToHeadRecord } from "@/app/lib/db/match";
@@ -36,6 +40,7 @@ import { winRate } from "@/app/(main)/player/shared";
 
 type ProfileViewProps = {
   profile: PlayerProfileType;
+  avatarSrc: string | null;
   clubs: ClubMembership[];
   seasonStats: SeasonStatsScope;
   clubStats: StatsScope;
@@ -48,6 +53,7 @@ type ProfileViewProps = {
 
 function ProfileView({
   profile,
+  avatarSrc,
   clubs,
   seasonStats,
   clubStats,
@@ -87,6 +93,42 @@ function ProfileView({
     [t, router],
   );
 
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/images", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          setEditError(data.error ?? t("error.serverError"));
+          return;
+        }
+        const { id } = await res.json();
+        const result = await updateProfileImageAction(id);
+        if ("error" in result) {
+          setEditError(t(`error.${result.error.split(".").pop()}`));
+        } else {
+          router.refresh();
+        }
+      } catch {
+        setEditError(t("error.serverError"));
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [t, router],
+  );
+
   const trendProp =
     seasonStats.trend === "none" ? undefined : seasonStats.trend;
 
@@ -94,6 +136,7 @@ function ProfileView({
     <PageLayout title={t("title")}>
       <PlayerProfile
         name={profile.name}
+        avatarSrc={avatarSrc}
         rank={seasonStats.rank}
         wins={seasonStats.wins}
         losses={seasonStats.losses}
@@ -257,6 +300,19 @@ function ProfileView({
         title={t("editTitle")}
       >
         <form ref={formRef} action={handleEditSubmit} className="space-y-4">
+          <div className="flex flex-col items-center gap-2">
+            <Avatar name={profile.name} src={avatarSrc} size="xl" />
+            <label className="cursor-pointer text-sm font-medium text-court-600 hover:text-court-700 dark:text-court-400">
+              {isUploading ? t("uploading") : t("changePhoto")}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleImageUpload}
+                disabled={isUploading || isPending}
+              />
+            </label>
+          </div>
           <FormField
             label={t("nameLabel")}
             required

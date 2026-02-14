@@ -17,6 +17,7 @@ import {
   getAggregatedWinsLosses,
 } from "@/app/lib/db/match";
 import { computeMovement } from "@/app/lib/pyramid";
+import { imageUrl } from "@/app/lib/image-storage";
 import { ProfileView } from "./profile-view";
 
 export default async function ProfilePage() {
@@ -109,6 +110,7 @@ export default async function ProfilePage() {
   return (
     <ProfileView
       profile={profile}
+      avatarSrc={imageUrl(profile.imageId)}
       clubs={clubs}
       seasonStats={seasonStats}
       clubStats={clubWL}
