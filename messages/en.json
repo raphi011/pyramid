@@ -231,7 +231,7 @@
     "comingSoon": "Coming soon",
     "comments": "Comments",
     "noComments": "No comments yet",
-    "noCommentsDesc": "Comments will be available soon.",
+    "noCommentsDesc": "Be the first to write a message.",
     "commentPlaceholder": "Write a message...",
     "send": "Send",
     "error": {
@@ -243,6 +243,8 @@
       "proposalNotFound": "The proposal was not found.",
       "notFound": "Match not found.",
       "invalidInput": "Invalid input.",
+      "commentEmpty": "Please enter a message.",
+      "commentTooLong": "Message is too long (max 2000 characters).",
       "serverError": "An unexpected error occurred. Please try again."
     }
   },

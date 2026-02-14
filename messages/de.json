@@ -241,7 +241,7 @@
     "comingSoon": "Bald verf\u00fcgbar",
     "comments": "Nachrichten",
     "noComments": "Noch keine Nachrichten",
-    "noCommentsDesc": "Nachrichten werden bald verf\u00fcgbar sein.",
+    "noCommentsDesc": "Schreibe die erste Nachricht.",
     "commentPlaceholder": "Nachricht schreiben...",
     "send": "Senden",
     "error": {
@@ -253,6 +253,8 @@
       "proposalNotFound": "Der Vorschlag wurde nicht gefunden.",
       "notFound": "Spiel nicht gefunden.",
       "invalidInput": "Ung\u00fcltige Eingabe.",
+      "commentEmpty": "Bitte gib eine Nachricht ein.",
+      "commentTooLong": "Nachricht ist zu lang (max. 2000 Zeichen).",
       "serverError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },

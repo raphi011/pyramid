@@ -23,6 +23,7 @@ import {
   declineDateAction,
   enterResultAction,
   confirmResultAction,
+  postCommentAction,
 } from "@/app/lib/actions/match";
 import type { MatchStatus } from "@/app/lib/db/match";
 
@@ -152,6 +153,9 @@ export function MatchDetailView({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // Comment state
+  const [commentText, setCommentText] = useState("");
+
   // Dialog state
   const [showProposeDateDialog, setShowProposeDateDialog] = useState(false);
   const [showEnterResultDialog, setShowEnterResultDialog] = useState(false);
@@ -215,6 +219,10 @@ export function MatchDetailView({
           break;
         case "confirmResult":
           result = await confirmResultAction(formData);
+          break;
+        case "postComment":
+          result = await postCommentAction(formData);
+          if (result && "success" in result) setCommentText("");
           break;
       }
       if (result && "error" in result) {
@@ -491,21 +499,31 @@ export function MatchDetailView({
             </p>
           )}
 
-          <Separator className="my-3" />
+          {isParticipant && (
+            <>
+              <Separator className="my-3" />
 
-          <div className="flex gap-2">
-            <FormField
-              label=""
-              placeholder={t("commentPlaceholder")}
-              disabled
-              className="flex-1"
-            />
-            <Tooltip content={t("comingSoon")}>
-              <Button size="md" disabled>
-                {t("send")}
-              </Button>
-            </Tooltip>
-          </div>
+              <form action={handleAction} className="flex gap-2">
+                <input type="hidden" name="intent" value="postComment" />
+                <input type="hidden" name="matchId" value={match.id} />
+                <FormField
+                  label=""
+                  placeholder={t("commentPlaceholder")}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="flex-1"
+                  inputProps={{ name: "comment" }}
+                />
+                <Button
+                  type="submit"
+                  size="md"
+                  disabled={isPending || !commentText.trim()}
+                >
+                  {t("send")}
+                </Button>
+              </form>
+            </>
+          )}
         </CardContent>
       </Card>
 

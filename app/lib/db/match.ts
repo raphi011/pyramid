@@ -352,6 +352,45 @@ export async function getMatchComments(
   }));
 }
 
+export async function createMatchComment(
+  sql: Sql,
+  matchId: number,
+  playerId: number,
+  comment: string,
+): Promise<MatchComment> {
+  const trimmed = comment.trim();
+  if (!trimmed) {
+    throw new Error("Comment must not be empty");
+  }
+
+  const [row] = await sql`
+    INSERT INTO match_comments (match_id, player_id, comment, created)
+    VALUES (${matchId}, ${playerId}, ${trimmed}, NOW())
+    RETURNING
+      id,
+      match_id AS "matchId",
+      player_id AS "playerId",
+      comment,
+      created,
+      edited_at AS "editedAt"
+  `;
+
+  // Fetch player name separately (consistent with getMatchComments)
+  const [player] = await sql`
+    SELECT name AS "playerName" FROM player WHERE id = ${playerId}
+  `;
+
+  return {
+    id: row.id as number,
+    matchId: row.matchId as number,
+    playerId: row.playerId as number,
+    playerName: player.playerName as string,
+    comment: row.comment as string,
+    created: row.created as Date,
+    editedAt: (row.editedAt as Date) ?? null,
+  };
+}
+
 // ── Mutations ─────────────────────────────────────────
 
 export async function createDateProposal(

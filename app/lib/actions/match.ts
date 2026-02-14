@@ -12,6 +12,7 @@ import {
   enterMatchResult,
   confirmMatchResult,
   updateStandingsAfterResult,
+  createMatchComment,
 } from "@/app/lib/db/match";
 import { validateScores } from "@/app/lib/validate-scores";
 
@@ -316,6 +317,51 @@ export async function confirmResultAction(
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/rankings");
+
+  return { success: true };
+}
+
+// ── Post Comment ─────────────────────────────────────
+
+export async function postCommentAction(
+  formData: FormData,
+): Promise<MatchActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  const comment = (formData.get("comment") as string | null) ?? "";
+
+  if (!matchId) {
+    return { error: "matchDetail.error.notFound" };
+  }
+
+  const trimmed = comment.trim();
+  if (!trimmed) {
+    return { error: "matchDetail.error.commentEmpty" };
+  }
+  if (trimmed.length > 2000) {
+    return { error: "matchDetail.error.commentTooLong" };
+  }
+
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  // Must be a participant
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  try {
+    await createMatchComment(sql, matchId, player.id, trimmed);
+  } catch (e) {
+    console.error("postCommentAction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
 
   return { success: true };
 }
