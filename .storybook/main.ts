@@ -38,10 +38,16 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@": path.resolve(__dirname, ".."),
+      // Specific mocks MUST come before the general "@" alias —
+      // Vite checks aliases in insertion order with prefix matching,
+      // so "@" would shadow "@/app/lib/..." if listed first.
       "next/cache": path.resolve(__dirname, "mocks/next-cache.ts"),
       "next/headers": path.resolve(__dirname, "mocks/next-headers.ts"),
-      "@/app/lib/actions/challenge": path.resolve(__dirname, "mocks/challenge-action.ts"),
+      "@/app/lib/actions/challenge": path.resolve(
+        __dirname,
+        "mocks/challenge-action.ts",
+      ),
+      "@": path.resolve(__dirname, ".."),
     };
     config.plugins = config.plugins || [];
     config.plugins.push(tailwindcss());
