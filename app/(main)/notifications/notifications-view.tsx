@@ -24,18 +24,24 @@ export function NotificationsView({
   hasUnread,
 }: NotificationsViewProps) {
   const t = useTranslations("feed");
+  const tError = useTranslations("error");
   const [events, setEvents] = useState(initialEvents);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [showUnread, setShowUnread] = useState(hasUnread);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleLoadMore() {
     if (!cursor) return;
 
+    setError(null);
     startTransition(async () => {
       const result = await loadMoreNotificationsAction(cursor);
-      if ("error" in result) return;
+      if ("error" in result) {
+        setError(tError("description"));
+        return;
+      }
       setEvents((prev) => [...prev, ...result.events]);
       setHasMore(result.hasMore);
       setCursor(result.cursor);
@@ -43,9 +49,13 @@ export function NotificationsView({
   }
 
   function handleMarkAllRead() {
+    setError(null);
     startTransition(async () => {
       const result = await markAllReadAction();
-      if ("error" in result) return;
+      if ("error" in result) {
+        setError(tError("description"));
+        return;
+      }
       setShowUnread(false);
       setEvents((prev) => prev.map((e) => ({ ...e, unread: false })));
     });
@@ -67,6 +77,12 @@ export function NotificationsView({
         ) : undefined
       }
     >
+      {error && (
+        <p className="text-center text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      )}
+
       <EventTimeline
         events={events}
         highlightName={playerName}

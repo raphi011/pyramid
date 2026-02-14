@@ -273,6 +273,8 @@
     "empty": "Noch keine Neuigkeiten",
     "emptyDesc": "Aktivit\u00e4ten aus deinen Vereinen erscheinen hier.",
     "notificationsEmpty": "Keine Benachrichtigungen",
-    "notificationsEmptyDesc": "Sobald etwas passiert, wirst du hier benachrichtigt."
+    "notificationsEmptyDesc": "Sobald etwas passiert, wirst du hier benachrichtigt.",
+    "today": "Heute",
+    "yesterday": "Gestern"
   }
 }

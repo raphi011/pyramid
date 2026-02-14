@@ -46,22 +46,28 @@ const EVENT_SELECT = `
   sm.winner_team_id AS "winnerTeamId",
   sm.team1_score AS "team1Score",
   sm.team2_score AS "team2Score",
-  mp1.name AS "team1Name",
-  mp2.name AS "team2Name"
+  t1names.name AS "team1Name",
+  t2names.name AS "team2Name"
 `;
 
+// Use LATERAL string_agg to collapse team player names into a single value,
+// avoiding Cartesian product for doubles/team matches.
 const EVENT_JOIN = `
   FROM events e
   JOIN clubs c ON c.id = e.club_id
   LEFT JOIN player actor ON actor.id = e.player_id
   LEFT JOIN player target ON target.id = e.target_player_id
   LEFT JOIN season_matches sm ON sm.id = e.match_id
-  LEFT JOIN teams mt1 ON mt1.id = sm.team1_id
-  LEFT JOIN team_players mtp1 ON mtp1.team_id = mt1.id
-  LEFT JOIN player mp1 ON mp1.id = mtp1.player_id
-  LEFT JOIN teams mt2 ON mt2.id = sm.team2_id
-  LEFT JOIN team_players mtp2 ON mtp2.team_id = mt2.id
-  LEFT JOIN player mp2 ON mp2.id = mtp2.player_id
+  LEFT JOIN LATERAL (
+    SELECT string_agg(p.name, ' / ' ORDER BY p.id) AS name
+    FROM team_players tp JOIN player p ON p.id = tp.player_id
+    WHERE tp.team_id = sm.team1_id
+  ) t1names ON TRUE
+  LEFT JOIN LATERAL (
+    SELECT string_agg(p.name, ' / ' ORDER BY p.id) AS name
+    FROM team_players tp JOIN player p ON p.id = tp.player_id
+    WHERE tp.team_id = sm.team2_id
+  ) t2names ON TRUE
 `;
 
 function toEventRow(row: Record<string, unknown>): EventRow {
@@ -93,16 +99,18 @@ function toEventRow(row: Record<string, unknown>): EventRow {
 export async function getFeedEvents(
   sql: Sql,
   clubIds: number[],
-  cursor: Date | null,
+  cursor: { created: Date; id: number } | null,
   limit: number,
 ): Promise<EventRow[]> {
   if (clubIds.length === 0) return [];
 
   const cursorClause = cursor
-    ? `AND e.created < $2 ORDER BY e.created DESC LIMIT $3`
-    : `ORDER BY e.created DESC LIMIT $2`;
+    ? `AND (e.created, e.id) < ($2, $3) ORDER BY e.created DESC, e.id DESC LIMIT $4`
+    : `ORDER BY e.created DESC, e.id DESC LIMIT $2`;
 
-  const params = cursor ? [clubIds, cursor, limit] : [clubIds, limit];
+  const params = cursor
+    ? [clubIds, cursor.created, cursor.id, limit]
+    : [clubIds, limit];
 
   const rows = await sql.unsafe(
     `SELECT ${EVENT_SELECT}
@@ -120,17 +128,17 @@ export async function getNotifications(
   sql: Sql,
   playerId: number,
   clubIds: number[],
-  cursor: Date | null,
+  cursor: { created: Date; id: number } | null,
   limit: number,
 ): Promise<EventRow[]> {
   if (clubIds.length === 0) return [];
 
   const cursorClause = cursor
-    ? `AND e.created < $3 ORDER BY e.created DESC LIMIT $4`
-    : `ORDER BY e.created DESC LIMIT $3`;
+    ? `AND (e.created, e.id) < ($3, $4) ORDER BY e.created DESC, e.id DESC LIMIT $5`
+    : `ORDER BY e.created DESC, e.id DESC LIMIT $3`;
 
   const params = cursor
-    ? [playerId, clubIds, cursor, limit]
+    ? [playerId, clubIds, cursor.created, cursor.id, limit]
     : [playerId, clubIds, limit];
 
   const rows = await sql.unsafe(
@@ -159,6 +167,7 @@ export async function getUnreadCount(
       ON er.player_id = ${playerId} AND er.club_id = e.club_id
     WHERE e.club_id = ANY(${clubIds})
       AND (e.target_player_id IS NULL OR e.target_player_id = ${playerId})
+      AND e.player_id IS DISTINCT FROM ${playerId}
       AND (er.last_read_at IS NULL OR e.created > er.last_read_at)
   `;
 
@@ -193,12 +202,10 @@ export async function markAsRead(
 ): Promise<void> {
   if (clubIds.length === 0) return;
 
-  for (const clubId of clubIds) {
-    await sql`
-      INSERT INTO event_reads (player_id, club_id, last_read_at)
-      VALUES (${playerId}, ${clubId}, NOW())
-      ON CONFLICT (player_id, club_id)
-      DO UPDATE SET last_read_at = NOW()
-    `;
-  }
+  await sql`
+    INSERT INTO event_reads (player_id, club_id, last_read_at)
+    SELECT ${playerId}, unnest(${clubIds}::int[]), NOW()
+    ON CONFLICT (player_id, club_id)
+    DO UPDATE SET last_read_at = NOW()
+  `;
 }

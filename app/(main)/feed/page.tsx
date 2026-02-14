@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
@@ -21,20 +22,31 @@ export default async function FeedPage() {
 
   const clubIds = clubs.map((c) => c.clubId);
 
-  const [rows, watermarks] = await Promise.all([
+  const [rows, watermarks, t] = await Promise.all([
     getFeedEvents(sql, clubIds, null, PAGE_SIZE + 1),
     getEventReadWatermarks(sql, player.id, clubIds),
+    getTranslations("feed"),
   ]);
 
   const hasMore = rows.length > PAGE_SIZE;
   const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
-  const events = mapEventRowsToTimeline(pageRows, { watermarks });
+  const events = mapEventRowsToTimeline(pageRows, {
+    watermarks,
+    todayLabel: t("today"),
+    yesterdayLabel: t("yesterday"),
+  });
 
   const lastRow = pageRows[pageRows.length - 1];
-  const cursor = lastRow ? lastRow.created.toISOString() : null;
+  const cursor = lastRow
+    ? `${lastRow.created.toISOString()}|${lastRow.id}`
+    : null;
 
-  // Mark feed as read (advance watermarks)
-  await markAsRead(sql, player.id, clubIds);
+  // Mark feed as read AFTER computing timeline so initial render shows unread indicators
+  try {
+    await markAsRead(sql, player.id, clubIds);
+  } catch (e) {
+    console.error("Failed to mark feed as read:", e);
+  }
 
   return (
     <FeedView

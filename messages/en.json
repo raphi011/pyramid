@@ -263,6 +263,8 @@
     "empty": "No news yet",
     "emptyDesc": "Activity from your clubs will appear here.",
     "notificationsEmpty": "No notifications",
-    "notificationsEmptyDesc": "You'll be notified here when something happens."
+    "notificationsEmptyDesc": "You'll be notified here when something happens.",
+    "today": "Today",
+    "yesterday": "Yesterday"
   }
 }

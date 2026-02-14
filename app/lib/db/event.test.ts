@@ -122,8 +122,9 @@ describe("getFeedEvents", () => {
       const page1 = await getFeedEvents(tx, [clubId], null, 2);
       expect(page1).toHaveLength(2);
 
-      // Get second page using cursor
-      const cursor = page1[1].created;
+      // Get second page using composite cursor
+      const lastEvent = page1[1];
+      const cursor = { created: lastEvent.created, id: lastEvent.id };
       const page2 = await getFeedEvents(tx, [clubId], cursor, 2);
       expect(page2).toHaveLength(1);
       expect(page2[0].id).not.toBe(page1[0].id);
@@ -203,7 +204,8 @@ describe("getNotifications", () => {
       const page1 = await getNotifications(tx, p2, [clubId], null, 2);
       expect(page1).toHaveLength(2);
 
-      const cursor = page1[1].created;
+      const lastEvent = page1[1];
+      const cursor = { created: lastEvent.created, id: lastEvent.id };
       const page2 = await getNotifications(tx, p2, [clubId], cursor, 2);
       expect(page2).toHaveLength(1);
     });

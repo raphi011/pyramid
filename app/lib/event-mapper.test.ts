@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mapEventRowsToTimeline } from "./event-mapper";
 import type { EventRow } from "@/app/lib/db/event";
 
@@ -29,13 +29,17 @@ function makeRow(overrides: Partial<EventRow> = {}): EventRow {
   };
 }
 
+const defaultOpts = {
+  watermarks: new Map<number, Date>(),
+  now: NOW,
+  todayLabel: "Today",
+  yesterdayLabel: "Yesterday",
+};
+
 describe("mapEventRowsToTimeline", () => {
   it("maps challenge event", () => {
     const rows = [makeRow({ eventType: "challenge" })];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
@@ -46,7 +50,7 @@ describe("mapEventRowsToTimeline", () => {
     });
   });
 
-  it("maps result event with scores and winnerId", () => {
+  it("maps result event with scores and winnerId=player1", () => {
     const rows = [
       makeRow({
         eventType: "result",
@@ -57,10 +61,7 @@ describe("mapEventRowsToTimeline", () => {
         team2Id: 2,
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "result",
@@ -74,6 +75,25 @@ describe("mapEventRowsToTimeline", () => {
     });
   });
 
+  it("maps result event with winnerId=player2", () => {
+    const rows = [
+      makeRow({
+        eventType: "result",
+        team1Score: [4, 5],
+        team2Score: [6, 7],
+        winnerTeamId: 2,
+        team1Id: 1,
+        team2Id: 2,
+      }),
+    ];
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
+
+    expect(result[0]).toMatchObject({
+      type: "result",
+      winnerId: "player2",
+    });
+  });
+
   it("maps challenged event as personal", () => {
     const rows = [
       makeRow({
@@ -82,10 +102,7 @@ describe("mapEventRowsToTimeline", () => {
         targetName: "Bob",
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "challenged",
@@ -104,10 +121,7 @@ describe("mapEventRowsToTimeline", () => {
         metadata: { proposedDatetime: "2026-03-01T10:00:00Z" },
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "date_proposed",
@@ -125,10 +139,7 @@ describe("mapEventRowsToTimeline", () => {
         metadata: { acceptedDatetime: "2026-03-01T10:00:00Z" },
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "date_accepted",
@@ -145,10 +156,7 @@ describe("mapEventRowsToTimeline", () => {
         metadata: { startingRank: 5 },
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "new_player",
@@ -167,10 +175,7 @@ describe("mapEventRowsToTimeline", () => {
         team2Score: [4, 6],
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "result_entered",
@@ -192,10 +197,7 @@ describe("mapEventRowsToTimeline", () => {
         matchId: null,
       }),
     ];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result[0]).toMatchObject({
       type: "announcement",
@@ -204,28 +206,45 @@ describe("mapEventRowsToTimeline", () => {
     });
   });
 
+  // ── Unknown event types ─────────────────────────
+
+  it("skips unknown event types and logs a warning", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const rows = [makeRow({ eventType: "some_future_type" })];
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
+
+    expect(result).toHaveLength(0);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Unknown event type"),
+    );
+    warnSpy.mockRestore();
+  });
+
   // ── Unread flag ──────────────────────────────────
 
   it("sets unread=true when event is after watermark", () => {
     const watermarks = new Map([[10, new Date("2026-02-14T10:00:00Z")]]);
     const rows = [makeRow({ created: new Date("2026-02-14T11:00:00Z") })];
-    const result = mapEventRowsToTimeline(rows, { watermarks, now: NOW });
+    const result = mapEventRowsToTimeline(rows, {
+      ...defaultOpts,
+      watermarks,
+    });
     expect(result[0].unread).toBe(true);
   });
 
   it("sets unread=false when event is before watermark", () => {
     const watermarks = new Map([[10, new Date("2026-02-14T12:00:00Z")]]);
     const rows = [makeRow({ created: new Date("2026-02-14T11:00:00Z") })];
-    const result = mapEventRowsToTimeline(rows, { watermarks, now: NOW });
+    const result = mapEventRowsToTimeline(rows, {
+      ...defaultOpts,
+      watermarks,
+    });
     expect(result[0].unread).toBe(false);
   });
 
   it("sets unread=true when no watermark exists", () => {
     const rows = [makeRow()];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
     expect(result[0].unread).toBe(true);
   });
 
@@ -233,50 +252,45 @@ describe("mapEventRowsToTimeline", () => {
 
   it("generates match href when matchId present", () => {
     const rows = [makeRow({ matchId: 42 })];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
     expect(result[0].href).toBe("/matches/42");
   });
 
   it("generates no href when matchId is null", () => {
     const rows = [makeRow({ matchId: null })];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
     expect(result[0].href).toBeUndefined();
   });
 
   // ── Date grouping ────────────────────────────────
 
-  it("groups today events as 'Today'", () => {
+  it("groups today events using todayLabel", () => {
+    const rows = [makeRow({ created: new Date("2026-02-14T10:00:00Z") })];
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
+    expect(result[0].group).toBe("Today");
+  });
+
+  it("groups yesterday events using yesterdayLabel", () => {
+    const rows = [makeRow({ created: new Date("2026-02-13T10:00:00Z") })];
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
+    expect(result[0].group).toBe("Yesterday");
+  });
+
+  it("uses German defaults when no labels provided", () => {
     const rows = [makeRow({ created: new Date("2026-02-14T10:00:00Z") })];
     const result = mapEventRowsToTimeline(rows, {
       watermarks: new Map(),
       now: NOW,
     });
-    expect(result[0].group).toBe("Today");
-  });
-
-  it("groups yesterday events as 'Yesterday'", () => {
-    const rows = [makeRow({ created: new Date("2026-02-13T10:00:00Z") })];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
-    expect(result[0].group).toBe("Yesterday");
+    expect(result[0].group).toBe("Heute");
   });
 
   it("groups older events by locale date", () => {
     const rows = [makeRow({ created: new Date("2026-02-10T10:00:00Z") })];
     const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
+      ...defaultOpts,
       locale: "en-US",
     });
-    // Should be a date string, not "Today" or "Yesterday"
     expect(result[0].group).not.toBe("Today");
     expect(result[0].group).not.toBe("Yesterday");
     expect(result[0].group).toBeTruthy();
@@ -286,29 +300,20 @@ describe("mapEventRowsToTimeline", () => {
 
   it("formats recent time as relative", () => {
     const rows = [makeRow({ created: new Date("2026-02-14T11:30:00Z") })];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
     expect(result[0].time).toBe("30m ago");
   });
 
   it("formats hours ago", () => {
     const rows = [makeRow({ created: new Date("2026-02-14T09:00:00Z") })];
-    const result = mapEventRowsToTimeline(rows, {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline(rows, defaultOpts);
     expect(result[0].time).toBe("3h ago");
   });
 
   // ── Empty input ──────────────────────────────────
 
   it("returns empty array for empty input", () => {
-    const result = mapEventRowsToTimeline([], {
-      watermarks: new Map(),
-      now: NOW,
-    });
+    const result = mapEventRowsToTimeline([], defaultOpts);
     expect(result).toEqual([]);
   });
 });

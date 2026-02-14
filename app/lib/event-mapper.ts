@@ -5,6 +5,8 @@ type MapperOptions = {
   watermarks: Map<number, Date>;
   locale?: string;
   now?: Date;
+  todayLabel?: string;
+  yesterdayLabel?: string;
 };
 
 export function mapEventRowsToTimeline(
@@ -12,22 +14,27 @@ export function mapEventRowsToTimeline(
   opts: MapperOptions,
 ): TimelineEvent[] {
   const now = opts.now ?? new Date();
-  return rows.map((row) =>
-    mapSingleEvent(row, opts.watermarks, now, opts.locale),
-  );
+  const results: TimelineEvent[] = [];
+
+  for (const row of rows) {
+    const event = mapSingleEvent(row, opts.watermarks, now, opts);
+    if (event) results.push(event);
+  }
+
+  return results;
 }
 
 function mapSingleEvent(
   row: EventRow,
   watermarks: Map<number, Date>,
   now: Date,
-  locale?: string,
-): TimelineEvent {
+  opts: MapperOptions,
+): TimelineEvent | null {
   const watermark = watermarks.get(row.clubId);
   const unread = watermark ? row.created > watermark : true;
   const time = formatRelativeTime(row.created, now);
-  const group = formatDateGroup(row.created, now, locale);
-  const groupDate = row.created.toLocaleDateString(locale ?? "de-AT", {
+  const group = formatDateGroup(row.created, now, opts);
+  const groupDate = row.created.toLocaleDateString(opts.locale ?? "de-AT", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -232,14 +239,10 @@ function mapSingleEvent(
       };
 
     default:
-      // Fallback for unknown event types — render as challenge
-      return {
-        id: row.id,
-        type: "challenge",
-        challenger: { name: row.actorName ?? "" },
-        challengee: { name: row.targetName ?? "" },
-        ...base,
-      };
+      console.warn(
+        `Unknown event type "${row.eventType}" for event id=${row.id}. Skipping.`,
+      );
+      return null;
   }
 }
 
@@ -270,17 +273,21 @@ function formatRelativeTime(date: Date, now: Date): string {
   return `${diffDays}d ago`;
 }
 
-function formatDateGroup(date: Date, now: Date, locale?: string): string {
+function formatDateGroup(
+  date: Date,
+  now: Date,
+  opts: Pick<MapperOptions, "locale" | "todayLabel" | "yesterdayLabel">,
+): string {
   const eventDate = startOfDay(date);
   const today = startOfDay(now);
 
   const diffMs = today.getTime() - eventDate.getTime();
   const diffDays = Math.round(diffMs / 86_400_000);
 
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
+  if (diffDays === 0) return opts.todayLabel ?? "Heute";
+  if (diffDays === 1) return opts.yesterdayLabel ?? "Gestern";
 
-  return date.toLocaleDateString(locale ?? "de-AT", {
+  return date.toLocaleDateString(opts.locale ?? "de-AT", {
     day: "numeric",
     month: "long",
   });

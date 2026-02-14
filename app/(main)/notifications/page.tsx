@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
@@ -21,21 +22,32 @@ export default async function NotificationsPage() {
 
   const clubIds = clubs.map((c) => c.clubId);
 
-  const [rows, watermarks] = await Promise.all([
+  const [rows, watermarks, t] = await Promise.all([
     getNotifications(sql, player.id, clubIds, null, PAGE_SIZE + 1),
     getEventReadWatermarks(sql, player.id, clubIds),
+    getTranslations("feed"),
   ]);
 
   const hasMore = rows.length > PAGE_SIZE;
   const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
-  const events = mapEventRowsToTimeline(pageRows, { watermarks });
+  const events = mapEventRowsToTimeline(pageRows, {
+    watermarks,
+    todayLabel: t("today"),
+    yesterdayLabel: t("yesterday"),
+  });
   const hasUnread = events.some((e) => "unread" in e && e.unread);
 
   const lastRow = pageRows[pageRows.length - 1];
-  const cursor = lastRow ? lastRow.created.toISOString() : null;
+  const cursor = lastRow
+    ? `${lastRow.created.toISOString()}|${lastRow.id}`
+    : null;
 
-  // Mark notifications as read on page visit
-  await markAsRead(sql, player.id, clubIds);
+  // Mark notifications as read AFTER computing timeline so initial render shows unread indicators
+  try {
+    await markAsRead(sql, player.id, clubIds);
+  } catch (e) {
+    console.error("Failed to mark notifications as read:", e);
+  }
 
   return (
     <NotificationsView
