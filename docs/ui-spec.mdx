@@ -126,7 +126,7 @@ Redirect to / (feed)
 ### Challenge Flow
 
 ```
-Player taps FAB or challengeable player in pyramid
+Player taps FAB or "Challenge" button on player profile
         ↓
 System shows eligible opponents (filtered by rules)
         ↓
@@ -418,9 +418,9 @@ After code validated:
 
 **Pyramid view**:
 - Each player card shows: avatar/initials, name (truncated), rank number.
-- Card variants: current player (`court-500`), challengeable (`court-50` + `court-400` ring), challenged (`orange-50` + `orange-400` ring), unavailable (dimmed).
-- Tap a challengeable player → opens ChallengeSheet directly (no FAB needed — 1 tap to initiate).
-- Tap any other player → opens their profile.
+- Card variants: current player (`court-500`), challengeable (subtle `court-50/50` + `court-300` ring), challenged (`orange-50` + `orange-400` ring), unavailable (dimmed).
+- Tap any player → navigates to player profile (`/player/[id]`). Challenges are initiated from the profile page or the FAB.
+- Names are abbreviated in pyramid cards: "Raphael Gruber" → "Raphael G."
 - For team seasons: cards show team name instead of player name, team members listed below.
 
 **List view**:

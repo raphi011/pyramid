@@ -29,7 +29,7 @@ const variantStyles: Record<PlayerCardVariant, string> = {
     "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
   current: "bg-court-500 text-white ring-0",
   challengeable:
-    "bg-court-50 ring-2 ring-court-400 dark:bg-court-950 dark:ring-court-500",
+    "bg-court-50/50 ring-1 ring-court-300 dark:bg-court-950/50 dark:ring-court-700",
   challenged:
     "bg-orange-50 ring-2 ring-orange-400 dark:bg-orange-950 dark:ring-orange-500",
   unavailable: "bg-slate-100 text-slate-500 opacity-60 dark:bg-slate-800",

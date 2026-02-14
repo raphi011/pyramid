@@ -121,7 +121,6 @@ export function RankingsView({
   const searchParams = useSearchParams();
   const challengeFromUrl = searchParams.get("challenge") === "true";
   const [challengeOpen, setChallengeOpen] = useState(challengeFromUrl);
-  const [challengeTarget, setChallengeTarget] = useState<Opponent | null>(null);
 
   // Clean the ?challenge=true URL param after initial render
   useEffect(() => {
@@ -139,24 +138,14 @@ export function RankingsView({
     .map((p) => ({ teamId: p.id as number, name: p.name, rank: p.rank }));
 
   function handlePlayerClick(player: PyramidPlayer) {
-    if (player.variant === "challengeable") {
-      setChallengeTarget({
-        teamId: player.id as number,
-        name: player.name,
-        rank: player.rank,
-      });
-      setChallengeOpen(true);
+    if (player.playerId != null) {
+      router.push(`/player/${player.playerId}`);
     }
   }
 
   function handleStandingsPlayerClick(player: StandingsPlayer) {
-    if (player.challengeable) {
-      setChallengeTarget({
-        teamId: player.id as number,
-        name: player.name,
-        rank: player.rank,
-      });
-      setChallengeOpen(true);
+    if (player.playerId != null) {
+      router.push(`/player/${player.playerId}`);
     }
   }
 
@@ -287,11 +276,8 @@ export function RankingsView({
       {currentSeasonId && (
         <ChallengeSheet
           open={challengeOpen}
-          onClose={() => {
-            setChallengeOpen(false);
-            setChallengeTarget(null);
-          }}
-          target={challengeTarget}
+          onClose={() => setChallengeOpen(false)}
+          target={null}
           opponents={opponents}
           seasonId={currentSeasonId}
           seasons={seasons.length > 1 ? seasons : undefined}

@@ -81,6 +81,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-PROF-08](#us-prof-08-head-to-head-record) | Head-to-head record | Player | P2 | Profile | |
 | [US-PROF-09](#us-prof-09-view-other-player-profile) | View other player profile | Player | P1 | Profile | |
 | [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | |
+| [US-PROF-11](#us-prof-11-view-team-page) | View team page | Player | P2 | Profile | |
 | [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | |
 | [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | |
 | [US-SETT-03](#us-sett-03-configure-email-notifications) | Configure email notifications | Player | P1 | Settings | |
@@ -1432,6 +1433,29 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 - Multiple seasons → Season picker shown first (→ US-CHAL-04).
 
 **Cross-refs**: → US-CHAL-01, → US-CHAL-03
+
+---
+
+### US-PROF-11: View team page
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player is in a club with team seasons (doubles/mixed). A team exists with 2+ players.
+
+**Steps**:
+1. User taps a team card in the pyramid or standings list → System navigates to `/team/[id]`.
+2. System renders team page: team name, member avatars+names, rank, stats (wins/losses), match history, rank chart.
+3. Each team member's name is tappable → navigates to their individual player profile (→ US-PROF-09).
+4. If challengeable → Prominent "Challenge" button at top (→ US-PROF-10 equivalent for teams).
+
+**Postconditions**: Team page rendered.
+
+**Edge cases**:
+- Team has only 1 member (individual season mapped to team) → Redirect to player profile instead.
+- Team member left the club → Still shown in team roster (historical data preserved).
+- Team has no matches yet → Match history section shows empty state.
+
+**Cross-refs**: → US-PROF-09, → US-RANK-01
 
 ---
 

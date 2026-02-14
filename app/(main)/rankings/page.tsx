@@ -111,6 +111,7 @@ export default async function RankingsPage({
 
     return {
       id: p.teamId,
+      playerId: p.playerId,
       name: p.name,
       rank: p.rank,
       wins: wl.wins,
@@ -134,6 +135,7 @@ export default async function RankingsPage({
 
     return {
       id: p.teamId,
+      playerId: p.playerId,
       name: p.name,
       rank: p.rank,
       wins: wl.wins,
