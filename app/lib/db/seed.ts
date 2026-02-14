@@ -1,4 +1,5 @@
 import type postgres from "postgres";
+import type { Sql as _Sql } from "../db";
 
 type Tx = postgres.TransactionSql;
 
@@ -194,7 +195,7 @@ export async function seedEvent(
     playerId?: number;
     targetPlayerId?: number;
     eventType?: string;
-    metadata?: Record<string, unknown>;
+    metadata?: Record<string, postgres.JSONValue>;
     created?: Date;
   } = {},
 ): Promise<number> {

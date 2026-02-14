@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import postgres from "postgres";
+import type { Sql as _Sql } from "../app/lib/db";
 
 const DATABASE_URL =
   process.env.DATABASE_URL ??

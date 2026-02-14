@@ -1,6 +1,7 @@
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import postgres from "postgres";
+import type { Sql as _Sql } from "../app/lib/db";
 
 const DATABASE_URL =
   process.env.DATABASE_URL ??
@@ -53,7 +54,7 @@ async function migrate() {
 
     console.log(`Applying: ${file}`);
     const filePath = join(migrationsDir, file);
-    const content = await Bun.file(filePath).text();
+    const content = await readFile(filePath, "utf-8");
 
     try {
       await sql.begin(async (tx) => {

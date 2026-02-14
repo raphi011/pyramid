@@ -201,7 +201,7 @@ export async function createNewPlayerEvent(
   sql: Sql,
   clubId: number,
   playerId: number,
-  metadata: Record<string, unknown>,
+  metadata: Record<string, postgres.JSONValue>,
 ): Promise<number> {
   const [row] = await sql`
     INSERT INTO events (club_id, player_id, event_type, metadata, created)

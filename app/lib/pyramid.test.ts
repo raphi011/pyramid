@@ -21,7 +21,12 @@ describe("canChallenge", () => {
     [10, 6, false, "too far up"],
   ] as const)(
     "rank %i → rank %i = %s (%s)",
-    (challenger, challengee, expected) => {
+    (
+      challenger: number,
+      challengee: number,
+      expected: boolean,
+      _reason: string,
+    ) => {
       expect(canChallenge(challenger, challengee)).toBe(expected);
     },
   );

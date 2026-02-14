@@ -1,4 +1,4 @@
-name: Storybook Tests
+name: CI
 
 on:
   push:
@@ -7,6 +7,22 @@ on:
     branches: [main]
 
 jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
   test:
     runs-on: ubuntu-latest
     steps:

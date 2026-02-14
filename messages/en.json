@@ -202,6 +202,16 @@
     "description": "An unexpected error occurred. Please try again.",
     "retry": "Try again"
   },
+  "onboarding": {
+    "welcome": "Welcome!",
+    "subtitle": "Complete your profile",
+    "nameLabel": "Name",
+    "namePlaceholder": "John Doe",
+    "nameRequired": "Name is required",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "+1 555 1234567",
+    "submit": "Continue"
+  },
   "matchDetail": {
     "title": "Match Details",
     "openSince": "Open since {date}",

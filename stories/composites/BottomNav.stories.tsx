@@ -12,7 +12,14 @@ const meta = preview.meta({
   tags: ["autodocs"],
   parameters: {
     layout: "fullscreen",
-    viewport: { defaultViewport: "iPhoneSE" },
+    viewport: {
+      options: {
+        iPhoneSE: {
+          name: "iPhone SE",
+          styles: { width: "375px", height: "667px" },
+        },
+      },
+    },
   },
 });
 

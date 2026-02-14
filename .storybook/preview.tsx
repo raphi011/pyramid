@@ -33,10 +33,10 @@ const withIntl: DecoratorFunction<ReactRenderer> = (Story, context) => {
  * useEffect ensures the iframe body itself gets the dark background,
  * not just the wrapper div (which doesn't fill centered layouts).
  */
-function WithThemeBackground(
-  Story: ReactRenderer["component"],
-  context: Parameters<DecoratorFunction<ReactRenderer>>[1],
-) {
+const WithThemeBackground: DecoratorFunction<ReactRenderer> = (
+  Story,
+  context,
+) => {
   const isDark = context.globals?.theme === "dark";
 
   useEffect(() => {
@@ -49,7 +49,7 @@ function WithThemeBackground(
       <Story />
     </div>
   );
-}
+};
 
 export default definePreview({
   addons: [addonDocs(), addonA11y()],

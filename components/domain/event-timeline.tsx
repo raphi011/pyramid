@@ -39,6 +39,8 @@ type TimelineEvent = {
   id: string | number;
   group?: string;
   groupDate?: string;
+  unread?: boolean;
+  href?: string;
 } & (EventItemProps | SeasonEvent);
 
 type EventTimelineProps = {

@@ -54,7 +54,12 @@ export default async function MainLayout({
   return (
     <AppShellWrapper
       player={{ id: player.id, name: player.name }}
-      clubs={clubs.map((c) => ({ id: c.clubId, name: c.clubName }))}
+      clubs={
+        clubs.map((c) => ({ id: c.clubId, name: c.clubName })) as [
+          { id: number; name: string },
+          ...{ id: number; name: string }[],
+        ]
+      }
       activeMatchId={activeMatchId}
       unreadCount={unreadCount}
     >

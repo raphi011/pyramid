@@ -37,7 +37,7 @@ export const postgresImageStorage: ImageStorage = {
     return {
       id: row.id as string,
       data: row.data as Buffer,
-      contentType: row.contentType as string,
+      contentType: row.contentType as "image/webp",
       width: row.width as number,
       height: row.height as number,
       sizeBytes: row.sizeBytes as number,

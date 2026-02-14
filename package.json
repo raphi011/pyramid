@@ -23,6 +23,7 @@
     "db:seed": "bun run db/seed.ts",
     "test:db": "vitest --project db --run",
     "format": "prettier --write .",
+    "typecheck": "bunx tsc --noEmit",
     "format:check": "prettier --check .",
     "prepare": "husky"
   },

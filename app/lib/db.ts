@@ -1,5 +1,20 @@
 import postgres from "postgres";
 
+/*
+ * postgres.TransactionSql extends Omit<Sql, ...> which strips call signatures
+ * in TypeScript (see microsoft/TypeScript#41362). We augment TransactionSql with
+ * the missing tagged-template call signature so the union is callable.
+ */
+declare module "postgres" {
+  // biome-ignore lint: matching postgres.js original generic signature
+  interface TransactionSql<TTypes extends Record<string, unknown> = {}> {
+    <T extends readonly (object | undefined)[] = Row[]>(
+      template: TemplateStringsArray,
+      ...parameters: readonly ParameterOrFragment<TTypes[keyof TTypes]>[]
+    ): PendingQuery<T>;
+  }
+}
+
 /** Accepts both a root connection and a transaction handle. */
 export type Sql = postgres.Sql | postgres.TransactionSql;
 

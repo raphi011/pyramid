@@ -12,13 +12,12 @@ import {
 async function createTestImage(
   width: number,
   height: number,
-  format: keyof sharp.FormatEnum = "jpeg",
+  format: "jpeg" | "png" | "webp" | "gif" = "jpeg",
 ): Promise<Buffer> {
-  return sharp({
+  const s = sharp({
     create: { width, height, channels: 3, background: { r: 255, g: 0, b: 0 } },
-  })
-    [format]()
-    .toBuffer();
+  });
+  return s[format]().toBuffer();
 }
 
 // ── validateFileSize ──────────────────────────────────

@@ -17,6 +17,7 @@ import {
   getAggregatedWinsLosses,
 } from "@/app/lib/db/match";
 import { computeMovement } from "@/app/lib/pyramid";
+import type { SeasonStatsScope } from "../player/shared";
 import { imageUrl } from "@/app/lib/image-storage";
 import { ProfileView } from "./profile-view";
 
@@ -33,11 +34,11 @@ export default async function ProfilePage() {
   const clubId = clubs[0].clubId;
 
   // Default stats
-  let seasonStats = {
+  let seasonStats: SeasonStatsScope = {
     rank: 0,
     wins: 0,
     losses: 0,
-    trend: "none" as const,
+    trend: "none",
     trendValue: "",
   };
   let rankHistory: { date: string; rank: number }[] = [];
