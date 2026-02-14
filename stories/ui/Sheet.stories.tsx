@@ -2,6 +2,7 @@ import { useState } from "react";
 import preview from "#.storybook/preview";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { mobileViewport } from "../viewports";
 
 const meta = preview.meta({
   title: "UI/Sheet",
@@ -9,14 +10,7 @@ const meta = preview.meta({
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
-    viewport: {
-      options: {
-        iPhoneSE: {
-          name: "iPhone SE",
-          styles: { width: "375px", height: "667px" },
-        },
-      },
-    },
+    ...mobileViewport,
   },
 });
 

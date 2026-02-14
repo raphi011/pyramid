@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import postgres from "postgres";
+// Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../app/lib/db";
 
 const DATABASE_URL =

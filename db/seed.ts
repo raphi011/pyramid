@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import postgres from "postgres";
+// Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../app/lib/db";
 
 const DATABASE_URL =

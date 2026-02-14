@@ -5,6 +5,7 @@ import { getActiveSeasons, getPlayerTeamId } from "../lib/db/season";
 import { getActiveMatchId } from "../lib/db/match";
 import { getUnreadCount } from "../lib/db/event";
 import { sql } from "../lib/db";
+import { assertNonEmpty } from "../lib/assert";
 import { AppShellWrapper } from "./app-shell-wrapper";
 
 export default async function MainLayout({
@@ -54,12 +55,9 @@ export default async function MainLayout({
   return (
     <AppShellWrapper
       player={{ id: player.id, name: player.name }}
-      clubs={
-        clubs.map((c) => ({ id: c.clubId, name: c.clubName })) as [
-          { id: number; name: string },
-          ...{ id: number; name: string }[],
-        ]
-      }
+      clubs={assertNonEmpty(
+        clubs.map((c) => ({ id: c.clubId, name: c.clubName })),
+      )}
       activeMatchId={activeMatchId}
       unreadCount={unreadCount}
     >

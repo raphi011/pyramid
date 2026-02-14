@@ -1,4 +1,5 @@
 import postgres from "postgres";
+// Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../db";
 
 export const DATABASE_URL =

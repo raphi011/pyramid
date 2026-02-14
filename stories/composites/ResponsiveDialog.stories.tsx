@@ -6,6 +6,7 @@ import { within, userEvent, expect, waitFor } from "storybook/test";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
+import { mobileViewport } from "../viewports";
 
 const meta = preview.meta({
   title: "Composites/ResponsiveDialog",
@@ -13,14 +14,7 @@ const meta = preview.meta({
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
-    viewport: {
-      options: {
-        iPhoneSE: {
-          name: "iPhone SE",
-          styles: { width: "375px", height: "667px" },
-        },
-      },
-    },
+    ...mobileViewport,
   },
 });
 
