@@ -214,6 +214,7 @@
   },
   "matchDetail": {
     "title": "Match Details",
+    "actions": "Actions",
     "openSince": "Open since {date}",
     "challengedOn": "Challenged on {date}",
     "scheduledFor": "Scheduled for {date}",

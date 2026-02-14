@@ -15,6 +15,7 @@ type DataListProps<T> = {
   };
   renderItem: (item: T, index: number) => React.ReactNode;
   keyExtractor: (item: T, index: number) => string | number;
+  separator?: boolean;
   className?: string;
 };
 
@@ -25,6 +26,7 @@ function DataList<T>({
   empty,
   renderItem,
   keyExtractor,
+  separator = true,
   className,
 }: DataListProps<T>) {
   if (loading) {
@@ -53,7 +55,7 @@ function DataList<T>({
     <div className={className}>
       {items.map((item, index) => (
         <div key={keyExtractor(item, index)}>
-          {index > 0 && <Separator />}
+          {separator && index > 0 && <Separator />}
           {renderItem(item, index)}
         </div>
       ))}

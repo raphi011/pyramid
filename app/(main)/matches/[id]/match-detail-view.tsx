@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DataList } from "@/components/data-list";
+import { ResponsiveActions } from "@/components/responsive-actions";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { FormField } from "@/components/form-field";
@@ -312,31 +313,32 @@ export function MatchDetailView({
       title={t("title")}
       action={
         canEnterResult ? (
-          <div className="flex items-center gap-3">
-            {userRole === "team1" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-slate-500 dark:text-slate-400"
-                onClick={() => setShowWithdrawConfirm(true)}
-                disabled={isPending}
-              >
-                {t("withdraw")}
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-              onClick={() => setShowForfeitConfirm(true)}
-              disabled={isPending}
-            >
-              {t("forfeit")}
-            </Button>
-            <Button size="sm" onClick={() => setShowEnterResultDialog(true)}>
-              {t("enterResult")}
-            </Button>
-          </div>
+          <ResponsiveActions
+            mobileLabel={t("actions")}
+            actions={[
+              {
+                label: t("enterResult"),
+                onClick: () => setShowEnterResultDialog(true),
+                disabled: isPending,
+              },
+              ...(userRole === "team1"
+                ? [
+                    {
+                      label: t("withdraw"),
+                      onClick: () => setShowWithdrawConfirm(true),
+                      variant: "ghost" as const,
+                      disabled: isPending,
+                    },
+                  ]
+                : []),
+              {
+                label: t("forfeit"),
+                onClick: () => setShowForfeitConfirm(true),
+                variant: "destructive" as const,
+                disabled: isPending,
+              },
+            ]}
+          />
         ) : undefined
       }
     >
@@ -686,6 +688,7 @@ export function MatchDetailView({
         <CardContent>
           <DataList
             items={comments}
+            separator={false}
             empty={{
               title: t("noComments"),
               description: t("noCommentsDesc"),
@@ -730,9 +733,7 @@ export function MatchDetailView({
 
           {isParticipant && (
             <>
-              <Separator className="my-3" />
-
-              <form action={handleAction} className="flex gap-2">
+              <form action={handleAction} className="mt-4 flex gap-2">
                 <input type="hidden" name="intent" value="postComment" />
                 <input type="hidden" name="matchId" value={match.id} />
                 <FormField

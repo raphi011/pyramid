@@ -71,7 +71,7 @@ function SidebarNav({
               "disabled:opacity-50",
               "[&_svg]:size-5 [&_svg]:shrink-0",
               fab.variant === "active"
-                ? "bg-trophy-500 text-slate-900 hover:bg-trophy-600"
+                ? "bg-trophy-400 text-white hover:bg-trophy-500"
                 : "bg-court-500 text-white hover:bg-court-600",
             )}
           >
