@@ -13,6 +13,10 @@ export async function declineDateAction(): Promise<MatchActionResult> {
   return { success: true };
 }
 
+export async function removeDateProposalAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
 export async function enterResultAction(): Promise<MatchActionResult> {
   return { success: true };
 }

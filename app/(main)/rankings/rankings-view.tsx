@@ -3,9 +3,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useFormatter } from "next-intl";
-import { TrophyIcon, BoltIcon } from "@heroicons/react/24/outline";
+import {
+  TrophyIcon,
+  BoltIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+} from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Tabs } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { DataList } from "@/components/data-list";
 import {
   PyramidGrid,
@@ -119,6 +125,7 @@ export function RankingsView({
   const searchParams = useSearchParams();
   const challengeFromUrl = searchParams.get("challenge") === "true";
   const [challengeOpen, setChallengeOpen] = useState(challengeFromUrl);
+  const [view, setView] = useState<"pyramid" | "list">("pyramid");
 
   // Clean the ?challenge=true URL param after initial render
   useEffect(() => {
@@ -145,14 +152,43 @@ export function RankingsView({
     // Team seasons: team page not yet implemented (US-PROF-11)
   }
 
-  const seasonAction =
-    seasons.length > 1 ? (
-      <SeasonSelector
-        seasons={seasons}
-        value={currentSeasonId ?? undefined}
-        onChange={(id) => router.push(`/rankings?season=${id}`)}
-      />
-    ) : null;
+  const viewToggle = (
+    <div className="flex rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800">
+      {(["pyramid", "list"] as const).map((v) => (
+        <button
+          key={v}
+          onClick={() => setView(v)}
+          aria-label={t(v)}
+          aria-pressed={view === v}
+          className={cn(
+            "rounded-md p-1.5 transition-all duration-150",
+            view === v
+              ? "bg-white text-court-600 shadow-sm dark:bg-slate-900 dark:text-court-400"
+              : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
+          )}
+        >
+          {v === "pyramid" ? (
+            <Squares2X2Icon className="size-5" />
+          ) : (
+            <ListBulletIcon className="size-5" />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+
+  const headerAction = (
+    <div className="flex items-center gap-2">
+      {viewToggle}
+      {seasons.length > 1 && (
+        <SeasonSelector
+          seasons={seasons}
+          value={currentSeasonId ?? undefined}
+          onChange={(id) => router.push(`/rankings?season=${id}`)}
+        />
+      )}
+    </div>
+  );
 
   const currentSeason = seasons.find((s) => s.id === currentSeasonId);
   const subtitle = currentSeason
@@ -190,33 +226,22 @@ export function RankingsView({
 
   return (
     <>
-      <PageLayout title={t("title")} subtitle={subtitle} action={seasonAction}>
+      <PageLayout title={t("title")} subtitle={subtitle} action={headerAction}>
         {!hasPlayers ? (
           emptyState
         ) : (
           <>
-            <Tabs
-              items={[
-                {
-                  label: t("pyramid"),
-                  content: (
-                    <PyramidGrid
-                      players={pyramidPlayers}
-                      onPlayerClick={handleNavigateToPlayer}
-                    />
-                  ),
-                },
-                {
-                  label: t("list"),
-                  content: (
-                    <StandingsTable
-                      players={standingsPlayers}
-                      onPlayerClick={handleNavigateToPlayer}
-                    />
-                  ),
-                },
-              ]}
-            />
+            {view === "pyramid" ? (
+              <PyramidGrid
+                players={pyramidPlayers}
+                onPlayerClick={handleNavigateToPlayer}
+              />
+            ) : (
+              <StandingsTable
+                players={standingsPlayers}
+                onPlayerClick={handleNavigateToPlayer}
+              />
+            )}
 
             <div className="mt-6">
               <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">

@@ -215,6 +215,7 @@
   "matchDetail": {
     "title": "Match Details",
     "openSince": "Open since {date}",
+    "challengedOn": "Challenged on {date}",
     "scheduledFor": "Scheduled for {date}",
     "completedOn": "Completed on {date}",
     "rank": "Rank {rank}",

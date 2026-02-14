@@ -35,6 +35,7 @@ function Tabs({ items, className, ...props }: TabsProps) {
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium",
               "text-slate-600 transition-colors duration-150",
+              "cursor-pointer hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-200",
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-court-500",
               "data-[selected]:bg-white data-[selected]:text-court-600 data-[selected]:shadow-sm",
               "dark:text-slate-400",

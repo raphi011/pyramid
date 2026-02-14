@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Avatar } from "@/components/ui/avatar";
@@ -205,7 +206,7 @@ export function MatchDetailView({
   } else if (isCompleted) {
     dateLine = t("completedOn", { date: formatDate(match.created) });
   } else {
-    dateLine = t("openSince", { date: formatDate(match.created) });
+    dateLine = t("challengedOn", { date: formatDate(match.created) });
   }
 
   // ── Action handlers ───────────────────────────────
@@ -352,12 +353,8 @@ export function MatchDetailView({
       {/* Match Header */}
       <Card>
         <CardContent className="mt-0">
-          <div
-            className={`flex justify-between ${hasScores ? "items-end" : "items-center"}`}
-          >
-            <div
-              className={`flex gap-3 ${hasScores ? "items-end" : "items-center"}`}
-            >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <Avatar name={match.team1Name} size="lg" />
               <div>
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -406,14 +403,34 @@ export function MatchDetailView({
                 </div>
               </div>
             ) : (
-              <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
-                vs
-              </span>
+              <div className="flex items-center gap-5">
+                <div className="flex flex-col items-end gap-0.5">
+                  {Array.from({ length: match.seasonBestOf }, (_, i) => (
+                    <span
+                      key={i}
+                      className="text-base font-semibold tabular-nums text-slate-400 dark:text-slate-500"
+                    >
+                      0
+                    </span>
+                  ))}
+                </div>
+                <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
+                  :
+                </span>
+                <div className="flex flex-col items-start gap-0.5">
+                  {Array.from({ length: match.seasonBestOf }, (_, i) => (
+                    <span
+                      key={i}
+                      className="text-base font-semibold tabular-nums text-slate-400 dark:text-slate-500"
+                    >
+                      0
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
 
-            <div
-              className={`flex gap-3 ${hasScores ? "items-end" : "items-center"}`}
-            >
+            <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
                   {match.team2Name}
@@ -553,8 +570,9 @@ export function MatchDetailView({
                             />
                             <Button
                               type="submit"
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
+                              className="!text-court-600 hover:!text-court-700 dark:!text-court-400 dark:hover:!text-court-300"
                               disabled={isPending}
                             >
                               {t("accept")}
@@ -672,19 +690,41 @@ export function MatchDetailView({
               title: t("noComments"),
               description: t("noCommentsDesc"),
             }}
-            renderItem={(c) => (
-              <div className="flex gap-2 py-2">
-                <Avatar name={c.playerName} size="sm" />
-                <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">
-                    {c.comment}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {formatDateTime(c.created)}
-                  </p>
+            renderItem={(c) => {
+              const isOwn = c.playerId === currentPlayerId;
+              return (
+                <div
+                  className={cn("flex gap-2 py-2", isOwn && "flex-row-reverse")}
+                >
+                  <Avatar name={c.playerName} size="sm" />
+                  <div
+                    className={cn(
+                      "max-w-[75%] rounded-xl px-3 py-2",
+                      isOwn
+                        ? "bg-court-50 dark:bg-court-950/50"
+                        : "bg-slate-50 dark:bg-slate-800",
+                    )}
+                  >
+                    {!isOwn && (
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {c.playerName}
+                      </p>
+                    )}
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      {c.comment}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 text-xs text-slate-400",
+                        isOwn && "text-right",
+                      )}
+                    >
+                      {formatDateTime(c.created)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            }}
             keyExtractor={(c) => c.id}
           />
 

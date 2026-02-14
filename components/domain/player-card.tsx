@@ -55,8 +55,9 @@ function PlayerCard({
         disabled={!onClick}
         className={cn(
           "flex items-center gap-2 rounded-xl px-3 py-2 text-left",
-          "transition-shadow duration-150",
-          onClick && "hover:shadow-sm",
+          "transition-all duration-150",
+          onClick &&
+            "cursor-pointer hover:shadow-md hover:ring-slate-300 dark:hover:ring-slate-600",
           variantStyles[variant],
           className,
         )}
