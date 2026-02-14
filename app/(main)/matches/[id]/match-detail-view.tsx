@@ -7,8 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DataList } from "@/components/data-list";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { DateTimePicker } from "@/components/date-time-picker";
@@ -23,6 +23,9 @@ import {
   declineDateAction,
   enterResultAction,
   confirmResultAction,
+  withdrawAction,
+  forfeitAction,
+  disputeAction,
   postCommentAction,
   uploadMatchImageAction,
 } from "@/app/lib/actions/match";
@@ -170,6 +173,12 @@ export function MatchDetailView({
     })),
   );
 
+  // Confirm/dispute dialog state
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [showForfeitConfirm, setShowForfeitConfirm] = useState(false);
+  const [showDisputeDialog, setShowDisputeDialog] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+
   const isParticipant = userRole !== "spectator";
   const isOpen = match.status === "challenged" || match.status === "date_set";
   const isPendingConfirmation = match.status === "pending_confirmation";
@@ -222,6 +231,21 @@ export function MatchDetailView({
           break;
         case "confirmResult":
           result = await confirmResultAction(formData);
+          break;
+        case "withdraw":
+          result = await withdrawAction(formData);
+          if ("success" in result) setShowWithdrawConfirm(false);
+          break;
+        case "forfeit":
+          result = await forfeitAction(formData);
+          if ("success" in result) setShowForfeitConfirm(false);
+          break;
+        case "dispute":
+          result = await disputeAction(formData);
+          if ("success" in result) {
+            setShowDisputeDialog(false);
+            setDisputeReason("");
+          }
           break;
         case "postComment":
           result = await postCommentAction(formData);
@@ -278,7 +302,28 @@ export function MatchDetailView({
   // ── Render ────────────────────────────────────────
 
   return (
-    <PageLayout title={t("title")}>
+    <PageLayout
+      title={t("title")}
+      action={
+        canEnterResult ? (
+          <div className="flex items-center gap-3">
+            {userRole === "team1" && (
+              <button
+                type="button"
+                className="text-sm text-slate-500 underline hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                onClick={() => setShowWithdrawConfirm(true)}
+                disabled={isPending}
+              >
+                {t("withdraw")}
+              </button>
+            )}
+            <Button size="sm" onClick={() => setShowEnterResultDialog(true)}>
+              {t("enterResult")}
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
       {/* Error banner */}
       {error && (
         <p
@@ -380,11 +425,14 @@ export function MatchDetailView({
               {t("confirmResult")}
             </Button>
           </form>
-          <Tooltip content={t("comingSoon")}>
-            <Button variant="outline" className="flex-1" disabled>
-              {t("disputeResult")}
-            </Button>
-          </Tooltip>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => setShowDisputeDialog(true)}
+            disabled={isPending}
+          >
+            {t("disputeResult")}
+          </Button>
         </div>
       )}
 
@@ -494,25 +542,22 @@ export function MatchDetailView({
               }}
               keyExtractor={(p) => p.id}
             />
+            {isParticipant && (
+              <>
+                <Separator className="my-3" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-slate-500 dark:text-slate-400"
+                  onClick={() => setShowForfeitConfirm(true)}
+                  disabled={isPending}
+                >
+                  {t("forfeit")}
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
-      )}
-
-      {/* Enter Result + Actions (open matches, participant) */}
-      {canEnterResult && (
-        <div className="flex gap-2">
-          <Button
-            className="flex-1"
-            onClick={() => setShowEnterResultDialog(true)}
-          >
-            {t("enterResult")}
-          </Button>
-          <Tooltip content={t("comingSoon")}>
-            <Button variant="outline" className="flex-1" disabled>
-              {userRole === "team1" ? t("withdraw") : t("forfeit")}
-            </Button>
-          </Tooltip>
-        </div>
       )}
 
       {/* Match Photo */}
@@ -662,6 +707,64 @@ export function MatchDetailView({
           />
           <Button type="submit" className="w-full" disabled={isPending}>
             {t("submitResult")}
+          </Button>
+        </form>
+      </ResponsiveDialog>
+
+      {/* Withdraw Confirm Dialog */}
+      <ConfirmDialog
+        open={showWithdrawConfirm}
+        onClose={() => setShowWithdrawConfirm(false)}
+        onConfirm={() => {
+          const formData = new FormData();
+          formData.set("intent", "withdraw");
+          formData.set("matchId", String(match.id));
+          handleAction(formData);
+        }}
+        title={t("withdrawConfirmTitle")}
+        description={t("withdrawConfirmDesc")}
+        loading={isPending}
+      />
+
+      {/* Forfeit Confirm Dialog */}
+      <ConfirmDialog
+        open={showForfeitConfirm}
+        onClose={() => setShowForfeitConfirm(false)}
+        onConfirm={() => {
+          const formData = new FormData();
+          formData.set("intent", "forfeit");
+          formData.set("matchId", String(match.id));
+          handleAction(formData);
+        }}
+        title={t("forfeitConfirmTitle")}
+        description={t("forfeitConfirmDesc")}
+        loading={isPending}
+      />
+
+      {/* Dispute Dialog */}
+      <ResponsiveDialog
+        open={showDisputeDialog}
+        onClose={() => setShowDisputeDialog(false)}
+        title={t("disputeTitle")}
+      >
+        <form action={handleAction} className="space-y-4">
+          <input type="hidden" name="intent" value="dispute" />
+          <input type="hidden" name="matchId" value={match.id} />
+          <FormField
+            type="textarea"
+            label={t("disputeReasonLabel")}
+            placeholder={t("disputeReasonPlaceholder")}
+            value={disputeReason}
+            onChange={(e) => setDisputeReason(e.target.value)}
+            inputProps={{ name: "reason", rows: 3 }}
+          />
+          <Button
+            type="submit"
+            variant="destructive"
+            className="w-full"
+            disabled={isPending || !disputeReason.trim()}
+          >
+            {t("submitDispute")}
           </Button>
         </form>
       </ResponsiveDialog>

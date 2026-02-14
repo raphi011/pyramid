@@ -12,6 +12,9 @@ import {
   enterMatchResult,
   confirmMatchResult,
   updateStandingsAfterResult,
+  withdrawMatch,
+  forfeitMatch,
+  disputeMatchResult,
   createMatchComment,
   updateMatchImage,
   getMatchImageId,
@@ -315,6 +318,173 @@ export async function confirmResultAction(
     });
   } catch (e) {
     console.error("confirmResultAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/rankings");
+
+  return { success: true };
+}
+
+// ── Withdraw ─────────────────────────────────────
+
+export async function withdrawAction(
+  formData: FormData,
+): Promise<MatchActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  if (!matchId) return { error: "matchDetail.error.notFound" };
+
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  if (match.status !== "challenged" && match.status !== "date_set") {
+    return { error: "matchDetail.error.invalidStatus" };
+  }
+
+  // Only the challenger (team1) can withdraw
+  if (player.id !== match.team1PlayerId) {
+    return { error: "matchDetail.error.notChallenger" };
+  }
+
+  try {
+    await sql.begin(async (tx) => {
+      await withdrawMatch(
+        tx,
+        matchId,
+        player.id,
+        match.clubId,
+        match.seasonId,
+        match.team2PlayerId,
+      );
+    });
+  } catch (e) {
+    console.error("withdrawAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/rankings");
+
+  return { success: true };
+}
+
+// ── Forfeit ──────────────────────────────────────
+
+export async function forfeitAction(
+  formData: FormData,
+): Promise<MatchActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  if (!matchId) return { error: "matchDetail.error.notFound" };
+
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  if (match.status !== "challenged" && match.status !== "date_set") {
+    return { error: "matchDetail.error.invalidStatus" };
+  }
+
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
+  const opponentTeamId = isTeam1 ? match.team2Id : match.team1Id;
+
+  try {
+    await sql.begin(async (tx) => {
+      const { winnerTeamId, team1Id, team2Id } = await forfeitMatch(
+        tx,
+        matchId,
+        player.id,
+        match.clubId,
+        match.seasonId,
+        opponentPlayerId,
+        opponentTeamId,
+      );
+
+      const loserTeamId = winnerTeamId === team1Id ? team2Id : team1Id;
+      const challengerTeamId = team1Id; // team1 is always the challenger
+
+      await updateStandingsAfterResult(
+        tx,
+        match.seasonId,
+        matchId,
+        winnerTeamId,
+        loserTeamId,
+        challengerTeamId,
+      );
+    });
+  } catch (e) {
+    console.error("forfeitAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/rankings");
+
+  return { success: true };
+}
+
+// ── Dispute ──────────────────────────────────────
+
+export async function disputeAction(
+  formData: FormData,
+): Promise<MatchActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  if (!matchId) return { error: "matchDetail.error.notFound" };
+
+  const reason = ((formData.get("reason") as string) ?? "").trim();
+  if (!reason) return { error: "matchDetail.error.disputeReasonEmpty" };
+  if (reason.length > 500) {
+    return { error: "matchDetail.error.disputeReasonTooLong" };
+  }
+
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  if (match.status !== "pending_confirmation") {
+    return { error: "matchDetail.error.invalidStatus" };
+  }
+
+  // Cannot dispute your own result entry
+  if (match.resultEnteredBy === player.id) {
+    return { error: "matchDetail.error.cannotConfirmOwn" };
+  }
+
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
+
+  try {
+    await sql.begin(async (tx) => {
+      await disputeMatchResult(
+        tx,
+        matchId,
+        player.id,
+        match.clubId,
+        match.seasonId,
+        opponentPlayerId,
+        reason,
+      );
+    });
+  } catch (e) {
+    console.error("disputeAction transaction failed:", e);
     return { error: "matchDetail.error.serverError" };
   }
 
