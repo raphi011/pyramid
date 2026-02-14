@@ -47,6 +47,10 @@ const config: StorybookConfig = {
         __dirname,
         "mocks/challenge-action.ts",
       ),
+      "@/app/lib/actions/match": path.resolve(
+        __dirname,
+        "mocks/match-action.ts",
+      ),
       "@": path.resolve(__dirname, ".."),
     };
     config.plugins = config.plugins || [];

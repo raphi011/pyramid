@@ -1,6 +1,14 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { withTestDb } from "./test-helpers";
-import { seedPlayer, seedClub, seedSeason, seedTeam, seedMatch } from "./seed";
+import {
+  seedPlayer,
+  seedClub,
+  seedSeason,
+  seedTeam,
+  seedMatch,
+  seedStandings,
+  seedDateProposal,
+} from "./seed";
 import {
   getTeamsWithOpenChallenge,
   getUnavailableTeamIds,
@@ -8,6 +16,14 @@ import {
   getMatchesBySeason,
   getMatchesByTeam,
   getOpenMatches,
+  getMatchById,
+  getDateProposals,
+  createDateProposal,
+  acceptDateProposal,
+  declineDateProposal,
+  enterMatchResult,
+  confirmMatchResult,
+  updateStandingsAfterResult,
   ChallengeConflictError,
 } from "./match";
 
@@ -383,6 +399,378 @@ describe("getOpenMatches", () => {
       expect(
         matches.every((m) => ["challenged", "date_set"].includes(m.status)),
       ).toBe(true);
+    });
+  });
+});
+
+// ── getMatchById ──────────────────────────────────
+
+describe("getMatchById", () => {
+  it("returns match detail with extra fields", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "md1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "md2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const gameAt = new Date("2026-03-15T10:00:00Z");
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "date_set",
+        gameAt,
+      });
+
+      const match = await getMatchById(tx, matchId);
+      expect(match).not.toBeNull();
+      expect(match!.id).toBe(matchId);
+      expect(match!.team1PlayerId).toBe(p1);
+      expect(match!.team2PlayerId).toBe(p2);
+      expect(match!.seasonBestOf).toBe(3); // default from seedSeason
+      expect(match!.clubId).toBe(clubId);
+      expect(match!.gameAt).toEqual(gameAt);
+      expect(match!.team1Name).toBe("Alice");
+      expect(match!.team2Name).toBe("Bob");
+    });
+  });
+
+  it("returns null for non-existent match", async () => {
+    await db.withinTransaction(async (tx) => {
+      const match = await getMatchById(tx, 99999);
+      expect(match).toBeNull();
+    });
+  });
+});
+
+// ── getDateProposals ──────────────────────────────
+
+describe("getDateProposals", () => {
+  it("returns proposals with player names, ordered by created ASC", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "dp1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "dp2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      await seedDateProposal(tx, matchId, p1, {
+        proposedDatetime: new Date("2026-03-01T10:00:00Z"),
+        status: "pending",
+      });
+      await seedDateProposal(tx, matchId, p2, {
+        proposedDatetime: new Date("2026-03-02T14:00:00Z"),
+        status: "declined",
+      });
+
+      const proposals = await getDateProposals(tx, matchId);
+      expect(proposals).toHaveLength(2);
+      expect(proposals[0].proposedByName).toBe("Alice");
+      expect(proposals[0].status).toBe("pending");
+      expect(proposals[1].proposedByName).toBe("Bob");
+      expect(proposals[1].status).toBe("declined");
+    });
+  });
+});
+
+// ── createDateProposal ────────────────────────────
+
+describe("createDateProposal", () => {
+  it("inserts proposal and creates event for opponent", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "cdp1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "cdp2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const proposedDatetime = new Date("2026-04-01T09:00:00Z");
+      const proposalId = await createDateProposal(
+        tx,
+        matchId,
+        clubId,
+        seasonId,
+        p1,
+        p2,
+        proposedDatetime,
+      );
+
+      expect(proposalId).toBeGreaterThan(0);
+
+      const proposals = await getDateProposals(tx, matchId);
+      expect(proposals).toHaveLength(1);
+      expect(proposals[0].proposedBy).toBe(p1);
+      expect(proposals[0].proposedDatetime).toEqual(proposedDatetime);
+
+      // Verify event
+      const events = await tx`
+        SELECT * FROM events WHERE match_id = ${matchId} AND event_type = 'date_proposed'
+      `;
+      expect(events).toHaveLength(1);
+      expect(events[0].player_id).toBe(p1);
+      expect(events[0].target_player_id).toBe(p2);
+    });
+  });
+});
+
+// ── acceptDateProposal ────────────────────────────
+
+describe("acceptDateProposal", () => {
+  it("accepts proposal, dismisses others, sets match status and game_at", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "adp1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "adp2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const dt1 = new Date("2026-03-01T10:00:00Z");
+      const dt2 = new Date("2026-03-02T14:00:00Z");
+      const proposal1 = await seedDateProposal(tx, matchId, p1, {
+        proposedDatetime: dt1,
+      });
+      const proposal2 = await seedDateProposal(tx, matchId, p1, {
+        proposedDatetime: dt2,
+      });
+
+      // p2 accepts proposal1
+      await acceptDateProposal(
+        tx,
+        proposal1,
+        matchId,
+        clubId,
+        seasonId,
+        p2,
+        p1,
+      );
+
+      // Verify proposal statuses
+      const proposals = await getDateProposals(tx, matchId);
+      const accepted = proposals.find((p) => p.id === proposal1);
+      const dismissed = proposals.find((p) => p.id === proposal2);
+      expect(accepted!.status).toBe("accepted");
+      expect(dismissed!.status).toBe("dismissed");
+
+      // Verify match updated
+      const [match] = await tx`
+        SELECT status, game_at FROM season_matches WHERE id = ${matchId}
+      `;
+      expect(match.status).toBe("date_set");
+      expect(match.game_at).toEqual(dt1);
+
+      // Verify event
+      const events = await tx`
+        SELECT * FROM events WHERE match_id = ${matchId} AND event_type = 'date_accepted'
+      `;
+      expect(events).toHaveLength(1);
+      expect(events[0].player_id).toBe(p2);
+      expect(events[0].target_player_id).toBe(p1);
+    });
+  });
+});
+
+// ── declineDateProposal ───────────────────────────
+
+describe("declineDateProposal", () => {
+  it("sets proposal status to declined", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "ddp1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "ddp2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const proposalId = await seedDateProposal(tx, matchId, p1);
+
+      await declineDateProposal(tx, proposalId);
+
+      const proposals = await getDateProposals(tx, matchId);
+      expect(proposals[0].status).toBe("declined");
+    });
+  });
+});
+
+// ── enterMatchResult ──────────────────────────────
+
+describe("enterMatchResult", () => {
+  it("sets scores, status, result_entered_by, and creates event", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "emr1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "emr2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "date_set",
+      });
+
+      await enterMatchResult(
+        tx,
+        matchId,
+        p1,
+        [6, 7],
+        [3, 5],
+        t1,
+        clubId,
+        seasonId,
+        p2,
+      );
+
+      const [match] = await tx`
+        SELECT status, team1_score, team2_score, winner_team_id, result_entered_by, result_entered_at
+        FROM season_matches WHERE id = ${matchId}
+      `;
+      expect(match.status).toBe("pending_confirmation");
+      expect(match.team1_score).toEqual([6, 7]);
+      expect(match.team2_score).toEqual([3, 5]);
+      expect(match.winner_team_id).toBe(t1);
+      expect(match.result_entered_by).toBe(p1);
+      expect(match.result_entered_at).toBeTruthy();
+
+      // Verify event
+      const events = await tx`
+        SELECT * FROM events WHERE match_id = ${matchId} AND event_type = 'result_entered'
+      `;
+      expect(events).toHaveLength(1);
+      expect(events[0].target_player_id).toBe(p2);
+    });
+  });
+});
+
+// ── confirmMatchResult ────────────────────────────
+
+describe("confirmMatchResult", () => {
+  it("completes match and creates public result event", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "cmr1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "cmr2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "pending_confirmation",
+        winnerTeamId: t1,
+        resultEnteredBy: p1,
+        team1Score: [6, 6],
+        team2Score: [3, 4],
+      });
+
+      const result = await confirmMatchResult(
+        tx,
+        matchId,
+        p2,
+        clubId,
+        seasonId,
+      );
+
+      expect(result.winnerTeamId).toBe(t1);
+      expect(result.team1Id).toBe(t1);
+      expect(result.team2Id).toBe(t2);
+
+      const [match] = await tx`
+        SELECT status, confirmed_by FROM season_matches WHERE id = ${matchId}
+      `;
+      expect(match.status).toBe("completed");
+      expect(match.confirmed_by).toBe(p2);
+
+      // Verify public event
+      const events = await tx`
+        SELECT * FROM events WHERE match_id = ${matchId} AND event_type = 'result'
+      `;
+      expect(events).toHaveLength(1);
+    });
+  });
+});
+
+// ── updateStandingsAfterResult ────────────────────
+
+describe("updateStandingsAfterResult", () => {
+  it("swaps ranks when challenger wins", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "usr1@example.com");
+      const p2 = await seedPlayer(tx, "usr2@example.com");
+      const p3 = await seedPlayer(tx, "usr3@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+      const t3 = await seedTeam(tx, seasonId, [p3]);
+
+      // Initial standings: t1=rank1, t2=rank2, t3=rank3
+      await seedStandings(tx, seasonId, [t1, t2, t3]);
+
+      // t3 (challenger, rank 3) challenges t2 (rank 2) and wins
+      const matchId = await seedMatch(tx, seasonId, t3, t2, {
+        status: "completed",
+        winnerTeamId: t3,
+      });
+
+      await updateStandingsAfterResult(tx, seasonId, matchId, t3, t2, t3);
+
+      // New order: t1, t3, t2 (t3 moved to rank 2)
+      const [latest] = await tx`
+        SELECT results, match_id FROM season_standings
+        WHERE season_id = ${seasonId}
+        ORDER BY id DESC LIMIT 1
+      `;
+      expect(latest.results).toEqual([t1, t3, t2]);
+      expect(latest.match_id).toBe(matchId);
+    });
+  });
+
+  it("records snapshot without swap when challengee wins", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "usr4@example.com");
+      const p2 = await seedPlayer(tx, "usr5@example.com");
+      const p3 = await seedPlayer(tx, "usr6@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+      const t3 = await seedTeam(tx, seasonId, [p3]);
+
+      // Initial standings: t1=rank1, t2=rank2, t3=rank3
+      await seedStandings(tx, seasonId, [t1, t2, t3]);
+
+      // t3 (challenger) challenges t2, but t2 (challengee) wins
+      const matchId = await seedMatch(tx, seasonId, t3, t2, {
+        status: "completed",
+        winnerTeamId: t2,
+      });
+
+      await updateStandingsAfterResult(tx, seasonId, matchId, t2, t3, t3);
+
+      // Order unchanged: t1, t2, t3
+      const [latest] = await tx`
+        SELECT results, match_id FROM season_standings
+        WHERE season_id = ${seasonId}
+        ORDER BY id DESC LIMIT 1
+      `;
+      expect(latest.results).toEqual([t1, t2, t3]);
+      expect(latest.match_id).toBe(matchId);
     });
   });
 });

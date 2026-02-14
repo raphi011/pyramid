@@ -104,11 +104,41 @@ export async function seedMatch(
   {
     status = "completed",
     winnerTeamId,
-  }: { status?: string; winnerTeamId?: number } = {},
+    resultEnteredBy,
+    team1Score,
+    team2Score,
+    gameAt,
+  }: {
+    status?: string;
+    winnerTeamId?: number;
+    resultEnteredBy?: number;
+    team1Score?: number[];
+    team2Score?: number[];
+    gameAt?: Date;
+  } = {},
 ): Promise<number> {
   const [row] = await tx`
-    INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, status, created)
-    VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${status}, NOW())
+    INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, result_entered_by, team1_score, team2_score, game_at, status, created)
+    VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${resultEnteredBy ?? null}, ${team1Score ?? null}, ${team2Score ?? null}, ${gameAt ?? null}, ${status}, NOW())
+    RETURNING id
+  `;
+  return row.id as number;
+}
+
+// ── Date Proposal ────────────────────────────────────
+
+export async function seedDateProposal(
+  tx: Tx,
+  matchId: number,
+  proposedBy: number,
+  {
+    proposedDatetime = new Date("2026-03-01T10:00:00Z"),
+    status = "pending",
+  }: { proposedDatetime?: Date; status?: string } = {},
+): Promise<number> {
+  const [row] = await tx`
+    INSERT INTO date_proposals (match_id, proposed_by, proposed_datetime, status, created)
+    VALUES (${matchId}, ${proposedBy}, ${proposedDatetime}, ${status}, NOW())
     RETURNING id
   `;
   return row.id as number;

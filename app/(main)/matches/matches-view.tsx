@@ -91,6 +91,7 @@ export function MatchesView({
           currentTeamId !== null &&
           (match.team1Id === currentTeamId || match.team2Id === currentTeamId)
         }
+        onClick={() => router.push(`/matches/${match.id}`)}
       />
     );
   }
