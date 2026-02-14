@@ -46,7 +46,6 @@ export default async function RankingsPage({
         clubName={clubName}
         pyramidPlayers={[]}
         standingsPlayers={[]}
-        currentPlayerTeamId={null}
         hasOpenChallenge={false}
         matches={[]}
         currentTeamId={null}
@@ -153,11 +152,14 @@ export default async function RankingsPage({
           )
         : undefined;
 
-    const winnerId: "player1" | "player2" | undefined = m.winnerTeamId
-      ? m.winnerTeamId === m.team1Id
-        ? "player1"
-        : "player2"
-      : undefined;
+    let winnerId: "player1" | "player2" | undefined;
+    if (m.winnerTeamId === m.team1Id) winnerId = "player1";
+    else if (m.winnerTeamId === m.team2Id) winnerId = "player2";
+    else if (m.winnerTeamId !== null) {
+      console.error(
+        `[rankings] Match ${m.id}: winnerTeamId=${m.winnerTeamId} matches neither team1Id=${m.team1Id} nor team2Id=${m.team2Id}`,
+      );
+    }
 
     return {
       id: m.id,
@@ -168,11 +170,7 @@ export default async function RankingsPage({
       status: m.status,
       winnerId,
       scores,
-      date: m.created.toLocaleDateString("de-DE", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }),
+      date: m.created.toISOString(),
     };
   });
 
@@ -183,7 +181,6 @@ export default async function RankingsPage({
       clubName={clubName}
       pyramidPlayers={pyramidPlayers}
       standingsPlayers={standingsPlayers}
-      currentPlayerTeamId={currentTeamId}
       hasOpenChallenge={
         currentTeamId !== null && openChallengeTeams.has(currentTeamId)
       }
