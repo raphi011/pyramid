@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "../lib/auth";
 import { getPlayerClubs } from "../lib/db/club";
 import { getActiveSeasons, getPlayerTeamId } from "../lib/db/season";
-import { getTeamsWithOpenChallenge } from "../lib/db/match";
+import { getActiveMatchId } from "../lib/db/match";
 import { getUnreadCount } from "../lib/db/event";
 import { sql } from "../lib/db";
 import { AppShellWrapper } from "./app-shell-wrapper";
@@ -28,15 +28,14 @@ export default async function MainLayout({
     redirect("/join");
   }
 
-  // Check if player has open challenge (for FAB state)
-  let hasOpenChallenge = false;
+  // Check if player has an active match (for FAB navigation)
+  let activeMatchId: number | null = null;
   const activeSeasons = await getActiveSeasons(sql, clubs[0].clubId);
   if (activeSeasons.length > 0) {
     const firstSeason = activeSeasons[0];
     const teamId = await getPlayerTeamId(sql, player.id, firstSeason.id);
     if (teamId) {
-      const openTeams = await getTeamsWithOpenChallenge(sql, firstSeason.id);
-      hasOpenChallenge = openTeams.has(teamId);
+      activeMatchId = await getActiveMatchId(sql, firstSeason.id, teamId);
     }
   }
 
@@ -48,7 +47,7 @@ export default async function MainLayout({
     <AppShellWrapper
       player={{ id: player.id, name: player.name }}
       clubs={clubs.map((c) => ({ id: c.clubId, name: c.clubName }))}
-      hasOpenChallenge={hasOpenChallenge}
+      activeMatchId={activeMatchId}
       unreadCount={unreadCount}
     >
       {children}

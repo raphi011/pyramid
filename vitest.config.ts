@@ -47,6 +47,14 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: "unit",
+          include: ["lib/**/*.test.ts"],
+          environment: "node",
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: "db",
           include: ["app/lib/**/*.test.ts"],
           environment: "node",

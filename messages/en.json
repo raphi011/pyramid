@@ -21,6 +21,7 @@
     "news": "News",
     "manageClub": "Manage club",
     "challenge": "Challenge",
+    "activeChallenge": "Open match",
     "matches": "Matches"
   },
   "challenge": {

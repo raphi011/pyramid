@@ -175,6 +175,21 @@ async function queryTeamsWithOpenChallenge(
 // Cached version deduplicates within a single server request (layout + page)
 export const getTeamsWithOpenChallenge = cache(queryTeamsWithOpenChallenge);
 
+export async function getActiveMatchId(
+  sql: Sql,
+  seasonId: number,
+  teamId: number,
+): Promise<number | null> {
+  const [row] = await sql`
+    SELECT id FROM season_matches
+    WHERE season_id = ${seasonId}
+      AND (team1_id = ${teamId} OR team2_id = ${teamId})
+      AND status IN ('challenged', 'date_set')
+    LIMIT 1
+  `;
+  return (row?.id as number) ?? null;
+}
+
 export async function getUnavailableTeamIds(
   sql: Sql,
   seasonId: number,

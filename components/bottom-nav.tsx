@@ -19,6 +19,7 @@ type BottomNavProps = {
     label: string;
     onClick: () => void;
     disabled?: boolean;
+    variant?: "default" | "active";
   };
   className?: string;
 };
@@ -62,17 +63,26 @@ function BottomNav({
               disabled={fab.disabled}
               className={cn(
                 "flex size-14 items-center justify-center rounded-full",
-                "bg-court-500 text-white shadow-lg",
-                "active:bg-court-700 active:shadow-md",
+                "text-white shadow-lg",
                 "transition-all duration-150",
                 "disabled:opacity-50 disabled:shadow-sm",
                 "[&_svg]:size-6",
+                fab.variant === "active"
+                  ? "bg-trophy-400 active:bg-trophy-500"
+                  : "bg-court-500 active:bg-court-700 active:shadow-md",
               )}
               aria-label={fab.label}
             >
               {fab.icon}
             </button>
-            <span className="mt-0.5 text-[10px] font-medium text-court-600 dark:text-court-400">
+            <span
+              className={cn(
+                "mt-0.5 text-[10px] font-medium",
+                fab.variant === "active"
+                  ? "text-trophy-500 dark:text-trophy-400"
+                  : "text-court-600 dark:text-court-400",
+              )}
+            >
               {fab.label}
             </span>
           </div>

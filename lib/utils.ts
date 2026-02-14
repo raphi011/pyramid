@@ -10,7 +10,8 @@ export function cn(...inputs: ClassValue[]) {
  * "Raphael" → "Raphael"
  */
 export function abbreviateName(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length <= 1) return name;
+  const trimmed = name.trim();
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return trimmed;
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
 }

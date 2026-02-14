@@ -46,7 +46,6 @@ export default async function RankingsPage({
         clubName={clubName}
         pyramidPlayers={[]}
         standingsPlayers={[]}
-        hasOpenChallenge={false}
         matches={[]}
         currentTeamId={null}
       />
@@ -183,9 +182,6 @@ export default async function RankingsPage({
       clubName={clubName}
       pyramidPlayers={pyramidPlayers}
       standingsPlayers={standingsPlayers}
-      hasOpenChallenge={
-        currentTeamId !== null && openChallengeTeams.has(currentTeamId)
-      }
       matches={matches}
       currentTeamId={currentTeamId}
     />

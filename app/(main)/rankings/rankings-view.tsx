@@ -101,7 +101,6 @@ type RankingsViewProps = {
   clubName: string;
   pyramidPlayers: PyramidPlayer[];
   standingsPlayers: StandingsPlayer[];
-  hasOpenChallenge: boolean;
   matches: SerializedMatch[];
   currentTeamId: number | null;
 };
@@ -112,7 +111,6 @@ export function RankingsView({
   clubName,
   pyramidPlayers,
   standingsPlayers,
-  hasOpenChallenge,
   matches,
   currentTeamId,
 }: RankingsViewProps) {
@@ -140,12 +138,21 @@ export function RankingsView({
   function handlePlayerClick(player: PyramidPlayer) {
     if (player.playerId != null) {
       router.push(`/player/${player.playerId}`);
+    } else {
+      // Team seasons: team page not yet implemented (US-PROF-11)
+      console.warn(
+        `[rankings] No playerId for team ${player.id} — team page navigation not yet supported`,
+      );
     }
   }
 
   function handleStandingsPlayerClick(player: StandingsPlayer) {
     if (player.playerId != null) {
       router.push(`/player/${player.playerId}`);
+    } else {
+      console.warn(
+        `[rankings] No playerId for team ${player.id} — team page navigation not yet supported`,
+      );
     }
   }
 
