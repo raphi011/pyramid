@@ -152,7 +152,7 @@ function ProfileView({
           {recentMatches.length > 0 && seasonId && (
             <CardAction>
               <Link
-                href="/matches"
+                href="/rankings"
                 className="text-sm font-medium text-court-600 hover:text-court-700 dark:text-court-400"
               >
                 {t("seeAllMatches")}

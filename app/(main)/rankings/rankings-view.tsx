@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { TrophyIcon, BoltIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Tabs } from "@/components/ui/tabs";
@@ -57,11 +57,13 @@ function getPosition(index: number, total: number) {
 function MatchList({
   items,
   onMatchClick,
+  empty,
 }: {
   items: SerializedMatch[];
   onMatchClick: (id: number) => void;
+  empty: { title: string; description: string };
 }) {
-  const t = useTranslations("ranking");
+  const format = useFormatter();
   return (
     <DataList
       items={items}
@@ -74,15 +76,18 @@ function MatchList({
           status={m.status}
           winnerId={m.winnerId}
           scores={m.scores}
-          date={m.date}
+          date={format.dateTime(new Date(m.date), {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })}
           position={getPosition(index, items.length)}
           onClick={() => onMatchClick(m.id)}
         />
       )}
       empty={{
         icon: <BoltIcon />,
-        title: t("noMatches"),
-        description: t("noMatchesDesc"),
+        ...empty,
       }}
     />
   );
@@ -96,7 +101,6 @@ type RankingsViewProps = {
   clubName: string;
   pyramidPlayers: PyramidPlayer[];
   standingsPlayers: StandingsPlayer[];
-  currentPlayerTeamId: number | null;
   hasOpenChallenge: boolean;
   matches: SerializedMatch[];
   currentTeamId: number | null;
@@ -108,7 +112,6 @@ export function RankingsView({
   clubName,
   pyramidPlayers,
   standingsPlayers,
-  currentPlayerTeamId,
   hasOpenChallenge,
   matches,
   currentTeamId,
@@ -186,7 +189,9 @@ export function RankingsView({
     [matches],
   );
 
-  const handleMatchClick = (id: number) => router.push(`/matches/${id}`);
+  function handleMatchClick(id: number) {
+    router.push(`/matches/${id}`);
+  }
 
   const hasPlayers = pyramidPlayers.length > 0;
 
@@ -240,6 +245,10 @@ export function RankingsView({
                       <MatchList
                         items={matches}
                         onMatchClick={handleMatchClick}
+                        empty={{
+                          title: t("noMatches"),
+                          description: t("noMatchesDesc"),
+                        }}
                       />
                     ),
                   },
@@ -249,6 +258,10 @@ export function RankingsView({
                       <MatchList
                         items={openMatches}
                         onMatchClick={handleMatchClick}
+                        empty={{
+                          title: t("noOpenMatches"),
+                          description: t("noOpenMatchesDesc"),
+                        }}
                       />
                     ),
                   },
@@ -258,6 +271,10 @@ export function RankingsView({
                       <MatchList
                         items={myMatches}
                         onMatchClick={handleMatchClick}
+                        empty={{
+                          title: t("noMyMatches"),
+                          description: t("noMyMatchesDesc"),
+                        }}
                       />
                     ),
                   },
