@@ -67,13 +67,13 @@ function SidebarNav({
             disabled={fab.disabled}
             className={cn(
               "flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5",
-              "text-sm font-semibold text-white",
+              "text-sm font-semibold",
               "transition-colors",
               "disabled:opacity-50",
               "[&_svg]:size-5 [&_svg]:shrink-0",
               fab.variant === "active"
-                ? "bg-trophy-400 hover:bg-trophy-500"
-                : "bg-court-500 hover:bg-court-600",
+                ? "bg-trophy-500 text-slate-900 hover:bg-trophy-600"
+                : "bg-court-500 text-white hover:bg-court-600",
             )}
           >
             {fab.icon}

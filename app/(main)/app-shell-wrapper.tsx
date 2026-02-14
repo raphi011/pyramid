@@ -59,7 +59,7 @@ export function AppShellWrapper({
               icon: <BoltIcon />,
               label: t("activeChallenge"),
               onClick: () => router.push(`/matches/${activeMatchId}`),
-              variant: "active" as const,
+              variant: "active",
             }
           : {
               icon: <PlusIcon />,

@@ -63,13 +63,13 @@ function BottomNav({
               disabled={fab.disabled}
               className={cn(
                 "flex size-14 items-center justify-center rounded-full",
-                "text-white shadow-lg",
+                "shadow-lg",
                 "transition-all duration-150",
                 "disabled:opacity-50 disabled:shadow-sm",
                 "[&_svg]:size-6",
                 fab.variant === "active"
-                  ? "bg-trophy-400 active:bg-trophy-500"
-                  : "bg-court-500 active:bg-court-700 active:shadow-md",
+                  ? "bg-trophy-500 text-slate-900 active:bg-trophy-600"
+                  : "bg-court-500 text-white active:bg-court-700 active:shadow-md",
               )}
               aria-label={fab.label}
             >

@@ -135,25 +135,14 @@ export function RankingsView({
     .filter((p) => p.variant === "challengeable")
     .map((p) => ({ teamId: p.id as number, name: p.name, rank: p.rank }));
 
-  function handlePlayerClick(player: PyramidPlayer) {
+  function handleNavigateToPlayer(player: {
+    id: string | number;
+    playerId?: number;
+  }) {
     if (player.playerId != null) {
       router.push(`/player/${player.playerId}`);
-    } else {
-      // Team seasons: team page not yet implemented (US-PROF-11)
-      console.warn(
-        `[rankings] No playerId for team ${player.id} — team page navigation not yet supported`,
-      );
     }
-  }
-
-  function handleStandingsPlayerClick(player: StandingsPlayer) {
-    if (player.playerId != null) {
-      router.push(`/player/${player.playerId}`);
-    } else {
-      console.warn(
-        `[rankings] No playerId for team ${player.id} — team page navigation not yet supported`,
-      );
-    }
+    // Team seasons: team page not yet implemented (US-PROF-11)
   }
 
   const seasonAction =
@@ -213,7 +202,7 @@ export function RankingsView({
                   content: (
                     <PyramidGrid
                       players={pyramidPlayers}
-                      onPlayerClick={handlePlayerClick}
+                      onPlayerClick={handleNavigateToPlayer}
                     />
                   ),
                 },
@@ -222,7 +211,7 @@ export function RankingsView({
                   content: (
                     <StandingsTable
                       players={standingsPlayers}
-                      onPlayerClick={handleStandingsPlayerClick}
+                      onPlayerClick={handleNavigateToPlayer}
                     />
                   ),
                 },

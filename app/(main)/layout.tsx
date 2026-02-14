@@ -29,14 +29,22 @@ export default async function MainLayout({
   }
 
   // Check if player has an active match (for FAB navigation)
+  // Non-essential — fallback to default "Challenge" FAB on failure
   let activeMatchId: number | null = null;
-  const activeSeasons = await getActiveSeasons(sql, clubs[0].clubId);
-  if (activeSeasons.length > 0) {
-    const firstSeason = activeSeasons[0];
-    const teamId = await getPlayerTeamId(sql, player.id, firstSeason.id);
-    if (teamId) {
-      activeMatchId = await getActiveMatchId(sql, firstSeason.id, teamId);
+  try {
+    const activeSeasons = await getActiveSeasons(sql, clubs[0].clubId);
+    if (activeSeasons.length > 0) {
+      const firstSeason = activeSeasons[0];
+      const teamId = await getPlayerTeamId(sql, player.id, firstSeason.id);
+      if (teamId) {
+        activeMatchId = await getActiveMatchId(sql, firstSeason.id, teamId);
+      }
     }
+  } catch (error) {
+    console.error(
+      `[layout] Failed to fetch active match for player ${player.id}:`,
+      error,
+    );
   }
 
   // Fetch unread notification count

@@ -11,6 +11,7 @@ import {
 } from "./seed";
 import {
   getTeamsWithOpenChallenge,
+  getActiveMatchId,
   getUnavailableTeamIds,
   createChallenge,
   getMatchesBySeason,
@@ -115,6 +116,125 @@ describe("getTeamsWithOpenChallenge", () => {
       expect(openTeamsS1.has(t2)).toBe(true);
       expect(openTeamsS1.has(t3)).toBe(false);
       expect(openTeamsS1.has(t4)).toBe(false);
+    });
+  });
+});
+
+// ── getActiveMatchId ─────────────────────────────────
+
+describe("getActiveMatchId", () => {
+  it("returns match id for challenged match", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "am1@example.com");
+      const p2 = await seedPlayer(tx, "am2@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const result = await getActiveMatchId(tx, seasonId, t1);
+      expect(result).toBe(matchId);
+    });
+  });
+
+  it("returns match id for date_set match", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "am3@example.com");
+      const p2 = await seedPlayer(tx, "am4@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "date_set",
+      });
+
+      const result = await getActiveMatchId(tx, seasonId, t1);
+      expect(result).toBe(matchId);
+    });
+  });
+
+  it("returns null when no active match", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "am5@example.com");
+      const p2 = await seedPlayer(tx, "am6@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      await seedMatch(tx, seasonId, t1, t2, {
+        status: "completed",
+        winnerTeamId: t1,
+      });
+
+      const result = await getActiveMatchId(tx, seasonId, t1);
+      expect(result).toBeNull();
+    });
+  });
+
+  it("finds match when team is team2", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "am7@example.com");
+      const p2 = await seedPlayer(tx, "am8@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      // Query for t2, which is team2 in the match
+      const result = await getActiveMatchId(tx, seasonId, t2);
+      expect(result).toBe(matchId);
+    });
+  });
+
+  it("scoped to season", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const s1 = await seedSeason(tx, clubId);
+      const s2 = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "am9@example.com");
+      const p2 = await seedPlayer(tx, "am10@example.com");
+      const t1 = await seedTeam(tx, s1, [p1]);
+      const t2 = await seedTeam(tx, s1, [p2]);
+      const t3 = await seedTeam(tx, s2, [p1]);
+
+      await seedMatch(tx, s1, t1, t2, { status: "challenged" });
+
+      // Season 2 has no match for t3
+      const result = await getActiveMatchId(tx, s2, t3);
+      expect(result).toBeNull();
+    });
+  });
+
+  it("excludes terminal statuses", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "am11@example.com");
+      const p2 = await seedPlayer(tx, "am12@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      await seedMatch(tx, seasonId, t1, t2, {
+        status: "pending_confirmation",
+        winnerTeamId: t1,
+        resultEnteredBy: p1,
+        team1Score: [6, 6],
+        team2Score: [3, 4],
+      });
+
+      const result = await getActiveMatchId(tx, seasonId, t1);
+      expect(result).toBeNull();
     });
   });
 });

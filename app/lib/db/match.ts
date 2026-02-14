@@ -175,7 +175,7 @@ async function queryTeamsWithOpenChallenge(
 // Cached version deduplicates within a single server request (layout + page)
 export const getTeamsWithOpenChallenge = cache(queryTeamsWithOpenChallenge);
 
-export async function getActiveMatchId(
+async function queryActiveMatchId(
   sql: Sql,
   seasonId: number,
   teamId: number,
@@ -185,10 +185,14 @@ export async function getActiveMatchId(
     WHERE season_id = ${seasonId}
       AND (team1_id = ${teamId} OR team2_id = ${teamId})
       AND status IN ('challenged', 'date_set')
+    ORDER BY created DESC
     LIMIT 1
   `;
-  return (row?.id as number) ?? null;
+  return row ? (row.id as number) : null;
 }
+
+// Cached version deduplicates within a single server request (layout + page)
+export const getActiveMatchId = cache(queryActiveMatchId);
 
 export async function getUnavailableTeamIds(
   sql: Sql,
