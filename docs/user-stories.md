@@ -34,54 +34,54 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-AUTH-08](#us-auth-08-season-enrollment) | Season enrollment | Player | P0 | Auth | |
 | [US-AUTH-09](#us-auth-09-logout) | Logout | Player | P0 | Auth | ✅ |
 | [US-AUTH-10](#us-auth-10-session-expiry) | Session expiry | Player | P0 | Auth | ✅ |
-| [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | |
-| [US-FEED-02](#us-feed-02-filter-feed-by-club) | Filter feed by club | Player | P1 | Feed | |
-| [US-FEED-03](#us-feed-03-navigate-from-event-card) | Navigate from event card | Player | P1 | Feed | |
+| [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | ✅ |
+| [US-FEED-02](#us-feed-02-filter-feed-by-club) | Filter feed by club | Player | P1 | Feed | ✅ |
+| [US-FEED-03](#us-feed-03-navigate-from-event-card) | Navigate from event card | Player | P1 | Feed | ✅ |
 | [US-FEED-04](#us-feed-04-infinite-scroll) | Infinite scroll | Player | P1 | Feed | |
-| [US-FEED-05](#us-feed-05-empty-feed-state) | Empty feed state | Player | P1 | Feed | |
-| [US-FEED-06](#us-feed-06-bell-badge-shows-unread-count) | Bell badge shows unread count | Player | P0 | Feed | |
-| [US-FEED-07](#us-feed-07-notification-center) | Notification center | Player | P0 | Feed | |
-| [US-FEED-08](#us-feed-08-navigate-from-notification) | Navigate from notification | Player | P1 | Feed | |
-| [US-FEED-09](#us-feed-09-mark-all-notifications-read) | Mark all notifications read | Player | P1 | Feed | |
-| [US-FEED-10](#us-feed-10-read-tracking-watermark) | Read tracking watermark | Player | P1 | Feed | |
-| [US-RANK-01](#us-rank-01-view-pyramid) | View pyramid | Player | P0 | Rankings | |
-| [US-RANK-02](#us-rank-02-view-list) | View list | Player | P0 | Rankings | |
-| [US-RANK-03](#us-rank-03-toggle-pyramidlist-views) | Toggle pyramid/list views | Player | P1 | Rankings | |
-| [US-RANK-04](#us-rank-04-season-selector) | Season selector | Player | P0 | Rankings | |
-| [US-RANK-05](#us-rank-05-challengeable-indicators) | Challengeable indicators | Player | P0 | Rankings | |
-| [US-RANK-06](#us-rank-06-unavailable-indicators) | Unavailable indicators | Player | P1 | Rankings | |
-| [US-RANK-07](#us-rank-07-open-challenge-indicators) | Open-challenge indicators | Player | P1 | Rankings | |
+| [US-FEED-05](#us-feed-05-empty-feed-state) | Empty feed state | Player | P1 | Feed | ✅ |
+| [US-FEED-06](#us-feed-06-bell-badge-shows-unread-count) | Bell badge shows unread count | Player | P0 | Feed | ✅ |
+| [US-FEED-07](#us-feed-07-notification-center) | Notification center | Player | P0 | Feed | ✅ |
+| [US-FEED-08](#us-feed-08-navigate-from-notification) | Navigate from notification | Player | P1 | Feed | ✅ |
+| [US-FEED-09](#us-feed-09-mark-all-notifications-read) | Mark all notifications read | Player | P1 | Feed | ✅ |
+| [US-FEED-10](#us-feed-10-read-tracking-watermark) | Read tracking watermark | Player | P1 | Feed | ✅ |
+| [US-RANK-01](#us-rank-01-view-pyramid) | View pyramid | Player | P0 | Rankings | ✅ |
+| [US-RANK-02](#us-rank-02-view-list) | View list | Player | P0 | Rankings | ✅ |
+| [US-RANK-03](#us-rank-03-toggle-pyramidlist-views) | Toggle pyramid/list views | Player | P1 | Rankings | ✅ |
+| [US-RANK-04](#us-rank-04-season-selector) | Season selector | Player | P0 | Rankings | ✅ |
+| [US-RANK-05](#us-rank-05-challengeable-indicators) | Challengeable indicators | Player | P0 | Rankings | ✅ |
+| [US-RANK-06](#us-rank-06-unavailable-indicators) | Unavailable indicators | Player | P1 | Rankings | ✅ |
+| [US-RANK-07](#us-rank-07-open-challenge-indicators) | Open-challenge indicators | Player | P1 | Rankings | ✅ |
 | [US-RANK-08](#us-rank-08-archived-season-read-only) | Archived season (read-only) | Player | P1 | Rankings | |
-| [US-CHAL-01](#us-chal-01-challenge-from-pyramid-card) | Challenge from pyramid card | Player | P0 | Challenges | |
-| [US-CHAL-02](#us-chal-02-challenge-from-fab) | Challenge from FAB | Player | P0 | Challenges | |
-| [US-CHAL-03](#us-chal-03-challenge-from-player-profile) | Challenge from player profile | Player | P1 | Challenges | |
-| [US-CHAL-04](#us-chal-04-season-picker-multiple-active) | Season picker (multiple active) | Player | P1 | Challenges | |
-| [US-CHAL-05](#us-chal-05-challenge-validation-rules) | Challenge validation rules | Player | P0 | Challenges | |
+| [US-CHAL-01](#us-chal-01-challenge-from-pyramid-card) | Challenge from pyramid card | Player | P0 | Challenges | ✅ |
+| [US-CHAL-02](#us-chal-02-challenge-from-fab) | Challenge from FAB | Player | P0 | Challenges | ✅ |
+| [US-CHAL-03](#us-chal-03-challenge-from-player-profile) | Challenge from player profile | Player | P1 | Challenges | ✅ |
+| [US-CHAL-04](#us-chal-04-season-picker-multiple-active) | Season picker (multiple active) | Player | P1 | Challenges | ✅ |
+| [US-CHAL-05](#us-chal-05-challenge-validation-rules) | Challenge validation rules | Player | P0 | Challenges | ✅ |
 | [US-CHAL-06](#us-chal-06-fab-disabled-state) | FAB disabled state | Player | P1 | Challenges | |
-| [US-CHAL-07](#us-chal-07-view-match-list) | View match list | Player | P0 | Challenges | |
-| [US-CHAL-08](#us-chal-08-filter-matches-myallopen) | Filter matches (My/All/Open) | Player | P1 | Challenges | |
-| [US-CHAL-09](#us-chal-09-view-match-detail) | View match detail | Player | P0 | Challenges | |
-| [US-CHAL-10](#us-chal-10-propose-a-date) | Propose a date | Player | P0 | Challenges | |
-| [US-CHAL-11](#us-chal-11-acceptdecline-date-proposal) | Accept/decline date proposal | Player | P0 | Challenges | |
-| [US-CHAL-12](#us-chal-12-enter-match-result) | Enter match result | Player | P0 | Challenges | |
-| [US-CHAL-13](#us-chal-13-confirm-match-result) | Confirm match result | Player | P0 | Challenges | |
+| [US-CHAL-07](#us-chal-07-view-match-list) | View match list | Player | P0 | Challenges | ✅ |
+| [US-CHAL-08](#us-chal-08-filter-matches-myallopen) | Filter matches (My/All/Open) | Player | P1 | Challenges | ✅ |
+| [US-CHAL-09](#us-chal-09-view-match-detail) | View match detail | Player | P0 | Challenges | ✅ |
+| [US-CHAL-10](#us-chal-10-propose-a-date) | Propose a date | Player | P0 | Challenges | ✅ |
+| [US-CHAL-11](#us-chal-11-acceptdecline-date-proposal) | Accept/decline date proposal | Player | P0 | Challenges | ✅ |
+| [US-CHAL-12](#us-chal-12-enter-match-result) | Enter match result | Player | P0 | Challenges | ✅ |
+| [US-CHAL-13](#us-chal-13-confirm-match-result) | Confirm match result | Player | P0 | Challenges | ✅ |
 | [US-CHAL-14](#us-chal-14-dispute-match-result) | Dispute match result | Player | P1 | Challenges | |
 | [US-CHAL-15](#us-chal-15-forfeit-match) | Forfeit match | Player | P1 | Challenges | |
 | [US-CHAL-16](#us-chal-16-withdraw-challenge) | Withdraw challenge | Player | P1 | Challenges | |
-| [US-CHAL-17](#us-chal-17-post-match-comment) | Post match comment | Player | P1 | Challenges | |
+| [US-CHAL-17](#us-chal-17-post-match-comment) | Post match comment | Player | P1 | Challenges | ✅ |
 | [US-CHAL-18](#us-chal-18-edit-match-comment) | Edit match comment | Player | P2 | Challenges | |
-| [US-COMMENT-IMG](#us-comment-img-upload-image-in-match-comment) | Upload image in match comment | Player | P2 | Challenges | |
-| [US-CHAL-19](#us-chal-19-rankings-update-after-result) | Rankings update after result | Player | P0 | Challenges | |
-| [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | |
-| [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | |
-| [US-PROF-03](#us-prof-03-uploadchange-profile-photo) | Upload/change profile photo | Player | P1 | Profile | |
+| [US-COMMENT-IMG](#us-comment-img-upload-image-in-match-comment) | Upload image in match comment | Player | P2 | Challenges | ✅ |
+| [US-CHAL-19](#us-chal-19-rankings-update-after-result) | Rankings update after result | Player | P0 | Challenges | ✅ |
+| [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | ✅ |
+| [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | ✅ |
+| [US-PROF-03](#us-prof-03-uploadchange-profile-photo) | Upload/change profile photo | Player | P1 | Profile | ✅ |
 | [US-PROF-04](#us-prof-04-set-unavailability) | Set unavailability | Player | P1 | Profile | |
 | [US-PROF-05](#us-prof-05-cancel-unavailability) | Cancel unavailability | Player | P1 | Profile | |
-| [US-PROF-06](#us-prof-06-stats-scoping-seasoncluball) | Stats scoping (season/club/all) | Player | P1 | Profile | |
-| [US-PROF-07](#us-prof-07-rank-progression-chart) | Rank progression chart | Player | P2 | Profile | |
-| [US-PROF-08](#us-prof-08-head-to-head-record) | Head-to-head record | Player | P2 | Profile | |
-| [US-PROF-09](#us-prof-09-view-other-player-profile) | View other player profile | Player | P1 | Profile | |
-| [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | |
+| [US-PROF-06](#us-prof-06-stats-scoping-seasoncluball) | Stats scoping (season/club/all) | Player | P1 | Profile | ✅ |
+| [US-PROF-07](#us-prof-07-rank-progression-chart) | Rank progression chart | Player | P2 | Profile | ✅ |
+| [US-PROF-08](#us-prof-08-head-to-head-record) | Head-to-head record | Player | P2 | Profile | ✅ |
+| [US-PROF-09](#us-prof-09-view-other-player-profile) | View other player profile | Player | P1 | Profile | ✅ |
+| [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | ✅ |
 | [US-PROF-11](#us-prof-11-view-team-page) | View team page | Player | P2 | Profile | |
 | [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | |
 | [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | |
@@ -750,26 +750,20 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P0
 
-**Preconditions**: Active season, player has no open challenge, target is challengeable (→ US-RANK-05).
+**Preconditions**: Active season, target is challengeable (→ US-RANK-05).
 
 **Steps**:
-1. User taps a challengeable card in the pyramid → System opens ChallengeSheet (ResponsiveDialog: bottom sheet on mobile, dialog on desktop).
-2. Sheet shows: target player name, rank, optional message textarea, "Send Challenge" button.
-3. User optionally types a message and taps "Send Challenge" → System creates `season_matches` row (status = `challenged`, `challenge_text` = message).
-4. System generates events: public `challenge` event + personal `challenged` event (to target).
-5. If `notification_preferences.challenge_emails` is true for the target → System sends challenge email via Resend.
-6. Sheet closes, pyramid updates (both players now show "in challenge" state).
+1. User taps a player card in the pyramid → System navigates to `/player/[id]` (player profile page).
+2. Challengeable cards are visually highlighted (green variant) to indicate the player can be challenged.
+3. On the player profile page, if the target is challengeable, a "Challenge" button is shown (→ US-CHAL-03).
+4. Alternatively, the user can challenge via the FAB button (→ US-CHAL-02).
+
+**Design decision**: Pyramid cards always navigate to the player profile rather than directly opening a challenge sheet. This keeps the pyramid focused on browsing/discovery and delegates the challenge action to the profile page or FAB, which provide richer context.
 
 **Postconditions**:
-- `season_matches` row with `status = 'challenged'`.
-- `events` rows for public + personal notifications.
-- Email sent to challengee (if enabled).
+- Player navigated to target's profile page where they can initiate a challenge.
 
-**Edge cases**:
-- Race condition: target gets challenged by someone else first → Server returns error "Player already has an open challenge", sheet shows error.
-- Network failure → Error toast, challenge not created.
-
-**Cross-refs**: → US-CHAL-02, → US-CHAL-05, → US-RANK-05
+**Cross-refs**: → US-CHAL-02, → US-CHAL-03, → US-RANK-05
 
 ---
 
