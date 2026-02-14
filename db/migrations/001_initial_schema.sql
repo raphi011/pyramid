@@ -3,6 +3,19 @@
 -- If schema and docs diverge, update both.
 
 -----------------------------------------------
+-- 0. images
+-----------------------------------------------
+CREATE TABLE images (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    data BYTEA NOT NULL,
+    content_type TEXT NOT NULL,
+    width INT NOT NULL,
+    height INT NOT NULL,
+    size_bytes INT NOT NULL,
+    created TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-----------------------------------------------
 -- 1. clubs
 -----------------------------------------------
 CREATE TABLE clubs (
@@ -15,7 +28,7 @@ CREATE TABLE clubs (
     city TEXT NOT NULL DEFAULT '',
     zip TEXT NOT NULL DEFAULT '',
     country TEXT NOT NULL DEFAULT '',
-    logo_data BYTEA,
+    image_id UUID REFERENCES images(id),
     is_disabled BOOL NOT NULL DEFAULT false,
     created TIMESTAMPTZ NOT NULL
 );
@@ -28,7 +41,7 @@ CREATE TABLE player (
     name TEXT NOT NULL,
     phone_number TEXT NOT NULL DEFAULT '',
     email_address TEXT NOT NULL UNIQUE,
-    photo_data BYTEA,
+    image_id UUID REFERENCES images(id),
     bio TEXT NOT NULL DEFAULT '',
     language TEXT NOT NULL DEFAULT 'en',
     theme TEXT NOT NULL DEFAULT 'auto',
@@ -108,6 +121,7 @@ CREATE TABLE season_matches (
     challenge_text TEXT NOT NULL DEFAULT '',
     disputed_reason TEXT NOT NULL DEFAULT '',
     game_at TIMESTAMPTZ,
+    image_id UUID REFERENCES images(id),
     created TIMESTAMPTZ NOT NULL
 );
 
