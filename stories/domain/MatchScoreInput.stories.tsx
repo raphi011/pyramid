@@ -3,8 +3,17 @@
 import { useState } from "react";
 import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
-import { MatchScoreInput, type SetScore } from "@/components/domain/match-score-input";
-import { emptyThreeSets, emptyOneSet, partiallyFilledSets, completedSets, invalidSets } from "../__fixtures__";
+import {
+  MatchScoreInput,
+  type SetScore,
+} from "@/components/domain/match-score-input";
+import {
+  emptyThreeSets,
+  emptyOneSet,
+  partiallyFilledSets,
+  completedSets,
+  invalidSets,
+} from "../__fixtures__";
 
 const meta = preview.meta({
   title: "Domain/MatchScoreInput",
@@ -22,7 +31,13 @@ const meta = preview.meta({
 
 export default meta;
 
-function ScoreDemo({ initial, maxSets }: { initial: SetScore[]; maxSets?: number }) {
+function ScoreDemo({
+  initial,
+  maxSets,
+}: {
+  initial: SetScore[];
+  maxSets?: number;
+}) {
   const [sets, setSets] = useState(initial);
   return (
     <MatchScoreInput
@@ -57,7 +72,9 @@ export const BestOfThree = meta.story({
     await userEvent.type(inputs[5], "5");
 
     // No "add set" button — already at maxSets=3
-    await expect(canvas.queryByRole("button", { name: /satz hinzufügen/i })).not.toBeInTheDocument();
+    await expect(
+      canvas.queryByRole("button", { name: /satz hinzufügen/i }),
+    ).not.toBeInTheDocument();
   },
 });
 
@@ -75,7 +92,9 @@ export const BestOfFive = meta.story({
     await userEvent.type(initialInputs[1], "4");
 
     // Click "Add set" button
-    await userEvent.click(canvas.getByRole("button", { name: /satz hinzufügen/i }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: /satz hinzufügen/i }),
+    );
 
     // Now 2 sets = 4 spinbuttons
     const afterAddInputs = canvas.getAllByRole("spinbutton");

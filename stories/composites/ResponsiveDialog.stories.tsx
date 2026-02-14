@@ -49,7 +49,9 @@ export const Default = meta.story({
     const body = within(document.body);
 
     // Open dialog
-    await userEvent.click(canvas.getByRole("button", { name: /dialog öffnen/i }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: /dialog öffnen/i }),
+    );
 
     // Verify title is visible
     const dialog = await body.findByRole("dialog");
@@ -58,11 +60,15 @@ export const Default = meta.story({
 
     // Close via the visible "Schließen" button (not the sr-only X button)
     const buttons = dialogScope.getAllByRole("button", { name: /schließen/i });
-    const visibleClose = buttons.find((b) => b.textContent?.trim() === "Schließen");
+    const visibleClose = buttons.find(
+      (b) => b.textContent?.trim() === "Schließen",
+    );
     await userEvent.click(visibleClose!);
 
     // Wait for Headless UI transition to complete
-    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(body.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   },
 });
 
@@ -105,14 +111,18 @@ export const WithForm = meta.story({
     const body = within(document.body);
 
     // Open the dialog
-    await userEvent.click(canvas.getByRole("button", { name: /mit formular/i }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: /mit formular/i }),
+    );
 
     // Wait for dialog to appear
     const dialog = await body.findByRole("dialog");
     const dialogScope = within(dialog);
 
     // Verify title
-    await expect(dialogScope.getByText("Ergebnis eintragen")).toBeInTheDocument();
+    await expect(
+      dialogScope.getByText("Ergebnis eintragen"),
+    ).toBeInTheDocument();
 
     // Fill the form fields
     const inputs = dialogScope.getAllByRole("textbox");
@@ -121,9 +131,13 @@ export const WithForm = meta.story({
     await userEvent.type(inputs[2], "7:5");
 
     // Click "Speichern" to submit and close
-    await userEvent.click(dialogScope.getByRole("button", { name: /speichern/i }));
+    await userEvent.click(
+      dialogScope.getByRole("button", { name: /speichern/i }),
+    );
 
     // Dialog should close
-    await waitFor(() => expect(body.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(body.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
   },
 });

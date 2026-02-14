@@ -1,16 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { TrophyIcon } from "@heroicons/react/24/outline";
+import { useTranslations, useFormatter } from "next-intl";
+import { TrophyIcon, BoltIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Tabs } from "@/components/ui/tabs";
-import { PyramidGrid, type PyramidPlayer } from "@/components/domain/pyramid-grid";
+import { DataList } from "@/components/data-list";
+import {
+  PyramidGrid,
+  type PyramidPlayer,
+} from "@/components/domain/pyramid-grid";
 import {
   StandingsTable,
   type StandingsPlayer,
 } from "@/components/domain/standings-table";
+import {
+  MatchRow,
+  type MatchStatus as MatchRowStatus,
+} from "@/components/domain/match-row";
 import { SeasonSelector } from "@/components/domain/season-selector";
 import { EmptyState } from "@/components/empty-state";
 import {
@@ -18,14 +26,84 @@ import {
   type Opponent,
 } from "@/components/domain/challenge-sheet";
 
+// ── Match types ─────────────────────────────────
+
+type SerializedMatch = {
+  id: number;
+  team1Id: number;
+  team2Id: number;
+  player1: { name: string };
+  player2: { name: string };
+  status: MatchRowStatus;
+  winnerId?: "player1" | "player2";
+  scores?: [number, number][];
+  date: string;
+};
+
+const OPEN_STATUSES: MatchRowStatus[] = [
+  "challenged",
+  "date_set",
+  "pending_confirmation",
+  "disputed",
+];
+
+function getPosition(index: number, total: number) {
+  if (total === 1) return "only" as const;
+  if (index === 0) return "first" as const;
+  if (index === total - 1) return "last" as const;
+  return "middle" as const;
+}
+
+function MatchList({
+  items,
+  onMatchClick,
+  empty,
+}: {
+  items: SerializedMatch[];
+  onMatchClick: (id: number) => void;
+  empty: { title: string; description: string };
+}) {
+  const format = useFormatter();
+  return (
+    <DataList
+      items={items}
+      keyExtractor={(m) => m.id}
+      className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden"
+      renderItem={(m, index) => (
+        <MatchRow
+          player1={m.player1}
+          player2={m.player2}
+          status={m.status}
+          winnerId={m.winnerId}
+          scores={m.scores}
+          date={format.dateTime(new Date(m.date), {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })}
+          position={getPosition(index, items.length)}
+          onClick={() => onMatchClick(m.id)}
+        />
+      )}
+      empty={{
+        icon: <BoltIcon />,
+        ...empty,
+      }}
+    />
+  );
+}
+
+// ── Props ───────────────────────────────────────
+
 type RankingsViewProps = {
   seasons: { id: number; name: string }[];
   currentSeasonId: number | null;
   clubName: string;
   pyramidPlayers: PyramidPlayer[];
   standingsPlayers: StandingsPlayer[];
-  currentPlayerTeamId: number | null;
   hasOpenChallenge: boolean;
+  matches: SerializedMatch[];
+  currentTeamId: number | null;
 };
 
 export function RankingsView({
@@ -34,8 +112,9 @@ export function RankingsView({
   clubName,
   pyramidPlayers,
   standingsPlayers,
-  currentPlayerTeamId,
   hasOpenChallenge,
+  matches,
+  currentTeamId,
 }: RankingsViewProps) {
   const t = useTranslations("ranking");
   const router = useRouter();
@@ -95,6 +174,25 @@ export function RankingsView({
     ? `${currentSeason.name} \u2014 ${clubName}`
     : clubName;
 
+  const myMatches = useMemo(
+    () =>
+      currentTeamId !== null
+        ? matches.filter(
+            (m) => m.team1Id === currentTeamId || m.team2Id === currentTeamId,
+          )
+        : [],
+    [matches, currentTeamId],
+  );
+
+  const openMatches = useMemo(
+    () => matches.filter((m) => OPEN_STATUSES.includes(m.status)),
+    [matches],
+  );
+
+  function handleMatchClick(id: number) {
+    router.push(`/matches/${id}`);
+  }
+
   const hasPlayers = pyramidPlayers.length > 0;
 
   const emptyState = (
@@ -111,28 +209,79 @@ export function RankingsView({
         {!hasPlayers ? (
           emptyState
         ) : (
-          <Tabs
-            items={[
-              {
-                label: t("pyramid"),
-                content: (
-                  <PyramidGrid
-                    players={pyramidPlayers}
-                    onPlayerClick={handlePlayerClick}
-                  />
-                ),
-              },
-              {
-                label: t("list"),
-                content: (
-                  <StandingsTable
-                    players={standingsPlayers}
-                    onPlayerClick={handleStandingsPlayerClick}
-                  />
-                ),
-              },
-            ]}
-          />
+          <>
+            <Tabs
+              items={[
+                {
+                  label: t("pyramid"),
+                  content: (
+                    <PyramidGrid
+                      players={pyramidPlayers}
+                      onPlayerClick={handlePlayerClick}
+                    />
+                  ),
+                },
+                {
+                  label: t("list"),
+                  content: (
+                    <StandingsTable
+                      players={standingsPlayers}
+                      onPlayerClick={handleStandingsPlayerClick}
+                    />
+                  ),
+                },
+              ]}
+            />
+
+            <div className="mt-6">
+              <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {t("matches")}
+              </h2>
+              <Tabs
+                items={[
+                  {
+                    label: t("all"),
+                    content: (
+                      <MatchList
+                        items={matches}
+                        onMatchClick={handleMatchClick}
+                        empty={{
+                          title: t("noMatches"),
+                          description: t("noMatchesDesc"),
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    label: t("open"),
+                    content: (
+                      <MatchList
+                        items={openMatches}
+                        onMatchClick={handleMatchClick}
+                        empty={{
+                          title: t("noOpenMatches"),
+                          description: t("noOpenMatchesDesc"),
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    label: t("mine"),
+                    content: (
+                      <MatchList
+                        items={myMatches}
+                        onMatchClick={handleMatchClick}
+                        empty={{
+                          title: t("noMyMatches"),
+                          description: t("noMyMatchesDesc"),
+                        }}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </div>
+          </>
         )}
       </PageLayout>
       {currentSeasonId && (

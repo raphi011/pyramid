@@ -18,7 +18,9 @@ function Demo({ length, initial = "" }: { length?: number; initial?: string }) {
   return (
     <div className="space-y-2">
       <CharacterInput length={length} value={value} onChange={setValue} />
-      <p className="text-center text-xs text-slate-500">Value: &quot;{value}&quot;</p>
+      <p className="text-center text-xs text-slate-500">
+        Value: &quot;{value}&quot;
+      </p>
     </div>
   );
 }

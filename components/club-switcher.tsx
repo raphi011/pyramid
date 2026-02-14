@@ -73,9 +73,7 @@ function ClubSwitcher({
           {idx > 0 && <DropdownMenuSeparator />}
           <DropdownMenuItem
             onClick={() => onSwitch(club.id)}
-            icon={
-              <Avatar name={club.name} src={club.avatarSrc} size="sm" />
-            }
+            icon={<Avatar name={club.name} src={club.avatarSrc} size="sm" />}
           >
             <span className="flex items-center gap-2">
               {club.name}

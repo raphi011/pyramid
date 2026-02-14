@@ -30,7 +30,11 @@ function useSidebarItems() {
       { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
     ],
     adminItems: [
-      { icon: <ShieldCheckIcon />, label: t("manageClub"), href: "/admin/club/1" },
+      {
+        icon: <ShieldCheckIcon />,
+        label: t("manageClub"),
+        href: "/admin/club/1",
+      },
     ],
     fabLabel: t("challenge"),
   };

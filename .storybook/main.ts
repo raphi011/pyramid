@@ -28,7 +28,7 @@ const config: StorybookConfig = {
       },
     },
     "@storybook/addon-a11y",
-    "@storybook/addon-vitest"
+    "@storybook/addon-vitest",
   ],
   framework: {
     name: "@storybook/react-vite",
@@ -46,6 +46,10 @@ const config: StorybookConfig = {
       "@/app/lib/actions/challenge": path.resolve(
         __dirname,
         "mocks/challenge-action.ts",
+      ),
+      "@/app/lib/actions/match": path.resolve(
+        __dirname,
+        "mocks/match-action.ts",
       ),
       "@": path.resolve(__dirname, ".."),
     };

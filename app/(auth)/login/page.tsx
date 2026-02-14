@@ -80,11 +80,7 @@ function LoginForm() {
           }}
         />
 
-        <Button
-          type="submit"
-          className="w-full"
-          loading={isLoading}
-        >
+        <Button type="submit" className="w-full" loading={isLoading}>
           {isLoading ? "Wird gesendet..." : "Login-Link anfordern"}
         </Button>
       </form>

@@ -1,0 +1,22 @@
+// Mock for match actions in Storybook — server actions can't run in the browser
+export type MatchActionResult = { success: true } | { error: string };
+
+export async function proposeDateAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function acceptDateAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function declineDateAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function enterResultAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function confirmResultAction(): Promise<MatchActionResult> {
+  return { success: true };
+}

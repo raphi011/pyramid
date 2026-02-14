@@ -82,8 +82,18 @@ function MatchRow({
     >
       {/* Player avatars */}
       <div className="flex -space-x-0.5">
-        <Avatar name={player1.name} src={player1.avatarSrc} size="sm" className="ring-2 ring-white dark:ring-slate-900" />
-        <Avatar name={player2.name} src={player2.avatarSrc} size="sm" className="ring-2 ring-white dark:ring-slate-900" />
+        <Avatar
+          name={player1.name}
+          src={player1.avatarSrc}
+          size="sm"
+          className="ring-2 ring-white dark:ring-slate-900"
+        />
+        <Avatar
+          name={player2.name}
+          src={player2.avatarSrc}
+          size="sm"
+          className="ring-2 ring-white dark:ring-slate-900"
+        />
       </div>
 
       {/* Names + date */}
@@ -117,7 +127,10 @@ function MatchRow({
       )}
 
       {/* Status indicator */}
-      {(status === "challenged" || status === "date_set" || status === "disputed" || status === "pending_confirmation") && (
+      {(status === "challenged" ||
+        status === "date_set" ||
+        status === "disputed" ||
+        status === "pending_confirmation") && (
         <Badge variant="subtle" size="sm">
           {t(statusKeys[status])}
         </Badge>

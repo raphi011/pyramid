@@ -25,8 +25,7 @@ const variantStyles: Record<
   { container: string; icon: React.ReactNode }
 > = {
   info: {
-    container:
-      "bg-sky-50 ring-sky-200 dark:bg-sky-950/40 dark:ring-sky-800",
+    container: "bg-sky-50 ring-sky-200 dark:bg-sky-950/40 dark:ring-sky-800",
     icon: <InformationCircleIcon className="size-5 text-sky-500" />,
   },
   warning: {

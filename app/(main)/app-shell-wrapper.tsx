@@ -8,7 +8,6 @@ import {
   PlusIcon,
   BellIcon,
   Cog6ToothIcon,
-  BoltIcon,
 } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/app-shell";
 import { ClubSwitcher } from "@/components/club-switcher";
@@ -37,13 +36,11 @@ export function AppShellWrapper({
 
   const navItems = [
     { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-    { icon: <BoltIcon />, label: t("matches"), href: "/matches" },
   ];
 
   const sidebarItems = [
     { icon: <BellIcon />, label: t("news"), href: "/feed" },
     { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-    { icon: <BoltIcon />, label: t("matches"), href: "/matches" },
     { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
   ];
 

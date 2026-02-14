@@ -72,12 +72,33 @@ export const tenPyramidPlayers: PyramidPlayer[] = [
 // ── 6-player set for StandingsTable ────────────
 
 export const sixStandingsPlayers: StandingsPlayer[] = [
-  { id: 1, name: "Julia Fischer", rank: 1, wins: 12, losses: 0, movement: "up" },
-  { id: 2, name: "Anna Schmidt", rank: 2, wins: 8, losses: 1, movement: "none" },
+  {
+    id: 1,
+    name: "Julia Fischer",
+    rank: 1,
+    wins: 12,
+    losses: 0,
+    movement: "up",
+  },
+  {
+    id: 2,
+    name: "Anna Schmidt",
+    rank: 2,
+    wins: 8,
+    losses: 1,
+    movement: "none",
+  },
   { id: 3, name: "Tom Weber", rank: 3, wins: 5, losses: 2, movement: "down" },
   { id: 4, name: "Lisa Müller", rank: 4, wins: 6, losses: 3, movement: "up" },
   { id: 5, name: "Max Braun", rank: 5, wins: 4, losses: 4, movement: "none" },
-  { id: 6, name: "Sarah Hoffmann", rank: 6, wins: 3, losses: 5, movement: "down" },
+  {
+    id: 6,
+    name: "Sarah Hoffmann",
+    rank: 6,
+    wins: 3,
+    losses: 5,
+    movement: "down",
+  },
 ];
 
 // ── Helpers ────────────────────────────────────

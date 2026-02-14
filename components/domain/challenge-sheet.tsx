@@ -68,9 +68,7 @@ function ChallengeSheetInner({
   const t = useTranslations("challenge");
   const tCommon = useTranslations("common");
 
-  const [step, setStep] = useState<Step>(() =>
-    getInitialStep(target, seasons),
-  );
+  const [step, setStep] = useState<Step>(() => getInitialStep(target, seasons));
   const [selectedTarget, setSelectedTarget] = useState<Opponent | null>(
     target ?? null,
   );
@@ -189,11 +187,7 @@ function ChallengeSheetInner({
 
       {/* Step: Confirm challenge */}
       {step === "confirm" && selectedTarget && (
-        <form
-          ref={formRef}
-          action={handleSubmit}
-          className="space-y-4"
-        >
+        <form ref={formRef} action={handleSubmit} className="space-y-4">
           {/* Opponent info */}
           <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
             <Avatar

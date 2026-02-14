@@ -38,7 +38,11 @@ function useNavItems() {
       { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
     ],
     adminItems: [
-      { icon: <ShieldCheckIcon />, label: t("manageClub"), href: "/admin/club/1" },
+      {
+        icon: <ShieldCheckIcon />,
+        label: t("manageClub"),
+        href: "/admin/club/1",
+      },
     ],
     fabLabel: t("challenge"),
   };
@@ -110,7 +114,8 @@ function AppShellWithMessages() {
       id: "2",
       variant: "warning",
       title: "Saisonende am 30. Juni",
-      description: "Bitte alle offenen Herausforderungen bis dahin abschließen.",
+      description:
+        "Bitte alle offenen Herausforderungen bis dahin abschließen.",
     },
   ]);
 
@@ -134,7 +139,10 @@ function AppShellWithMessages() {
         </div>
       }
     >
-      <PageLayout title={t("title")} subtitle={t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" })}>
+      <PageLayout
+        title={t("title")}
+        subtitle={t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" })}
+      >
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 dark:text-slate-400">

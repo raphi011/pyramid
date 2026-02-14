@@ -1,6 +1,20 @@
 import type { MatchRowProps } from "@/components/domain/match-row";
 import type { SetScore } from "@/components/domain/match-score-input";
-import { maxMustermann, annaSchmidt, maxBraun, lisaMueller, tomWeber, sophieHoffmann, felixWagner, paulBecker, marieKoch, lauraRichter, juliaFischer, lukasSchaefer, emmaBauer } from "./players";
+import {
+  maxMustermann,
+  annaSchmidt,
+  maxBraun,
+  lisaMueller,
+  tomWeber,
+  sophieHoffmann,
+  felixWagner,
+  paulBecker,
+  marieKoch,
+  lauraRichter,
+  juliaFischer,
+  lukasSchaefer,
+  emmaBauer,
+} from "./players";
 
 // ── Match rows (per status) ────────────────────
 
@@ -22,7 +36,11 @@ export const completedWinMatch: MatchRowProps = {
   player2: annaSchmidt,
   status: "completed",
   winnerId: "player1",
-  scores: [[6, 4], [3, 6], [7, 5]],
+  scores: [
+    [6, 4],
+    [3, 6],
+    [7, 5],
+  ],
   date: "12.03.2026",
 };
 
@@ -31,7 +49,10 @@ export const completedLossMatch: MatchRowProps = {
   player2: annaSchmidt,
   status: "completed",
   winnerId: "player2",
-  scores: [[4, 6], [2, 6]],
+  scores: [
+    [4, 6],
+    [2, 6],
+  ],
   date: "10.03.2026",
 };
 
@@ -86,7 +107,10 @@ export const matchList: (MatchRowProps & { id: string })[] = [
     player2: annaSchmidt,
     status: "completed",
     winnerId: "player1",
-    scores: [[6, 3], [7, 5]],
+    scores: [
+      [6, 3],
+      [7, 5],
+    ],
     date: "10.02.2026",
   },
   {
@@ -95,7 +119,10 @@ export const matchList: (MatchRowProps & { id: string })[] = [
     player2: sophieHoffmann,
     status: "completed",
     winnerId: "player2",
-    scores: [[4, 6], [3, 6]],
+    scores: [
+      [4, 6],
+      [3, 6],
+    ],
     date: "05.02.2026",
   },
   {
@@ -118,7 +145,10 @@ export const matchList: (MatchRowProps & { id: string })[] = [
     player2: tomWeber,
     status: "completed",
     winnerId: "player1",
-    scores: [[6, 4], [6, 2]],
+    scores: [
+      [6, 4],
+      [6, 2],
+    ],
     date: "20.01.2026",
   },
   {
@@ -138,9 +168,7 @@ export const emptyThreeSets: SetScore[] = [
   { player1: "", player2: "" },
 ];
 
-export const emptyOneSet: SetScore[] = [
-  { player1: "", player2: "" },
-];
+export const emptyOneSet: SetScore[] = [{ player1: "", player2: "" }];
 
 export const partiallyFilledSets: SetScore[] = [
   { player1: "6", player2: "4" },
@@ -154,6 +182,4 @@ export const completedSets: SetScore[] = [
   { player1: "7", player2: "5" },
 ];
 
-export const invalidSets: SetScore[] = [
-  { player1: "6", player2: "6" },
-];
+export const invalidSets: SetScore[] = [{ player1: "6", player2: "6" }];

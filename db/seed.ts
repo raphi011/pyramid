@@ -145,9 +145,7 @@ async function seed() {
     for (const p of players) {
       console.log(`  ${p.email} (${p.name})`);
     }
-    console.log(
-      `\nClick to login as ${players[0].name} (admin):`,
-    );
+    console.log(`\nClick to login as ${players[0].name} (admin):`);
     console.log(`  ${appUrl}/api/auth/verify?token=${token}`);
   });
 }

@@ -1,6 +1,14 @@
 import preview from "#.storybook/preview";
 import { EventItem } from "@/components/domain/event-item";
-import { maxMustermann, annaSchmidt, tomWeber, lisaMueller, sarahHoffmann, erikMeier, sophieHoffmann } from "../__fixtures__";
+import {
+  maxMustermann,
+  annaSchmidt,
+  tomWeber,
+  lisaMueller,
+  sarahHoffmann,
+  erikMeier,
+  sophieHoffmann,
+} from "../__fixtures__";
 import { allEventTypes } from "../__fixtures__";
 
 const meta = preview.meta({
@@ -12,11 +20,23 @@ const meta = preview.meta({
     type: {
       control: "select",
       options: [
-        "result", "challenge", "withdrawal", "forfeit", "new_player", "unavailable",
-        "challenged", "challenge_accepted", "challenge_withdrawn",
-        "date_proposed", "date_accepted", "date_reminder",
-        "result_entered", "result_confirmed", "result_disputed",
-        "announcement", "deadline_exceeded",
+        "result",
+        "challenge",
+        "withdrawal",
+        "forfeit",
+        "new_player",
+        "unavailable",
+        "challenged",
+        "challenge_accepted",
+        "challenge_withdrawn",
+        "date_proposed",
+        "date_accepted",
+        "date_reminder",
+        "result_entered",
+        "result_confirmed",
+        "result_disputed",
+        "announcement",
+        "deadline_exceeded",
       ],
     },
   },
@@ -39,7 +59,11 @@ export const Result = meta.story({
     player1: maxMustermann,
     player2: annaSchmidt,
     winnerId: "player1",
-    scores: [[6, 4], [3, 6], [7, 5]],
+    scores: [
+      [6, 4],
+      [3, 6],
+      [7, 5],
+    ],
     rankBefore: 5,
     rankAfter: 3,
     time: "14:30",
@@ -180,7 +204,10 @@ export const ResultEntered = meta.story({
     type: "result_entered",
     player1: annaSchmidt,
     player2: maxMustermann,
-    scores: [[6, 4], [7, 5]],
+    scores: [
+      [6, 4],
+      [7, 5],
+    ],
     personal: true,
     time: "17:00",
   },
@@ -191,7 +218,10 @@ export const ResultConfirmed = meta.story({
     type: "result_confirmed",
     player1: maxMustermann,
     player2: annaSchmidt,
-    scores: [[6, 4], [7, 5]],
+    scores: [
+      [6, 4],
+      [7, 5],
+    ],
     personal: true,
     time: "17:30",
   },

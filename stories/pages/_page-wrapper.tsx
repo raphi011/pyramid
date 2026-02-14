@@ -20,7 +20,12 @@ type PageWrapperProps = {
   children: React.ReactNode;
 };
 
-export function PageWrapper({ activeHref, isAdmin, singleClub, children }: PageWrapperProps) {
+export function PageWrapper({
+  activeHref,
+  isAdmin,
+  singleClub,
+  children,
+}: PageWrapperProps) {
   const t = useTranslations("nav");
   const [active, setActive] = useState(activeHref);
   const [activeClub, setActiveClub] = useState<string | number>("c1");
@@ -39,7 +44,11 @@ export function PageWrapper({ activeHref, isAdmin, singleClub, children }: PageW
   ];
 
   const adminItems = [
-    { icon: <ShieldCheckIcon />, label: t("manageClub"), href: "/admin/club/1" },
+    {
+      icon: <ShieldCheckIcon />,
+      label: t("manageClub"),
+      href: "/admin/club/1",
+    },
   ];
 
   return (

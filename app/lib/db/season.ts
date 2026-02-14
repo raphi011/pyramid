@@ -27,6 +27,18 @@ export type TeamEnrollment = {
   seasonName: string;
 };
 
+export type RankHistoryPoint = {
+  date: string;
+  rank: number;
+};
+
+export type PlayerSeasonTeam = {
+  seasonId: number;
+  teamId: number;
+  seasonName: string;
+  clubId: number;
+};
+
 export type RankedPlayer = {
   teamId: number;
   playerId: number;
@@ -353,4 +365,56 @@ export async function autoEnrollInActiveSeasons(
   }
 
   return enrollments;
+}
+
+// ── Profile queries ─────────────────────────────
+
+export async function getRankHistory(
+  sql: Sql,
+  seasonId: number,
+  teamId: number,
+): Promise<RankHistoryPoint[]> {
+  const rows = await sql`
+    SELECT
+      created,
+      array_position(results, ${teamId}) AS rank
+    FROM season_standings
+    WHERE season_id = ${seasonId}
+      AND ${teamId} = ANY(results)
+    ORDER BY created ASC
+  `;
+
+  return rows.map((row) => ({
+    date: (row.created as Date).toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+    }),
+    rank: row.rank as number,
+  }));
+}
+
+export async function getPlayerSeasonTeams(
+  sql: Sql,
+  playerId: number,
+  clubId?: number,
+): Promise<PlayerSeasonTeam[]> {
+  const rows = await sql`
+    SELECT
+      s.id AS "seasonId",
+      t.id AS "teamId",
+      s.name AS "seasonName",
+      s.club_id AS "clubId"
+    FROM teams t
+    JOIN team_players tp ON tp.team_id = t.id
+    JOIN seasons s ON s.id = t.season_id
+    WHERE tp.player_id = ${playerId}
+      ${clubId !== undefined ? sql`AND s.club_id = ${clubId}` : sql``}
+  `;
+
+  return rows.map((row) => ({
+    seasonId: row.seasonId as number,
+    teamId: row.teamId as number,
+    seasonName: row.seasonName as string,
+    clubId: row.clubId as number,
+  }));
 }

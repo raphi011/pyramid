@@ -69,10 +69,6 @@ export const Default = meta.story({
 
 export const Empty = meta.story({
   render: () => (
-    <ReorderableList
-      items={[]}
-      onReorder={() => {}}
-      renderItem={() => null}
-    />
+    <ReorderableList items={[]} onReorder={() => {}} renderItem={() => null} />
   ),
 });

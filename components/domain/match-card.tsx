@@ -74,10 +74,7 @@ function relativeTime(
 
 // ── Score formatting ───────────────────────────────────
 
-function formatScore(
-  team1Score: number[],
-  team2Score: number[],
-): string {
+function formatScore(team1Score: number[], team2Score: number[]): string {
   return team1Score.map((s, i) => `${s}-${team2Score[i]}`).join(", ");
 }
 

@@ -22,6 +22,8 @@ import {
   getStandingsWithPlayers,
   getTeamWinsLosses,
   getPlayerTeamId,
+  getRankHistory,
+  getPlayerSeasonTeams,
 } from "./season";
 const db = withTestDb();
 
@@ -329,11 +331,7 @@ describe("autoEnrollInActiveSeasons", () => {
         status: "active",
       });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toHaveLength(1);
       expect(enrollments[0]).toEqual(
@@ -359,11 +357,7 @@ describe("autoEnrollInActiveSeasons", () => {
         maxTeamSize: 2,
       });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toEqual([]);
     });
@@ -376,11 +370,7 @@ describe("autoEnrollInActiveSeasons", () => {
       await seedClubMember(tx, playerId, clubId);
       await seedSeason(tx, clubId, { status: "draft" });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toEqual([]);
     });
@@ -430,11 +420,7 @@ describe("autoEnrollInActiveSeasons", () => {
         maxTeamSize: 2,
       });
 
-      const enrollments = await autoEnrollInActiveSeasons(
-        tx,
-        playerId,
-        clubId,
-      );
+      const enrollments = await autoEnrollInActiveSeasons(tx, playerId, clubId);
 
       expect(enrollments).toHaveLength(2);
 
@@ -616,6 +602,87 @@ describe("getPlayerTeamId", () => {
 
       const result = await getPlayerTeamId(tx, playerId, seasonId);
       expect(result).toBeNull();
+    });
+  });
+});
+
+// ── getRankHistory ──────────────────────────────
+
+describe("getRankHistory", () => {
+  it("returns chronological rank history", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "rh1@example.com");
+      const p2 = await seedPlayer(tx, "rh2@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      // First snapshot: t1=rank1, t2=rank2
+      await seedStandings(tx, seasonId, [t1, t2]);
+      // Second snapshot: t2=rank1, t1=rank2 (swapped)
+      await seedStandings(tx, seasonId, [t2, t1]);
+
+      const history = await getRankHistory(tx, seasonId, t1);
+      expect(history).toHaveLength(2);
+      expect(history[0].rank).toBe(1);
+      expect(history[1].rank).toBe(2);
+      expect(history[0].date).toBeTruthy();
+    });
+  });
+
+  it("returns empty when no standings", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+
+      const history = await getRankHistory(tx, seasonId, 99999);
+      expect(history).toEqual([]);
+    });
+  });
+});
+
+// ── getPlayerSeasonTeams ────────────────────────
+
+describe("getPlayerSeasonTeams", () => {
+  it("returns all team enrollments for player", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const s1 = await seedSeason(tx, clubId, { name: "Season A" });
+      const s2 = await seedSeason(tx, clubId, { name: "Season B" });
+      const playerId = await seedPlayer(tx, "pst@example.com");
+      const t1 = await seedTeam(tx, s1, [playerId]);
+      const t2 = await seedTeam(tx, s2, [playerId]);
+
+      const teams = await getPlayerSeasonTeams(tx, playerId);
+      expect(teams).toHaveLength(2);
+
+      const teamIds = teams.map((t) => t.teamId).sort();
+      expect(teamIds).toEqual([t1, t2].sort());
+    });
+  });
+
+  it("filters by club when clubId provided", async () => {
+    await db.withinTransaction(async (tx) => {
+      const club1 = await seedClub(tx);
+      const club2 = await seedClub(tx);
+      const s1 = await seedSeason(tx, club1, { name: "Club1 Season" });
+      const s2 = await seedSeason(tx, club2, { name: "Club2 Season" });
+      const playerId = await seedPlayer(tx, "pst-club@example.com");
+      await seedTeam(tx, s1, [playerId]);
+      await seedTeam(tx, s2, [playerId]);
+
+      const teams = await getPlayerSeasonTeams(tx, playerId, club1);
+      expect(teams).toHaveLength(1);
+      expect(teams[0].clubId).toBe(club1);
+    });
+  });
+
+  it("returns empty when no enrollments", async () => {
+    await db.withinTransaction(async (tx) => {
+      const playerId = await seedPlayer(tx, "pst-none@example.com");
+      const teams = await getPlayerSeasonTeams(tx, playerId);
+      expect(teams).toEqual([]);
     });
   });
 });

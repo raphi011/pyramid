@@ -10,6 +10,16 @@ export type Player = {
   email: string;
 };
 
+export type PlayerProfile = {
+  id: number;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  bio: string;
+  unavailableFrom: Date | null;
+  unavailableUntil: Date | null;
+};
+
 // ── Queries ────────────────────────────────────────────
 
 export async function getPlayerByEmail(
@@ -40,22 +50,55 @@ export async function getPlayerById(
     : null;
 }
 
+export async function getPlayerProfile(
+  sql: Sql,
+  playerId: number,
+): Promise<PlayerProfile | null> {
+  const rows = await sql`
+    SELECT
+      id,
+      name,
+      email_address AS "email",
+      phone_number AS "phoneNumber",
+      bio,
+      unavailable_from AS "unavailableFrom",
+      unavailable_until AS "unavailableUntil"
+    FROM player
+    WHERE id = ${playerId}
+  `;
+
+  if (rows.length === 0) return null;
+
+  const row = rows[0];
+  return {
+    id: row.id as number,
+    name: row.name as string,
+    email: row.email as string,
+    phoneNumber: row.phoneNumber as string,
+    bio: row.bio as string,
+    unavailableFrom: (row.unavailableFrom as Date) ?? null,
+    unavailableUntil: (row.unavailableUntil as Date) ?? null,
+  };
+}
+
 export async function updatePlayerProfile(
   sql: Sql,
   playerId: number,
-  { name, phoneNumber }: { name: string; phoneNumber?: string },
-): Promise<void> {
-  if (phoneNumber !== undefined) {
-    await sql`
-      UPDATE player
-      SET name = ${name}, phone_number = ${phoneNumber}
-      WHERE id = ${playerId}
-    `;
-  } else {
-    await sql`
-      UPDATE player SET name = ${name} WHERE id = ${playerId}
-    `;
-  }
+  {
+    name,
+    phoneNumber,
+    bio,
+  }: { name: string; phoneNumber: string; bio: string },
+): Promise<number> {
+  const result = await sql`
+    UPDATE player
+    SET
+      name = ${name},
+      phone_number = ${phoneNumber},
+      bio = ${bio}
+    WHERE id = ${playerId}
+  `;
+  return result.count;
 }
 
 export async function createMagicLink(

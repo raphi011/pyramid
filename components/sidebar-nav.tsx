@@ -57,9 +57,7 @@ function SidebarNav({
         className,
       )}
     >
-      {clubSwitcher && (
-        <div className="px-3 pt-4 pb-2">{clubSwitcher}</div>
-      )}
+      {clubSwitcher && <div className="px-3 pt-4 pb-2">{clubSwitcher}</div>}
 
       {fab && (
         <div className="px-3 pb-1 pt-2">

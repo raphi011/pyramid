@@ -86,9 +86,7 @@ function DropdownMenuItem({
             disabled && "cursor-not-allowed opacity-50",
           )}
         >
-          {icon && (
-            <span className="shrink-0 [&_svg]:size-4">{icon}</span>
-          )}
+          {icon && <span className="shrink-0 [&_svg]:size-4">{icon}</span>}
           {children}
         </button>
       )}

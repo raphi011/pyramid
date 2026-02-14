@@ -6,6 +6,10 @@ const meta = preview.meta({
   component: RankChart,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
+  args: {
+    emptyLabel: "No rank data available",
+    tooltipLabel: "Rank",
+  },
   decorators: [
     (Story) => (
       <div className="h-64 w-96">

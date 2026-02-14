@@ -38,7 +38,9 @@ export const Success = meta.story({
 
     // Verify toast content renders
     await expect(canvas.getByText("Forderung gesendet")).toBeInTheDocument();
-    await expect(canvas.getByText("Max Mustermann wurde herausgefordert.")).toBeInTheDocument();
+    await expect(
+      canvas.getByText("Max Mustermann wurde herausgefordert."),
+    ).toBeInTheDocument();
 
     // Click close button
     await userEvent.click(canvas.getByRole("button"));
@@ -81,9 +83,24 @@ export const WithAction = meta.story({
 export const AllVariants = meta.story({
   render: () => (
     <div className="space-y-3">
-      <Toast variant="success" title="Erfolg" description="Alles hat geklappt." onClose={fn()} />
-      <Toast variant="error" title="Fehler" description="Etwas ist schiefgelaufen." onClose={fn()} />
-      <Toast variant="info" title="Info" description="Neue Aktualisierung verfügbar." onClose={fn()} />
+      <Toast
+        variant="success"
+        title="Erfolg"
+        description="Alles hat geklappt."
+        onClose={fn()}
+      />
+      <Toast
+        variant="error"
+        title="Fehler"
+        description="Etwas ist schiefgelaufen."
+        onClose={fn()}
+      />
+      <Toast
+        variant="info"
+        title="Info"
+        description="Neue Aktualisierung verfügbar."
+        onClose={fn()}
+      />
     </div>
   ),
 });

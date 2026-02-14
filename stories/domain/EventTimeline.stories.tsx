@@ -1,7 +1,11 @@
 import preview from "#.storybook/preview";
 import { within, expect } from "storybook/test";
 import { EventTimeline } from "@/components/domain/event-timeline";
-import { sampleTimelineEvents, seasonStartEvent, seasonEndEvent } from "../__fixtures__";
+import {
+  sampleTimelineEvents,
+  seasonStartEvent,
+  seasonEndEvent,
+} from "../__fixtures__";
 
 const meta = preview.meta({
   title: "Domain/EventTimeline",
@@ -29,7 +33,9 @@ export const Default = meta.story({
     await expect(separators.length).toBeGreaterThan(0);
 
     // Event content is visible (player names from fixtures)
-    await expect(canvas.getAllByText(/Max Mustermann/).length).toBeGreaterThan(0);
+    await expect(canvas.getAllByText(/Max Mustermann/).length).toBeGreaterThan(
+      0,
+    );
     await expect(canvas.getAllByText(/Tom Weber/).length).toBeGreaterThan(0);
   },
 });
@@ -50,10 +56,6 @@ export const Empty = meta.story({
 
 export const WithSeasonEvents = meta.story({
   args: {
-    events: [
-      ...sampleTimelineEvents,
-      seasonStartEvent,
-      seasonEndEvent,
-    ],
+    events: [...sampleTimelineEvents, seasonStartEvent, seasonEndEvent],
   },
 });

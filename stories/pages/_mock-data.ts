@@ -21,22 +21,24 @@ import { rankedPlayers, currentPlayer } from "../__fixtures__/players";
 
 export const pyramidPlayers: PyramidPlayer[] = rankedPlayers.map((p) => ({
   ...p,
-  variant: p.id === currentPlayer.id
-    ? "current" as const
-    : p.rank === 4
-      ? "challengeable" as const
-      : p.rank === 3
-        ? "challengeable" as const
-        : "default" as const,
+  variant:
+    p.id === currentPlayer.id
+      ? ("current" as const)
+      : p.rank === 4
+        ? ("challengeable" as const)
+        : p.rank === 3
+          ? ("challengeable" as const)
+          : ("default" as const),
 }));
 
 export const standingsPlayers: StandingsPlayer[] = rankedPlayers.map((p) => ({
   ...p,
-  movement: p.rank <= 3
-    ? "up" as const
-    : p.rank >= 10
-      ? "down" as const
-      : "none" as const,
+  movement:
+    p.rank <= 3
+      ? ("up" as const)
+      : p.rank >= 10
+        ? ("down" as const)
+        : ("none" as const),
   challengeable: p.rank === 3 || p.rank === 4,
 }));
 
@@ -57,34 +59,57 @@ const historicalPlayers = [
   { id: "p12", name: "Emma Bauer", rank: 11, wins: 2, losses: 10 },
 ] as const;
 
-export const pyramidPlayersHistorical: PyramidPlayer[] = historicalPlayers.map((p) => ({
-  ...p,
-  variant: p.id === currentPlayer.id
-    ? "current" as const
-    : p.rank === 3 || p.rank === 5
-      ? "challengeable" as const
-      : "default" as const,
-}));
+export const pyramidPlayersHistorical: PyramidPlayer[] = historicalPlayers.map(
+  (p) => ({
+    ...p,
+    variant:
+      p.id === currentPlayer.id
+        ? ("current" as const)
+        : p.rank === 3 || p.rank === 5
+          ? ("challengeable" as const)
+          : ("default" as const),
+  }),
+);
 
-export const standingsPlayersHistorical: StandingsPlayer[] = historicalPlayers.map((p) => ({
-  ...p,
-  movement: p.rank <= 2
-    ? "up" as const
-    : p.rank >= 11
-      ? "down" as const
-      : "none" as const,
-  challengeable: p.rank === 3 || p.rank === 5,
-}));
+export const standingsPlayersHistorical: StandingsPlayer[] =
+  historicalPlayers.map((p) => ({
+    ...p,
+    movement:
+      p.rank <= 2
+        ? ("up" as const)
+        : p.rank >= 11
+          ? ("down" as const)
+          : ("none" as const),
+    challengeable: p.rank === 3 || p.rank === 5,
+  }));
 
 // ── Large pyramid (25 players) ───────────────
 
 const bigPlayerNames = [
-  "Julia Fischer", "Anna Schmidt", "Tom Weber", "Lisa Müller",
-  "Max Braun", "Sophie Hoffmann", "Paul Becker", "Laura Richter",
-  "Felix Wagner", "Marie Koch", "Lukas Schäfer", "Emma Bauer",
-  "Nico Hartmann", "Lena Fuchs", "Moritz Krause", "Clara Vogel",
-  "Jonas Meier", "Lea Wolf", "Tim Schulz", "Nina Berger",
-  "David Roth", "Sarah Lang", "Finn Peters", "Mia Schwarz",
+  "Julia Fischer",
+  "Anna Schmidt",
+  "Tom Weber",
+  "Lisa Müller",
+  "Max Braun",
+  "Sophie Hoffmann",
+  "Paul Becker",
+  "Laura Richter",
+  "Felix Wagner",
+  "Marie Koch",
+  "Lukas Schäfer",
+  "Emma Bauer",
+  "Nico Hartmann",
+  "Lena Fuchs",
+  "Moritz Krause",
+  "Clara Vogel",
+  "Jonas Meier",
+  "Lea Wolf",
+  "Tim Schulz",
+  "Nina Berger",
+  "David Roth",
+  "Sarah Lang",
+  "Finn Peters",
+  "Mia Schwarz",
   "Jan Weiß",
 ];
 

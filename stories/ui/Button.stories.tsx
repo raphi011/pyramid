@@ -1,9 +1,5 @@
 import preview from "#.storybook/preview";
-import {
-  PlusIcon,
-  ArrowRightIcon,
-  TrashIcon,
-} from "@heroicons/react/20/solid";
+import { PlusIcon, ArrowRightIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/ui/button";
 
 const meta = preview.meta({

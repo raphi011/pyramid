@@ -13,7 +13,13 @@ import {
 import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
 import { StatBlock } from "@/components/stat-block";
-import { Card, CardHeader, CardTitle, CardContent, CardAction } from "@/components/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardAction,
+} from "@/components/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ClubJoinCard } from "@/components/domain/club-join-card";
@@ -24,7 +30,14 @@ const meta = preview.meta({
   title: "Pages/ClubDashboard",
   parameters: {
     layout: "fullscreen",
-    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+    a11y: {
+      config: {
+        rules: [
+          { id: "heading-order", enabled: false },
+          { id: "color-contrast", enabled: false },
+        ],
+      },
+    },
   },
 });
 
@@ -150,10 +163,22 @@ function ClubDashboardPage({ showOverdue = false }: { showOverdue?: boolean }) {
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2">
               {[
-                { icon: <UserGroupIcon className="size-5" />, label: "Mitglieder verwalten" },
-                { icon: <CalendarDaysIcon className="size-5" />, label: "Saison erstellen" },
-                { icon: <MegaphoneIcon className="size-5" />, label: "Ankündigung senden" },
-                { icon: <Cog6ToothIcon className="size-5" />, label: "Club-Einstellungen" },
+                {
+                  icon: <UserGroupIcon className="size-5" />,
+                  label: "Mitglieder verwalten",
+                },
+                {
+                  icon: <CalendarDaysIcon className="size-5" />,
+                  label: "Saison erstellen",
+                },
+                {
+                  icon: <MegaphoneIcon className="size-5" />,
+                  label: "Ankündigung senden",
+                },
+                {
+                  icon: <Cog6ToothIcon className="size-5" />,
+                  label: "Club-Einstellungen",
+                },
               ].map((action) => (
                 <Button
                   key={action.label}

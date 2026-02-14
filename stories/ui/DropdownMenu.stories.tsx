@@ -57,9 +57,7 @@ export const Simple = meta.story({
 
 export const WithoutIcons = meta.story({
   render: () => (
-    <DropdownMenu
-      trigger={<Button variant="outline">Menü</Button>}
-    >
+    <DropdownMenu trigger={<Button variant="outline">Menü</Button>}>
       <DropdownMenuItem>Profil anzeigen</DropdownMenuItem>
       <DropdownMenuItem>Einstellungen</DropdownMenuItem>
       <DropdownMenuSeparator />

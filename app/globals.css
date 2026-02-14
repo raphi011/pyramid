@@ -4,25 +4,25 @@
 
 @theme {
   /* ── Court Green — Primary ─────────────────── */
-  --color-court-50: #F0FDF4;
-  --color-court-100: #DCFCE7;
-  --color-court-200: #BBF7D0;
-  --color-court-300: #86EFAC;
-  --color-court-400: #3EB369;
+  --color-court-50: #f0fdf4;
+  --color-court-100: #dcfce7;
+  --color-court-200: #bbf7d0;
+  --color-court-300: #86efac;
+  --color-court-400: #3eb369;
   --color-court-500: #178840;
-  --color-court-600: #146E35;
-  --color-court-700: #115A2C;
-  --color-court-800: #0E4823;
-  --color-court-900: #0B361A;
-  --color-court-950: #052E16;
+  --color-court-600: #146e35;
+  --color-court-700: #115a2c;
+  --color-court-800: #0e4823;
+  --color-court-900: #0b361a;
+  --color-court-950: #052e16;
 
   /* ── Trophy Gold — Accent ──────────────────── */
-  --color-trophy-50: #FFFBEB;
-  --color-trophy-100: #FEF3C7;
-  --color-trophy-200: #FDE68A;
-  --color-trophy-400: #E5A820;
-  --color-trophy-500: #A8680B;
-  --color-trophy-600: #8C5709;
+  --color-trophy-50: #fffbeb;
+  --color-trophy-100: #fef3c7;
+  --color-trophy-200: #fde68a;
+  --color-trophy-400: #e5a820;
+  --color-trophy-500: #a8680b;
+  --color-trophy-600: #8c5709;
 
   /* ── Font ───────────────────────────────────── */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;

@@ -45,7 +45,9 @@ function AppShell({
   className,
 }: AppShellProps) {
   return (
-    <div className={cn("min-h-screen bg-slate-50 dark:bg-slate-950", className)}>
+    <div
+      className={cn("min-h-screen bg-slate-50 dark:bg-slate-950", className)}
+    >
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-60">
         <SidebarNav
@@ -91,11 +93,7 @@ function AppShell({
           {messages && messages.length > 0 && (
             <div className="mb-4 space-y-2">
               {messages.map((msg) => (
-                <AdminBanner
-                  key={msg.id}
-                  {...msg}
-                  onClose={onDismissMessage}
-                />
+                <AdminBanner key={msg.id} {...msg} onClose={onDismissMessage} />
               ))}
             </div>
           )}

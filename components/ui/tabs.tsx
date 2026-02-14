@@ -33,7 +33,7 @@ function Tabs({ items, className, ...props }: TabsProps) {
           <Tab
             key={item.label}
             className={cn(
-              "flex-1 rounded-lg px-3 py-2 text-sm font-medium",
+              "flex-1 cursor-pointer rounded-lg px-3 py-2 text-sm font-medium",
               "text-slate-600 transition-colors duration-150",
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-court-500",
               "data-[selected]:bg-white data-[selected]:text-court-600 data-[selected]:shadow-sm",

@@ -23,7 +23,9 @@ export const Default = meta.story({
 });
 
 export const WithValue = meta.story({
-  args: { defaultValue: "Ich fordere dich heraus! Hast du am Wochenende Zeit?" },
+  args: {
+    defaultValue: "Ich fordere dich heraus! Hast du am Wochenende Zeit?",
+  },
 });
 
 export const Error = meta.story({

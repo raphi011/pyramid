@@ -3,11 +3,7 @@
 import { useState } from "react";
 import preview from "#.storybook/preview";
 import { useTranslations } from "next-intl";
-import {
-  TrophyIcon,
-  PlusIcon,
-  BellIcon,
-} from "@heroicons/react/24/outline";
+import { TrophyIcon, PlusIcon, BellIcon } from "@heroicons/react/24/outline";
 import { BottomNav } from "@/components/bottom-nav";
 
 const meta = preview.meta({

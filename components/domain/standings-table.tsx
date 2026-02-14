@@ -46,8 +46,7 @@ function StandingsTable({
               "flex w-full items-center gap-3 px-1 py-3 text-left",
               "transition-colors duration-150",
               onPlayerClick && "hover:bg-slate-50 dark:hover:bg-slate-800/50",
-              player.challengeable &&
-                "bg-court-50/50 dark:bg-court-950/30",
+              player.challengeable && "bg-court-50/50 dark:bg-court-950/30",
             )}
           >
             {/* Rank */}

@@ -28,7 +28,11 @@ export async function completeOnboarding(
     return { error: t("nameRequired") };
   }
 
-  await updatePlayerProfile(sql, session.playerId, { name, phoneNumber });
+  await updatePlayerProfile(sql, session.playerId, {
+    name,
+    phoneNumber,
+    bio: "",
+  });
 
   let hasClubs = false;
   try {

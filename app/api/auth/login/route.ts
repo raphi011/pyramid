@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (!email || typeof email !== "string") {
       return NextResponse.json(
         { error: "E-Mail-Adresse erforderlich" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -20,7 +20,11 @@ export async function POST(request: NextRequest) {
     // But only send email if player exists
     if (player) {
       const token = await createMagicLink(player.id);
-      const emailResult = await sendMagicLinkEmail(player.email, player.name, token);
+      const emailResult = await sendMagicLinkEmail(
+        player.email,
+        player.name,
+        token,
+      );
 
       if (!emailResult.success) {
         // Log the failure but don't expose to user (enumeration protection)
@@ -33,13 +37,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Falls ein Konto mit dieser E-Mail existiert, wurde ein Login-Link gesendet.",
+      message:
+        "Falls ein Konto mit dieser E-Mail existiert, wurde ein Login-Link gesendet.",
     });
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
       { error: "Ein Fehler ist aufgetreten" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

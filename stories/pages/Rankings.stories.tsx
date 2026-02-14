@@ -29,7 +29,14 @@ const meta = preview.meta({
   title: "Pages/Rankings",
   parameters: {
     layout: "fullscreen",
-    a11y: { config: { rules: [{ id: "heading-order", enabled: false }, { id: "color-contrast", enabled: false }] } },
+    a11y: {
+      config: {
+        rules: [
+          { id: "heading-order", enabled: false },
+          { id: "color-contrast", enabled: false },
+        ],
+      },
+    },
   },
 });
 
@@ -135,14 +142,19 @@ function RankingsPage({
   const baseStandings = customStandings ?? standingsPlayers;
   const isHistorical = selectedMatchId !== null;
   const activePyramid = isHistorical ? pyramidPlayersHistorical : basePyramid;
-  const activeStandings = isHistorical ? standingsPlayersHistorical : baseStandings;
+  const activeStandings = isHistorical
+    ? standingsPlayersHistorical
+    : baseStandings;
 
   const selectedMatch = selectedMatchId
     ? matches.find((m) => m.id === selectedMatchId)
     : null;
 
   const subtitle = selectedMatch
-    ? t("stateAfter", { player1: selectedMatch.player1.name, player2: selectedMatch.player2.name })
+    ? t("stateAfter", {
+        player1: selectedMatch.player1.name,
+        player2: selectedMatch.player2.name,
+      })
     : t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" });
 
   return (
