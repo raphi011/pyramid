@@ -18,15 +18,15 @@ type RankDataPoint = {
 
 type RankChartProps = {
   data: RankDataPoint[];
-  emptyLabel?: string;
-  tooltipLabel?: string;
+  emptyLabel: string;
+  tooltipLabel: string;
   className?: string;
 };
 
 function RankChart({
   data,
-  emptyLabel = "Keine Rangdaten vorhanden",
-  tooltipLabel = "Rang",
+  emptyLabel,
+  tooltipLabel,
   className,
 }: RankChartProps) {
   const ref = useRef<HTMLDivElement>(null);

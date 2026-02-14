@@ -88,16 +88,17 @@ export async function updatePlayerProfile(
     name,
     phoneNumber,
     bio,
-  }: { name: string; phoneNumber?: string; bio?: string },
-): Promise<void> {
-  await sql`
+  }: { name: string; phoneNumber: string; bio: string },
+): Promise<number> {
+  const result = await sql`
     UPDATE player
     SET
       name = ${name},
-      phone_number = COALESCE(${phoneNumber ?? null}, phone_number),
-      bio = COALESCE(${bio ?? null}, bio)
+      phone_number = ${phoneNumber},
+      bio = ${bio}
     WHERE id = ${playerId}
   `;
+  return result.count;
 }
 
 export async function createMagicLink(

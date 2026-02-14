@@ -27,8 +27,8 @@ type PlayerPageProps = {
 
 export default async function PlayerPage({ params }: PlayerPageProps) {
   const { id } = await params;
-  const targetPlayerId = parseInt(id, 10);
-  if (Number.isNaN(targetPlayerId) || targetPlayerId <= 0) notFound();
+  const targetPlayerId = Number(id);
+  if (!Number.isInteger(targetPlayerId) || targetPlayerId <= 0) notFound();
 
   const viewer = await getCurrentPlayer();
   if (!viewer) redirect("/login");
@@ -61,6 +61,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   let headToHead: Awaited<ReturnType<typeof getHeadToHeadRecords>> = [];
   let challengeEligible = false;
   let seasonId: number | null = null;
+  let targetTeamId: number | null = null;
 
   const seasons = await getActiveSeasons(sql, clubId);
 
@@ -68,7 +69,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
     const season = seasons[0];
     seasonId = season.id;
 
-    const targetTeamId = await getPlayerTeamId(sql, targetPlayerId, season.id);
+    targetTeamId = await getPlayerTeamId(sql, targetPlayerId, season.id);
     const viewerTeamId = await getPlayerTeamId(sql, viewer.id, season.id);
 
     if (targetTeamId) {
@@ -147,11 +148,6 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
         )
       : { wins: 0, losses: 0 };
 
-  // Build target opponent info for challenge sheet
-  const targetTeamIdForChallenge = seasonId
-    ? await getPlayerTeamId(sql, targetPlayerId, seasonId)
-    : null;
-
   return (
     <PlayerDetailView
       profile={targetProfile}
@@ -171,7 +167,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
       headToHead={headToHead}
       canChallenge={challengeEligible}
       seasonId={seasonId}
-      targetTeamId={targetTeamIdForChallenge}
+      targetTeamId={targetTeamId}
     />
   );
 }

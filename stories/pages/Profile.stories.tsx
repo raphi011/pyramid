@@ -57,7 +57,11 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
                 <CardTitle>Rangverlauf</CardTitle>
               </CardHeader>
               <CardContent>
-                <RankChart data={rankChartData} />
+                <RankChart
+                  data={rankChartData}
+                  emptyLabel="Keine Rangdaten vorhanden"
+                  tooltipLabel="Rang"
+                />
               </CardContent>
             </Card>
           }

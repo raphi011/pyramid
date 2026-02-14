@@ -156,9 +156,14 @@
     "noMatchesDesc": "Deine Spiele erscheinen hier.",
     "unavailableUntil": "Abwesend bis {date}",
     "record": "{wins}S \u2013 {losses}N",
+    "noClubs": "Keine Vereine",
+    "noClubsDesc": "Du bist noch kein Mitglied in einem Verein.",
+    "noRankData": "Keine Rangdaten vorhanden",
+    "rankTooltip": "Rang",
     "error": {
       "nameRequired": "Name ist erforderlich",
-      "notAuthenticated": "Nicht angemeldet"
+      "notAuthenticated": "Nicht angemeldet",
+      "serverError": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
     }
   },
   "club": {

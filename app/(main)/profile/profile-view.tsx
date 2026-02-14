@@ -22,32 +22,17 @@ import { Button } from "@/components/ui/button";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
+import { StatsCard } from "@/components/domain/stats-card";
 import { updateProfileAction } from "@/app/lib/actions/profile";
 import type { PlayerProfile as PlayerProfileType } from "@/app/lib/db/auth";
 import type { ClubMembership } from "@/app/lib/db/club";
 import type { HeadToHeadRecord } from "@/app/lib/db/match";
-import type { MatchStatus } from "@/app/lib/db/match";
-
-type SerializedMatch = {
-  id: number;
-  team1Name: string;
-  team2Name: string;
-  status: MatchStatus;
-  team1Score: number[] | null;
-  team2Score: number[] | null;
-  created: string;
-};
-
-type StatsScope = {
-  wins: number;
-  losses: number;
-};
-
-type SeasonStatsScope = StatsScope & {
-  rank: number;
-  trend: "up" | "down" | "none";
-  trendValue: string;
-};
+import type {
+  SerializedMatch,
+  StatsScope,
+  SeasonStatsScope,
+} from "@/app/(main)/player/shared";
+import { winRate } from "@/app/(main)/player/shared";
 
 type ProfileViewProps = {
   profile: PlayerProfileType;
@@ -60,12 +45,6 @@ type ProfileViewProps = {
   headToHead: HeadToHeadRecord[];
   seasonId: number | null;
 };
-
-function winRate(wins: number, losses: number): string {
-  const total = wins + losses;
-  if (total === 0) return "0%";
-  return `${Math.round((wins / total) * 100)}%`;
-}
 
 function ProfileView({
   profile,
@@ -92,12 +71,16 @@ function ProfileView({
     (formData: FormData) => {
       startTransition(async () => {
         setEditError(null);
-        const result = await updateProfileAction(formData);
-        if ("error" in result) {
-          setEditError(t(`error.${result.error.split(".").pop()}`));
-        } else {
-          setEditOpen(false);
-          router.refresh();
+        try {
+          const result = await updateProfileAction(formData);
+          if ("error" in result) {
+            setEditError(t(`error.${result.error.split(".").pop()}`));
+          } else {
+            setEditOpen(false);
+            router.refresh();
+          }
+        } catch {
+          setEditError(t("error.serverError"));
         }
       });
     },
@@ -127,7 +110,11 @@ function ProfileView({
                 <CardTitle>{t("rankChart")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <RankChart data={rankHistory} />
+                <RankChart
+                  data={rankHistory}
+                  emptyLabel={t("noRankData")}
+                  tooltipLabel={t("rankTooltip")}
+                />
               </CardContent>
             </Card>
           ) : null
@@ -233,12 +220,15 @@ function ProfileView({
           <CardTitle>{t("clubs")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {clubs.map((club) => (
-              <div
-                key={club.clubId}
-                className="flex items-center justify-between"
-              >
+          <DataList
+            items={clubs}
+            keyExtractor={(c) => c.clubId}
+            empty={{
+              title: t("noClubs"),
+              description: t("noClubsDesc"),
+            }}
+            renderItem={(club) => (
+              <div className="flex items-center justify-between py-2">
                 <span className="text-sm font-medium text-slate-900 dark:text-white">
                   {club.clubName}
                 </span>
@@ -248,8 +238,8 @@ function ProfileView({
                   </Badge>
                 )}
               </div>
-            ))}
-          </div>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -321,43 +311,6 @@ function ProfileView({
         </form>
       </ResponsiveDialog>
     </PageLayout>
-  );
-}
-
-function StatsCard({ wins, losses }: { wins: number; losses: number }) {
-  const t = useTranslations("profile");
-  const total = wins + losses;
-  const rate = total === 0 ? "0%" : `${Math.round((wins / total) * 100)}%`;
-
-  return (
-    <Card>
-      <div className="grid grid-cols-3 gap-4 text-center">
-        <div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {wins}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t("winsLabel")}
-          </p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {losses}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t("lossesLabel")}
-          </p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {rate}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t("winRateLabel")}
-          </p>
-        </div>
-      </div>
-    </Card>
   );
 }
 

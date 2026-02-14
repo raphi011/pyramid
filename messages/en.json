@@ -156,9 +156,14 @@
     "noMatchesDesc": "Your matches will appear here.",
     "unavailableUntil": "Away until {date}",
     "record": "{wins}W \u2013 {losses}L",
+    "noClubs": "No clubs",
+    "noClubsDesc": "You are not a member of any club yet.",
+    "noRankData": "No rank data available",
+    "rankTooltip": "Rank",
     "error": {
       "nameRequired": "Name is required",
-      "notAuthenticated": "Not authenticated"
+      "notAuthenticated": "Not authenticated",
+      "serverError": "Something went wrong. Please try again."
     }
   },
   "club": {

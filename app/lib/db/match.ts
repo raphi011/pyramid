@@ -562,7 +562,7 @@ export async function getHeadToHeadRecords(
   const rows = await sql`
     SELECT
       opponent_id AS "opponentTeamId",
-      p.name AS "opponentName",
+      (SELECT p.name FROM team_players tp JOIN player p ON p.id = tp.player_id WHERE tp.team_id = opponent_id LIMIT 1) AS "opponentName",
       SUM(CASE WHEN is_winner THEN 1 ELSE 0 END)::int AS wins,
       SUM(CASE WHEN NOT is_winner THEN 1 ELSE 0 END)::int AS losses
     FROM (
@@ -578,10 +578,7 @@ export async function getHeadToHeadRecords(
       FROM season_matches
       WHERE season_id = ${seasonId} AND team2_id = ${teamId} AND status = 'completed'
     ) matches
-    JOIN teams t ON t.id = opponent_id
-    JOIN team_players tp ON tp.team_id = t.id
-    JOIN player p ON p.id = tp.player_id
-    GROUP BY opponent_id, p.name
+    GROUP BY opponent_id
     ORDER BY (SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) + SUM(CASE WHEN NOT is_winner THEN 1 ELSE 0 END)) DESC
   `;
 

@@ -376,7 +376,7 @@ export async function getRankHistory(
 ): Promise<RankHistoryPoint[]> {
   const rows = await sql`
     SELECT
-      TO_CHAR(created, 'DD.MM') AS date,
+      created,
       array_position(results, ${teamId}) AS rank
     FROM season_standings
     WHERE season_id = ${seasonId}
@@ -385,7 +385,10 @@ export async function getRankHistory(
   `;
 
   return rows.map((row) => ({
-    date: row.date as string,
+    date: (row.created as Date).toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+    }),
     rank: row.rank as number,
   }));
 }
@@ -395,22 +398,6 @@ export async function getPlayerSeasonTeams(
   playerId: number,
   clubId?: number,
 ): Promise<PlayerSeasonTeam[]> {
-  if (clubId !== undefined) {
-    const rows = await sql`
-      SELECT
-        s.id AS "seasonId",
-        t.id AS "teamId",
-        s.name AS "seasonName",
-        s.club_id AS "clubId"
-      FROM teams t
-      JOIN team_players tp ON tp.team_id = t.id
-      JOIN seasons s ON s.id = t.season_id
-      WHERE tp.player_id = ${playerId}
-        AND s.club_id = ${clubId}
-    `;
-    return rows as PlayerSeasonTeam[];
-  }
-
   const rows = await sql`
     SELECT
       s.id AS "seasonId",
@@ -421,6 +408,13 @@ export async function getPlayerSeasonTeams(
     JOIN team_players tp ON tp.team_id = t.id
     JOIN seasons s ON s.id = t.season_id
     WHERE tp.player_id = ${playerId}
+      ${clubId !== undefined ? sql`AND s.club_id = ${clubId}` : sql``}
   `;
-  return rows as PlayerSeasonTeam[];
+
+  return rows.map((row) => ({
+    seasonId: row.seasonId as number,
+    teamId: row.teamId as number,
+    seasonName: row.seasonName as string,
+    clubId: row.clubId as number,
+  }));
 }

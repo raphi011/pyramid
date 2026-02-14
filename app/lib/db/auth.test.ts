@@ -118,6 +118,7 @@ describe("updatePlayerProfile", () => {
       await updatePlayerProfile(tx, id, {
         name: "New Name",
         phoneNumber: "+49 123",
+        bio: "",
       });
       const [row] =
         await tx`SELECT name, phone_number FROM player WHERE id = ${id}`;
@@ -131,6 +132,7 @@ describe("updatePlayerProfile", () => {
       const id = await seedPlayer(tx, "bio@example.com", "Bio Test");
       await updatePlayerProfile(tx, id, {
         name: "Bio Test",
+        phoneNumber: "",
         bio: "My cool bio",
       });
       const [row] = await tx`SELECT bio FROM player WHERE id = ${id}`;
@@ -138,15 +140,26 @@ describe("updatePlayerProfile", () => {
     });
   });
 
-  it("leaves other fields unchanged", async () => {
+  it("returns update count", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await seedPlayer(tx, "keep@example.com", "Keep");
-      await updatePlayerProfile(tx, id, { name: "Updated" });
-      const [row] =
-        await tx`SELECT name, email_address, bio FROM player WHERE id = ${id}`;
-      expect(row.name).toBe("Updated");
-      expect(row.email_address).toBe("keep@example.com");
-      expect(row.bio).toBe("");
+      const id = await seedPlayer(tx, "count@example.com", "Count");
+      const count = await updatePlayerProfile(tx, id, {
+        name: "Updated",
+        phoneNumber: "",
+        bio: "",
+      });
+      expect(count).toBe(1);
+    });
+  });
+
+  it("returns 0 for non-existent player", async () => {
+    await db.withinTransaction(async (tx) => {
+      const count = await updatePlayerProfile(tx, 999999, {
+        name: "Ghost",
+        phoneNumber: "",
+        bio: "",
+      });
+      expect(count).toBe(0);
     });
   });
 });

@@ -23,7 +23,19 @@ export async function updateProfileAction(
     return { error: "profile.error.notAuthenticated" };
   }
 
-  await updatePlayerProfile(sql, player.id, { name, phoneNumber, bio });
+  try {
+    const count = await updatePlayerProfile(sql, player.id, {
+      name,
+      phoneNumber,
+      bio,
+    });
+    if (count === 0) {
+      return { error: "profile.error.notAuthenticated" };
+    }
+  } catch (e) {
+    console.error("updateProfileAction failed:", e);
+    return { error: "profile.error.serverError" };
+  }
 
   revalidatePath("/profile");
 
