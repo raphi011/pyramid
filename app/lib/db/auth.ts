@@ -1,6 +1,4 @@
-import type postgres from "postgres";
-
-type Sql = postgres.Sql | postgres.TransactionSql;
+import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -16,6 +14,7 @@ export type PlayerProfile = {
   email: string;
   phoneNumber: string;
   bio: string;
+  imageId: string | null;
   unavailableFrom: Date | null;
   unavailableUntil: Date | null;
 };
@@ -61,6 +60,7 @@ export async function getPlayerProfile(
       email_address AS "email",
       phone_number AS "phoneNumber",
       bio,
+      image_id::text AS "imageId",
       unavailable_from AS "unavailableFrom",
       unavailable_until AS "unavailableUntil"
     FROM player
@@ -76,6 +76,7 @@ export async function getPlayerProfile(
     email: row.email as string,
     phoneNumber: row.phoneNumber as string,
     bio: row.bio as string,
+    imageId: (row.imageId as string) ?? null,
     unavailableFrom: (row.unavailableFrom as Date) ?? null,
     unavailableUntil: (row.unavailableUntil as Date) ?? null,
   };
@@ -96,6 +97,29 @@ export async function updatePlayerProfile(
       name = ${name},
       phone_number = ${phoneNumber},
       bio = ${bio}
+    WHERE id = ${playerId}
+  `;
+  return result.count;
+}
+
+export async function getPlayerImageId(
+  sql: Sql,
+  playerId: number,
+): Promise<string | null> {
+  const [row] = await sql`
+    SELECT image_id::text AS "imageId" FROM player WHERE id = ${playerId}
+  `;
+  return (row?.imageId as string) ?? null;
+}
+
+export async function updatePlayerImage(
+  sql: Sql,
+  playerId: number,
+  imageId: string | null,
+): Promise<number> {
+  const result = await sql`
+    UPDATE player
+    SET image_id = ${imageId}
     WHERE id = ${playerId}
   `;
   return result.count;

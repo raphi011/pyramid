@@ -26,6 +26,7 @@ async function seed() {
     await tx`DELETE FROM notification_preferences`;
     await tx`DELETE FROM clubs`;
     await tx`DELETE FROM player`;
+    await tx`DELETE FROM images`;
 
     // ── Club ──────────────────────────────────────────
     const [club] = await tx`

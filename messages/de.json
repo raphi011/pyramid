@@ -21,6 +21,7 @@
     "news": "Neuigkeiten",
     "manageClub": "Club verwalten",
     "challenge": "Fordern",
+    "activeChallenge": "Zur Forderung",
     "matches": "Spiele"
   },
   "challenge": {
@@ -164,6 +165,8 @@
     "noClubsDesc": "Du bist noch kein Mitglied in einem Verein.",
     "noRankData": "Keine Rangdaten vorhanden",
     "rankTooltip": "Rang",
+    "changePhoto": "Foto ändern",
+    "uploading": "Wird hochgeladen\u2026",
     "error": {
       "nameRequired": "Name ist erforderlich",
       "notAuthenticated": "Nicht angemeldet",
@@ -241,9 +244,11 @@
     "comingSoon": "Bald verf\u00fcgbar",
     "comments": "Nachrichten",
     "noComments": "Noch keine Nachrichten",
-    "noCommentsDesc": "Nachrichten werden bald verf\u00fcgbar sein.",
+    "noCommentsDesc": "Schreibe die erste Nachricht.",
     "commentPlaceholder": "Nachricht schreiben...",
     "send": "Senden",
+    "matchPhoto": "Matchfoto",
+    "uploadPhoto": "Foto hochladen",
     "error": {
       "notParticipant": "Du bist kein Teilnehmer dieses Spiels.",
       "invalidStatus": "Diese Aktion ist f\u00fcr den aktuellen Spielstatus nicht verf\u00fcgbar.",
@@ -253,11 +258,28 @@
       "proposalNotFound": "Der Vorschlag wurde nicht gefunden.",
       "notFound": "Spiel nicht gefunden.",
       "invalidInput": "Ung\u00fcltige Eingabe.",
+      "commentEmpty": "Bitte gib eine Nachricht ein.",
+      "commentTooLong": "Nachricht ist zu lang (max. 2000 Zeichen).",
       "serverError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
   "notifications": {
     "ariaLabel": "Benachrichtigungen",
     "ariaLabelWithCount": "{count} ungelesene Benachrichtigungen"
+  },
+  "feed": {
+    "title": "Neuigkeiten",
+    "notificationsTitle": "Benachrichtigungen",
+    "allClubs": "Alle Vereine",
+    "loadMore": "Mehr laden",
+    "new": "Neu",
+    "earlier": "Fr\u00fcher",
+    "markAllRead": "Alle als gelesen markieren",
+    "empty": "Noch keine Neuigkeiten",
+    "emptyDesc": "Aktivit\u00e4ten aus deinen Vereinen erscheinen hier.",
+    "notificationsEmpty": "Keine Benachrichtigungen",
+    "notificationsEmptyDesc": "Sobald etwas passiert, wirst du hier benachrichtigt.",
+    "today": "Heute",
+    "yesterday": "Gestern"
   }
 }

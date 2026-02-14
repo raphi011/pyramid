@@ -21,6 +21,7 @@
     "news": "News",
     "manageClub": "Manage club",
     "challenge": "Challenge",
+    "activeChallenge": "Open match",
     "matches": "Matches"
   },
   "challenge": {
@@ -164,6 +165,8 @@
     "noClubsDesc": "You are not a member of any club yet.",
     "noRankData": "No rank data available",
     "rankTooltip": "Rank",
+    "changePhoto": "Change photo",
+    "uploading": "Uploading\u2026",
     "error": {
       "nameRequired": "Name is required",
       "notAuthenticated": "Not authenticated",
@@ -231,9 +234,11 @@
     "comingSoon": "Coming soon",
     "comments": "Comments",
     "noComments": "No comments yet",
-    "noCommentsDesc": "Comments will be available soon.",
+    "noCommentsDesc": "Be the first to write a message.",
     "commentPlaceholder": "Write a message...",
     "send": "Send",
+    "matchPhoto": "Match photo",
+    "uploadPhoto": "Upload photo",
     "error": {
       "notParticipant": "You are not a participant in this match.",
       "invalidStatus": "This action is not available for the current match status.",
@@ -243,11 +248,28 @@
       "proposalNotFound": "The proposal was not found.",
       "notFound": "Match not found.",
       "invalidInput": "Invalid input.",
+      "commentEmpty": "Please enter a message.",
+      "commentTooLong": "Message is too long (max 2000 characters).",
       "serverError": "An unexpected error occurred. Please try again."
     }
   },
   "notifications": {
     "ariaLabel": "Notifications",
     "ariaLabelWithCount": "{count} unread notifications"
+  },
+  "feed": {
+    "title": "News",
+    "notificationsTitle": "Notifications",
+    "allClubs": "All clubs",
+    "loadMore": "Load more",
+    "new": "New",
+    "earlier": "Earlier",
+    "markAllRead": "Mark all as read",
+    "empty": "No news yet",
+    "emptyDesc": "Activity from your clubs will appear here.",
+    "notificationsEmpty": "No notifications",
+    "notificationsEmptyDesc": "You'll be notified here when something happens.",
+    "today": "Today",
+    "yesterday": "Yesterday"
   }
 }

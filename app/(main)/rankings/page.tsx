@@ -15,6 +15,7 @@ import {
   getMatchesBySeason,
 } from "@/app/lib/db/match";
 import { canChallenge, computeMovement } from "@/app/lib/pyramid";
+import { imageUrl } from "@/app/lib/image-storage";
 import { RankingsView } from "./rankings-view";
 import type { Season } from "@/app/lib/db/season";
 
@@ -46,7 +47,6 @@ export default async function RankingsPage({
         clubName={clubName}
         pyramidPlayers={[]}
         standingsPlayers={[]}
-        hasOpenChallenge={false}
         matches={[]}
         currentTeamId={null}
       />
@@ -111,11 +111,13 @@ export default async function RankingsPage({
 
     return {
       id: p.teamId,
+      playerId: p.playerId,
       name: p.name,
       rank: p.rank,
       wins: wl.wins,
       losses: wl.losses,
       variant,
+      avatarSrc: imageUrl(p.imageId),
     };
   });
 
@@ -134,12 +136,14 @@ export default async function RankingsPage({
 
     return {
       id: p.teamId,
+      playerId: p.playerId,
       name: p.name,
       rank: p.rank,
       wins: wl.wins,
       losses: wl.losses,
       movement,
       challengeable,
+      avatarSrc: imageUrl(p.imageId),
     };
   });
 
@@ -181,9 +185,6 @@ export default async function RankingsPage({
       clubName={clubName}
       pyramidPlayers={pyramidPlayers}
       standingsPlayers={standingsPlayers}
-      hasOpenChallenge={
-        currentTeamId !== null && openChallengeTeams.has(currentTeamId)
-      }
       matches={matches}
       currentTeamId={currentTeamId}
     />

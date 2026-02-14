@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
@@ -23,7 +23,10 @@ import {
   declineDateAction,
   enterResultAction,
   confirmResultAction,
+  postCommentAction,
+  uploadMatchImageAction,
 } from "@/app/lib/actions/match";
+import { imageUrl } from "@/app/lib/image-storage";
 import type { MatchStatus } from "@/app/lib/db/match";
 
 // ── Serialized types (dates as ISO strings) ───────────
@@ -47,6 +50,7 @@ type SerializedMatch = {
   team2PlayerId: number;
   seasonBestOf: number;
   clubId: number;
+  imageId: string | null;
 };
 
 type SerializedProposal = {
@@ -152,6 +156,9 @@ export function MatchDetailView({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // Comment state
+  const [commentText, setCommentText] = useState("");
+
   // Dialog state
   const [showProposeDateDialog, setShowProposeDateDialog] = useState(false);
   const [showEnterResultDialog, setShowEnterResultDialog] = useState(false);
@@ -216,12 +223,57 @@ export function MatchDetailView({
         case "confirmResult":
           result = await confirmResultAction(formData);
           break;
+        case "postComment":
+          result = await postCommentAction(formData);
+          if (result && "success" in result) setCommentText("");
+          break;
+        default:
+          result = { error: "matchDetail.error.serverError" };
+          break;
       }
       if (result && "error" in result) {
         setError(t(`error.${result.error.split(".").pop()}`));
       }
     });
   }
+
+  const handleMatchImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setError(null);
+      startTransition(async () => {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch("/api/images", {
+            method: "POST",
+            body: formData,
+          });
+          if (!res.ok) {
+            let errorMessage = t("error.serverError");
+            try {
+              const data = await res.json();
+              if (data.error) errorMessage = data.error;
+            } catch {
+              // Response was not JSON (e.g. proxy error page)
+            }
+            setError(errorMessage);
+            return;
+          }
+          const { id } = await res.json();
+          const result = await uploadMatchImageAction(match.id, id);
+          if ("error" in result) {
+            setError(t(`error.${result.error.split(".").pop()}`));
+          }
+        } catch (e) {
+          console.error("Match image upload failed:", e);
+          setError(t("error.serverError"));
+        }
+      });
+    },
+    [match.id, t],
+  );
 
   // ── Render ────────────────────────────────────────
 
@@ -463,49 +515,92 @@ export function MatchDetailView({
         </div>
       )}
 
+      {/* Match Photo */}
+      {(match.imageId || isParticipant) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("matchPhoto")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {match.imageId && (
+              // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
+              <img
+                src={imageUrl(match.imageId)!}
+                alt={t("matchPhoto")}
+                className="w-full rounded-xl object-cover"
+              />
+            )}
+            {isParticipant && (
+              <label
+                className={`${match.imageId ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
+              >
+                {t("uploadPhoto")}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={handleMatchImageUpload}
+                  disabled={isPending}
+                />
+              </label>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Comments Section */}
       <Card>
         <CardHeader>
           <CardTitle>{t("comments")}</CardTitle>
         </CardHeader>
         <CardContent>
-          {comments.length > 0 ? (
-            <div className="space-y-3">
-              {comments.map((c) => (
-                <div key={c.id} className="flex gap-2">
-                  <Avatar name={c.playerName} size="sm" />
-                  <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {c.comment}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {formatDateTime(c.created)}
-                    </p>
-                  </div>
+          <DataList
+            items={comments}
+            empty={{
+              title: t("noComments"),
+              description: t("noCommentsDesc"),
+            }}
+            renderItem={(c) => (
+              <div className="flex gap-2 py-2">
+                <Avatar name={c.playerName} size="sm" />
+                <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    {c.comment}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {formatDateTime(c.created)}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t("noCommentsDesc")}
-            </p>
+              </div>
+            )}
+            keyExtractor={(c) => c.id}
+          />
+
+          {isParticipant && (
+            <>
+              <Separator className="my-3" />
+
+              <form action={handleAction} className="flex gap-2">
+                <input type="hidden" name="intent" value="postComment" />
+                <input type="hidden" name="matchId" value={match.id} />
+                <FormField
+                  label=""
+                  placeholder={t("commentPlaceholder")}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="flex-1"
+                  inputProps={{ name: "comment" }}
+                />
+                <Button
+                  type="submit"
+                  size="md"
+                  disabled={isPending || !commentText.trim()}
+                >
+                  {t("send")}
+                </Button>
+              </form>
+            </>
           )}
-
-          <Separator className="my-3" />
-
-          <div className="flex gap-2">
-            <FormField
-              label=""
-              placeholder={t("commentPlaceholder")}
-              disabled
-              className="flex-1"
-            />
-            <Tooltip content={t("comingSoon")}>
-              <Button size="md" disabled>
-                {t("send")}
-              </Button>
-            </Tooltip>
-          </div>
         </CardContent>
       </Card>
 

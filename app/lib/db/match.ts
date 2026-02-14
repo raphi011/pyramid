@@ -1,7 +1,6 @@
 import { cache } from "react";
 import type postgres from "postgres";
-
-type Sql = postgres.Sql | postgres.TransactionSql;
+import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -38,6 +37,7 @@ export type MatchDetail = Match & {
   team2PlayerId: number;
   seasonBestOf: number;
   clubId: number;
+  imageId: string | null;
 };
 
 export type DateProposal = {
@@ -129,7 +129,8 @@ const MATCH_DETAIL_SELECT = `
   tp1.player_id AS "team1PlayerId",
   tp2.player_id AS "team2PlayerId",
   s.best_of AS "seasonBestOf",
-  s.club_id AS "clubId"
+  s.club_id AS "clubId",
+  sm.image_id::text AS "imageId"
 `;
 
 const MATCH_DETAIL_JOIN = `
@@ -148,6 +149,7 @@ function toMatchDetail(row: Record<string, unknown>): MatchDetail {
     team2PlayerId: row.team2PlayerId as number,
     seasonBestOf: row.seasonBestOf as number,
     clubId: row.clubId as number,
+    imageId: (row.imageId as string) ?? null,
   };
 }
 
@@ -174,6 +176,25 @@ async function queryTeamsWithOpenChallenge(
 
 // Cached version deduplicates within a single server request (layout + page)
 export const getTeamsWithOpenChallenge = cache(queryTeamsWithOpenChallenge);
+
+async function queryActiveMatchId(
+  sql: Sql,
+  seasonId: number,
+  teamId: number,
+): Promise<number | null> {
+  const [row] = await sql`
+    SELECT id FROM season_matches
+    WHERE season_id = ${seasonId}
+      AND (team1_id = ${teamId} OR team2_id = ${teamId})
+      AND status IN ('challenged', 'date_set')
+    ORDER BY created DESC
+    LIMIT 1
+  `;
+  return row ? (row.id as number) : null;
+}
+
+// Cached version deduplicates within a single server request (layout + page)
+export const getActiveMatchId = cache(queryActiveMatchId);
 
 export async function getUnavailableTeamIds(
   sql: Sql,
@@ -352,6 +373,66 @@ export async function getMatchComments(
   }));
 }
 
+export async function createMatchComment(
+  sql: Sql,
+  matchId: number,
+  playerId: number,
+  comment: string,
+): Promise<MatchComment> {
+  const trimmed = comment.trim();
+  if (!trimmed) {
+    throw new Error("Comment must not be empty");
+  }
+
+  const [row] = await sql`
+    INSERT INTO match_comments (match_id, player_id, comment, created)
+    VALUES (${matchId}, ${playerId}, ${trimmed}, NOW())
+    RETURNING
+      id,
+      match_id AS "matchId",
+      player_id AS "playerId",
+      (SELECT name FROM player WHERE id = match_comments.player_id) AS "playerName",
+      comment,
+      created,
+      edited_at AS "editedAt"
+  `;
+
+  return {
+    id: row.id as number,
+    matchId: row.matchId as number,
+    playerId: row.playerId as number,
+    playerName: row.playerName as string,
+    comment: row.comment as string,
+    created: row.created as Date,
+    editedAt: (row.editedAt as Date) ?? null,
+  };
+}
+
+// ── Image ─────────────────────────────────────────────
+
+export async function getMatchImageId(
+  sql: Sql,
+  matchId: number,
+): Promise<string | null> {
+  const [row] = await sql`
+    SELECT image_id::text AS "imageId" FROM season_matches WHERE id = ${matchId}
+  `;
+  return (row?.imageId as string) ?? null;
+}
+
+export async function updateMatchImage(
+  sql: Sql,
+  matchId: number,
+  imageId: string | null,
+): Promise<number> {
+  const result = await sql`
+    UPDATE season_matches
+    SET image_id = ${imageId}
+    WHERE id = ${matchId}
+  `;
+  return result.count;
+}
+
 // ── Mutations ─────────────────────────────────────────
 
 export async function createDateProposal(
@@ -371,7 +452,7 @@ export async function createDateProposal(
 
   await tx`
     INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-    VALUES (${clubId}, ${seasonId}, ${matchId}, ${proposedBy}, ${opponentPlayerId}, 'date_proposed', ${tx.json({})}, NOW())
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${proposedBy}, ${opponentPlayerId}, 'date_proposed', ${tx.json({ proposedDatetime: proposedDatetime.toISOString() })}, NOW())
   `;
 
   return row.id as number;
@@ -414,9 +495,10 @@ export async function acceptDateProposal(
   `;
 
   // Create personal event for the proposer
+  const acceptedDatetime = accepted[0].proposed_datetime as Date;
   await tx`
     INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-    VALUES (${clubId}, ${seasonId}, ${matchId}, ${acceptedBy}, ${proposerPlayerId}, 'date_accepted', ${tx.json({})}, NOW())
+    VALUES (${clubId}, ${seasonId}, ${matchId}, ${acceptedBy}, ${proposerPlayerId}, 'date_accepted', ${tx.json({ acceptedDatetime: acceptedDatetime.toISOString() })}, NOW())
   `;
 }
 

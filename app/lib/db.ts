@@ -1,5 +1,8 @@
 import postgres from "postgres";
 
+/** Accepts both a root connection and a transaction handle. */
+export type Sql = postgres.Sql | postgres.TransactionSql;
+
 // Cache the connection on globalThis to survive Next.js HMR in development.
 // Without this, every hot-reload creates a new pool (10 connections each),
 // quickly exhausting PostgreSQL's max_connections limit.

@@ -101,7 +101,6 @@ type RankingsViewProps = {
   clubName: string;
   pyramidPlayers: PyramidPlayer[];
   standingsPlayers: StandingsPlayer[];
-  hasOpenChallenge: boolean;
   matches: SerializedMatch[];
   currentTeamId: number | null;
 };
@@ -112,7 +111,6 @@ export function RankingsView({
   clubName,
   pyramidPlayers,
   standingsPlayers,
-  hasOpenChallenge,
   matches,
   currentTeamId,
 }: RankingsViewProps) {
@@ -121,7 +119,6 @@ export function RankingsView({
   const searchParams = useSearchParams();
   const challengeFromUrl = searchParams.get("challenge") === "true";
   const [challengeOpen, setChallengeOpen] = useState(challengeFromUrl);
-  const [challengeTarget, setChallengeTarget] = useState<Opponent | null>(null);
 
   // Clean the ?challenge=true URL param after initial render
   useEffect(() => {
@@ -138,26 +135,14 @@ export function RankingsView({
     .filter((p) => p.variant === "challengeable")
     .map((p) => ({ teamId: p.id as number, name: p.name, rank: p.rank }));
 
-  function handlePlayerClick(player: PyramidPlayer) {
-    if (player.variant === "challengeable") {
-      setChallengeTarget({
-        teamId: player.id as number,
-        name: player.name,
-        rank: player.rank,
-      });
-      setChallengeOpen(true);
+  function handleNavigateToPlayer(player: {
+    id: string | number;
+    playerId?: number;
+  }) {
+    if (player.playerId != null) {
+      router.push(`/player/${player.playerId}`);
     }
-  }
-
-  function handleStandingsPlayerClick(player: StandingsPlayer) {
-    if (player.challengeable) {
-      setChallengeTarget({
-        teamId: player.id as number,
-        name: player.name,
-        rank: player.rank,
-      });
-      setChallengeOpen(true);
-    }
+    // Team seasons: team page not yet implemented (US-PROF-11)
   }
 
   const seasonAction =
@@ -217,7 +202,7 @@ export function RankingsView({
                   content: (
                     <PyramidGrid
                       players={pyramidPlayers}
-                      onPlayerClick={handlePlayerClick}
+                      onPlayerClick={handleNavigateToPlayer}
                     />
                   ),
                 },
@@ -226,7 +211,7 @@ export function RankingsView({
                   content: (
                     <StandingsTable
                       players={standingsPlayers}
-                      onPlayerClick={handleStandingsPlayerClick}
+                      onPlayerClick={handleNavigateToPlayer}
                     />
                   ),
                 },
@@ -287,11 +272,8 @@ export function RankingsView({
       {currentSeasonId && (
         <ChallengeSheet
           open={challengeOpen}
-          onClose={() => {
-            setChallengeOpen(false);
-            setChallengeTarget(null);
-          }}
-          target={challengeTarget}
+          onClose={() => setChallengeOpen(false)}
+          target={null}
           opponents={opponents}
           seasonId={currentSeasonId}
           seasons={seasons.length > 1 ? seasons : undefined}

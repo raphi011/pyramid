@@ -5,10 +5,11 @@ import {
   PlayerCard,
   type PlayerCardVariant,
 } from "@/components/domain/player-card";
-import { cn } from "@/lib/utils";
+import { cn, abbreviateName } from "@/lib/utils";
 
 type PyramidPlayer = {
   id: string | number;
+  playerId?: number;
   name: string;
   rank: number;
   avatarSrc?: string | null;
@@ -113,7 +114,7 @@ function PyramidGrid({ players, onPlayerClick, className }: PyramidGridProps) {
               {row.map((player) => (
                 <PlayerCard
                   key={player.id}
-                  name={player.name}
+                  name={abbreviateName(player.name)}
                   rank={player.rank}
                   avatarSrc={player.avatarSrc}
                   wins={player.wins}

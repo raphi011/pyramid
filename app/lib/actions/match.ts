@@ -12,7 +12,11 @@ import {
   enterMatchResult,
   confirmMatchResult,
   updateStandingsAfterResult,
+  createMatchComment,
+  updateMatchImage,
+  getMatchImageId,
 } from "@/app/lib/db/match";
+import { postgresImageStorage } from "@/app/lib/image-storage";
 import { validateScores } from "@/app/lib/validate-scores";
 
 export type MatchActionResult = { success: true } | { error: string };
@@ -316,6 +320,96 @@ export async function confirmResultAction(
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/rankings");
+
+  return { success: true };
+}
+
+// ── Upload Match Image ───────────────────────────────
+
+export async function uploadMatchImageAction(
+  matchId: number,
+  imageId: string | null,
+): Promise<MatchActionResult> {
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  // Must be a participant
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  // Verify the image belongs to the current player
+  if (imageId) {
+    const owned = await postgresImageStorage.isOwnedBy(sql, imageId, player.id);
+    if (!owned) return { error: "matchDetail.error.serverError" };
+  }
+
+  try {
+    await sql.begin(async (tx) => {
+      const oldImageId = await getMatchImageId(tx, matchId);
+      const count = await updateMatchImage(tx, matchId, imageId);
+      if (count === 0) throw new Error(`Match ${matchId} not found`);
+      if (oldImageId && oldImageId !== imageId) {
+        await postgresImageStorage.delete(tx, oldImageId);
+      }
+    });
+  } catch (e) {
+    console.error("uploadMatchImageAction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  return { success: true };
+}
+
+// ── Post Comment ─────────────────────────────────────
+
+export async function postCommentAction(
+  formData: FormData,
+): Promise<MatchActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  const comment = (formData.get("comment") as string | null) ?? "";
+
+  if (!matchId) {
+    return { error: "matchDetail.error.notFound" };
+  }
+
+  const trimmed = comment.trim();
+  if (!trimmed) {
+    return { error: "matchDetail.error.commentEmpty" };
+  }
+  if (trimmed.length > 2000) {
+    return { error: "matchDetail.error.commentTooLong" };
+  }
+
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "matchDetail.error.notParticipant" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { error: "matchDetail.error.notFound" };
+
+  // Must be a participant
+  const isTeam1 = player.id === match.team1PlayerId;
+  const isTeam2 = player.id === match.team2PlayerId;
+  if (!isTeam1 && !isTeam2) {
+    return { error: "matchDetail.error.notParticipant" };
+  }
+
+  try {
+    await sql.begin(async (tx) => {
+      await createMatchComment(tx, matchId, player.id, trimmed);
+    });
+  } catch (e) {
+    console.error("postCommentAction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
 
   return { success: true };
 }

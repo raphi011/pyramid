@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 type StandingsPlayer = {
   id: string | number;
+  playerId?: number;
   name: string;
   rank: number;
   avatarSrc?: string | null;

@@ -69,6 +69,7 @@ export default async function MatchDetailPage({
         team2PlayerId: match.team2PlayerId,
         seasonBestOf: match.seasonBestOf,
         clubId: match.clubId,
+        imageId: match.imageId,
       }}
       proposals={proposals.map((p) => ({
         id: p.id,

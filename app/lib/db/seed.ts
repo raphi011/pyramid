@@ -159,6 +159,22 @@ export async function seedStandings(
   return row.id as number;
 }
 
+// ── Event Read ──────────────────────────────────────
+
+export async function seedEventRead(
+  tx: Tx,
+  playerId: number,
+  clubId: number,
+  lastReadAt: Date = new Date(),
+): Promise<void> {
+  await tx`
+    INSERT INTO event_reads (player_id, club_id, last_read_at)
+    VALUES (${playerId}, ${clubId}, ${lastReadAt})
+    ON CONFLICT (player_id, club_id)
+    DO UPDATE SET last_read_at = ${lastReadAt}
+  `;
+}
+
 // ── Event ────────────────────────────────────────────
 
 export async function seedEvent(
@@ -171,6 +187,7 @@ export async function seedEvent(
     targetPlayerId,
     eventType = "challenge",
     metadata = {},
+    created,
   }: {
     seasonId?: number;
     matchId?: number;
@@ -178,12 +195,19 @@ export async function seedEvent(
     targetPlayerId?: number;
     eventType?: string;
     metadata?: Record<string, unknown>;
+    created?: Date;
   } = {},
 ): Promise<number> {
-  const [row] = await tx`
-    INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-    VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, NOW())
-    RETURNING id
-  `;
+  const [row] = created
+    ? await tx`
+        INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+        VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, ${created})
+        RETURNING id
+      `
+    : await tx`
+        INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+        VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, NOW())
+        RETURNING id
+      `;
   return row.id as number;
 }

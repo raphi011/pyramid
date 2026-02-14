@@ -20,3 +20,11 @@ export async function enterResultAction(): Promise<MatchActionResult> {
 export async function confirmResultAction(): Promise<MatchActionResult> {
   return { success: true };
 }
+
+export async function postCommentAction(): Promise<MatchActionResult> {
+  return { success: true };
+}
+
+export async function uploadMatchImageAction(): Promise<MatchActionResult> {
+  return { success: true };
+}

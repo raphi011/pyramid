@@ -70,6 +70,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-CHAL-16](#us-chal-16-withdraw-challenge) | Withdraw challenge | Player | P1 | Challenges | |
 | [US-CHAL-17](#us-chal-17-post-match-comment) | Post match comment | Player | P1 | Challenges | |
 | [US-CHAL-18](#us-chal-18-edit-match-comment) | Edit match comment | Player | P2 | Challenges | |
+| [US-COMMENT-IMG](#us-comment-img-upload-image-in-match-comment) | Upload image in match comment | Player | P2 | Challenges | |
 | [US-CHAL-19](#us-chal-19-rankings-update-after-result) | Rankings update after result | Player | P0 | Challenges | |
 | [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | |
 | [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | |
@@ -81,6 +82,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-PROF-08](#us-prof-08-head-to-head-record) | Head-to-head record | Player | P2 | Profile | |
 | [US-PROF-09](#us-prof-09-view-other-player-profile) | View other player profile | Player | P1 | Profile | |
 | [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | |
+| [US-PROF-11](#us-prof-11-view-team-page) | View team page | Player | P2 | Profile | |
 | [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | |
 | [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | |
 | [US-SETT-03](#us-sett-03-configure-email-notifications) | Configure email notifications | Player | P1 | Settings | |
@@ -1265,15 +1267,17 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Steps**:
 1. User taps avatar or "Upload photo" → System opens file picker (image types only).
-2. User selects image → System encodes as binary, stores in `player.photo_data`.
-3. Avatar updates immediately (served via `/api/players/[id]/avatar`).
+2. User selects image → uploaded via `POST /api/images` (server resizes to 800×800 WebP), returns UUID.
+3. System stores returned UUID in `player.image_id`.
+4. Avatar updates immediately (served via `/api/images/{uuid}`).
 
-**Postconditions**: `player.photo_data` updated. Avatar API returns new image.
+**Postconditions**: `player.image_id` updated. Image served via `/api/images/{uuid}`.
 
 **Edge cases**:
 - No photo uploaded → Avatar falls back to initial-based avatar.
-- Remove photo → `photo_data` set to NULL, avatar reverts to initials.
-- Large image → Client-side resize before upload.
+- Remove photo → `image_id` set to NULL, avatar reverts to initials.
+- Large image → Server-side resize via `sharp` (800×800 max, WebP).
+- Upload fails → Show error toast, existing avatar preserved.
 
 **Cross-refs**: → US-PROF-02
 
@@ -1432,6 +1436,29 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 - Multiple seasons → Season picker shown first (→ US-CHAL-04).
 
 **Cross-refs**: → US-CHAL-01, → US-CHAL-03
+
+---
+
+### US-PROF-11: View team page
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Player is in a club with team seasons (doubles/mixed). A team exists with 2+ players.
+
+**Steps**:
+1. User taps a team card in the pyramid or standings list → System navigates to `/team/[id]`.
+2. System renders team page: team name, member avatars+names, rank, stats (wins/losses), match history, rank chart.
+3. Each team member's name is tappable → navigates to their individual player profile (→ US-PROF-09).
+4. If challengeable → Prominent "Challenge" button at top (→ US-PROF-10 equivalent for teams).
+
+**Postconditions**: Team page rendered.
+
+**Edge cases**:
+- Team has only 1 member (individual season mapped to team) → Redirect to player profile instead.
+- Team member left the club → Still shown in team roster (historical data preserved).
+- Team has no matches yet → Match history section shows empty state.
+
+**Cross-refs**: → US-PROF-09, → US-RANK-01
 
 ---
 
@@ -1959,12 +1986,13 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Steps**:
 1. Admin taps "Club settings" → System shows form with: name, URL, phone number, address, city, zip, country, logo upload.
 2. Admin edits fields and/or uploads a new logo.
-3. Admin taps "Save" → System updates `clubs` row: `name`, `url`, `phone_number`, `address`, `city`, `zip`, `country`, `logo_data`.
+3. If logo changed: uploaded via `POST /api/images` (server resizes to 800×800 WebP), returns UUID stored in `clubs.image_id`.
+4. Admin taps "Save" → System updates `clubs` row: `name`, `url`, `phone_number`, `address`, `city`, `zip`, `country`, `image_id`.
 
-**Postconditions**: `clubs` row updated. Logo served via `/api/clubs/[id]/logo`.
+**Postconditions**: `clubs` row updated. Logo served via `/api/images/{uuid}`.
 
 **Edge cases**:
-- Logo removed → `logo_data` set to NULL, avatar falls back to initial-based.
+- Logo removed → `image_id` set to NULL, avatar falls back to initial-based.
 - Empty name → Validation error (name required).
 - URL format validation (optional field, but if provided must be valid).
 
@@ -2060,6 +2088,31 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
+### US-COMMENT-IMG: Upload image in match comment
+
+> **Status: Future** — `match_comments.image_id` column not yet added. Requires migration + UI work.
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: User is a participant in the match.
+
+**Steps**:
+1. User writes a comment on a match → taps image icon → file picker opens.
+2. User selects image → uploaded via `POST /api/images`, returns UUID.
+3. Comment stored with image reference (`match_comments.image_id`).
+4. Comment displays inline image thumbnail, tappable to view full-size.
+
+**Postconditions**: `match_comments` row created with `image_id` set. Image served via `/api/images/{uuid}`.
+
+**Edge cases**:
+- Upload fails → Show error toast, comment text preserved.
+- Image too large → Client shows size error before upload.
+- Multiple images → Not supported in v1, one image per comment.
+
+**Cross-refs**: → US-CHAL-17
+
+---
+
 ## Cross-Cutting Concerns
 
 ### Responsive Behavior
@@ -2135,7 +2188,8 @@ Every DB table is exercised by at least one story:
 | `teams` | US-AUTH-08, US-ADMIN-03, US-ADMIN-07 |
 | `team_players` | US-AUTH-08, US-ADMIN-07 |
 | `season_matches` | US-CHAL-01, US-CHAL-07, US-CHAL-09, US-CHAL-12, US-CHAL-13–16, US-CHAL-19 |
-| `match_comments` | US-CHAL-17, US-CHAL-18 |
+| `match_comments` | US-CHAL-17, US-CHAL-18, US-COMMENT-IMG |
+| `images` | US-PROF-03, US-ADMIN-16, US-COMMENT-IMG |
 | `date_proposals` | US-CHAL-10, US-CHAL-11 |
 | `season_standings` | US-CHAL-19, US-ADMIN-05, US-RANK-01, US-PROF-07 |
 | `events` | US-FEED-01, US-FEED-06, US-FEED-07, US-CHAL-01 |

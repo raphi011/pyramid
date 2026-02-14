@@ -2,6 +2,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Tailwind v4 preflight sets cursor:default on interactive elements — restore pointer */
+@layer base {
+  a,
+  button,
+  [role="button"],
+  select,
+  summary {
+    cursor: pointer;
+  }
+}
+
 @theme {
   /* ── Court Green — Primary ─────────────────── */
   --color-court-50: #f0fdf4;
