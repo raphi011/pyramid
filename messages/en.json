@@ -207,7 +207,8 @@
       "alreadyCompleted": "This match has already been completed.",
       "proposalNotFound": "The proposal was not found.",
       "notFound": "Match not found.",
-      "invalidInput": "Invalid input."
+      "invalidInput": "Invalid input.",
+      "serverError": "An unexpected error occurred. Please try again."
     }
   },
   "notifications": {

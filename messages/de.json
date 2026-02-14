@@ -217,7 +217,8 @@
       "alreadyCompleted": "Dieses Spiel wurde bereits abgeschlossen.",
       "proposalNotFound": "Der Vorschlag wurde nicht gefunden.",
       "notFound": "Spiel nicht gefunden.",
-      "invalidInput": "Ung\u00fcltige Eingabe."
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "serverError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
   "notifications": {

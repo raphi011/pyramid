@@ -5,6 +5,7 @@ import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import {
   getMatchById,
+  getDateProposals,
   createDateProposal,
   acceptDateProposal,
   declineDateProposal,
@@ -12,6 +13,7 @@ import {
   confirmMatchResult,
   updateStandingsAfterResult,
 } from "@/app/lib/db/match";
+import { validateScores } from "@/app/lib/validate-scores";
 
 export type MatchActionResult = { success: true } | { error: string };
 
@@ -24,6 +26,11 @@ export async function proposeDateAction(
   const proposedDatetime = formData.get("proposedDatetime") as string;
 
   if (!matchId || !proposedDatetime) {
+    return { error: "matchDetail.error.invalidInput" };
+  }
+
+  const parsedDate = new Date(proposedDatetime);
+  if (isNaN(parsedDate.getTime())) {
     return { error: "matchDetail.error.invalidInput" };
   }
 
@@ -46,17 +53,22 @@ export async function proposeDateAction(
 
   const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
 
-  await sql.begin(async (tx) => {
-    await createDateProposal(
-      tx,
-      matchId,
-      match.clubId,
-      match.seasonId,
-      player.id,
-      opponentPlayerId,
-      new Date(proposedDatetime),
-    );
-  });
+  try {
+    await sql.begin(async (tx) => {
+      await createDateProposal(
+        tx,
+        matchId,
+        match.clubId,
+        match.seasonId,
+        player.id,
+        opponentPlayerId,
+        parsedDate,
+      );
+    });
+  } catch (e) {
+    console.error("proposeDateAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/matches");
@@ -82,25 +94,39 @@ export async function acceptDateAction(
   const match = await getMatchById(sql, matchId);
   if (!match) return { error: "matchDetail.error.notFound" };
 
+  if (match.status !== "challenged" && match.status !== "date_set") {
+    return { error: "matchDetail.error.invalidStatus" };
+  }
+
   const isTeam1 = player.id === match.team1PlayerId;
   const isTeam2 = player.id === match.team2PlayerId;
   if (!isTeam1 && !isTeam2) {
     return { error: "matchDetail.error.notParticipant" };
   }
 
-  const proposerPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
+  // Verify the current player is not accepting their own proposal
+  const proposals = await getDateProposals(sql, matchId);
+  const proposal = proposals.find((p) => p.id === proposalId);
+  if (!proposal || proposal.proposedBy === player.id) {
+    return { error: "matchDetail.error.proposalNotFound" };
+  }
 
-  await sql.begin(async (tx) => {
-    await acceptDateProposal(
-      tx,
-      proposalId,
-      matchId,
-      match.clubId,
-      match.seasonId,
-      player.id,
-      proposerPlayerId,
-    );
-  });
+  try {
+    await sql.begin(async (tx) => {
+      await acceptDateProposal(
+        tx,
+        proposalId,
+        matchId,
+        match.clubId,
+        match.seasonId,
+        player.id,
+        proposal.proposedBy,
+      );
+    });
+  } catch (e) {
+    console.error("acceptDateAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/matches");
@@ -126,15 +152,24 @@ export async function declineDateAction(
   const match = await getMatchById(sql, matchId);
   if (!match) return { error: "matchDetail.error.notFound" };
 
+  if (match.status !== "challenged" && match.status !== "date_set") {
+    return { error: "matchDetail.error.invalidStatus" };
+  }
+
   const isTeam1 = player.id === match.team1PlayerId;
   const isTeam2 = player.id === match.team2PlayerId;
   if (!isTeam1 && !isTeam2) {
     return { error: "matchDetail.error.notParticipant" };
   }
 
-  await sql.begin(async (tx) => {
-    await declineDateProposal(tx, proposalId);
-  });
+  try {
+    await sql.begin(async (tx) => {
+      await declineDateProposal(tx, proposalId, matchId);
+    });
+  } catch (e) {
+    console.error("declineDateAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
 
   revalidatePath(`/matches/${matchId}`);
 
@@ -142,56 +177,6 @@ export async function declineDateAction(
 }
 
 // ── Enter Result ──────────────────────────────────────
-
-function validateScores(
-  team1Score: number[],
-  team2Score: number[],
-  bestOf: number,
-): boolean {
-  if (team1Score.length !== team2Score.length) return false;
-  if (team1Score.length === 0) return false;
-
-  // Each game must have a clear winner (no ties)
-  for (let i = 0; i < team1Score.length; i++) {
-    if (team1Score[i] === team2Score[i]) return false;
-    if (team1Score[i] < 0 || team2Score[i] < 0) return false;
-  }
-
-  // Count games won by each team
-  let team1Wins = 0;
-  let team2Wins = 0;
-  for (let i = 0; i < team1Score.length; i++) {
-    if (team1Score[i] > team2Score[i]) team1Wins++;
-    else team2Wins++;
-  }
-
-  // One team must have won the majority
-  const majority = Math.ceil(bestOf / 2);
-  if (team1Wins !== majority && team2Wins !== majority) return false;
-
-  // The match should have ended when one team reached majority
-  // (no extra games played after someone already won)
-  const totalGames = team1Score.length;
-  if (totalGames > bestOf) return false;
-
-  // Verify the winning game is the last one
-  let runningT1 = 0;
-  let runningT2 = 0;
-  for (let i = 0; i < totalGames; i++) {
-    if (team1Score[i] > team2Score[i]) runningT1++;
-    else runningT2++;
-
-    // If someone reached majority before the last game, invalid
-    if (
-      i < totalGames - 1 &&
-      (runningT1 >= majority || runningT2 >= majority)
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-}
 
 export async function enterResultAction(
   formData: FormData,
@@ -244,19 +229,24 @@ export async function enterResultAction(
 
   const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
 
-  await sql.begin(async (tx) => {
-    await enterMatchResult(
-      tx,
-      matchId,
-      player.id,
-      team1Score,
-      team2Score,
-      winnerTeamId,
-      match.clubId,
-      match.seasonId,
-      opponentPlayerId,
-    );
-  });
+  try {
+    await sql.begin(async (tx) => {
+      await enterMatchResult(
+        tx,
+        matchId,
+        player.id,
+        team1Score,
+        team2Score,
+        winnerTeamId,
+        match.clubId,
+        match.seasonId,
+        opponentPlayerId,
+      );
+    });
+  } catch (e) {
+    console.error("enterResultAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/matches");
@@ -295,28 +285,33 @@ export async function confirmResultAction(
     return { error: "matchDetail.error.notParticipant" };
   }
 
-  await sql.begin(async (tx) => {
-    const { winnerTeamId, team1Id, team2Id } = await confirmMatchResult(
-      tx,
-      matchId,
-      player.id,
-      match.clubId,
-      match.seasonId,
-    );
+  try {
+    await sql.begin(async (tx) => {
+      const { winnerTeamId, team1Id, team2Id } = await confirmMatchResult(
+        tx,
+        matchId,
+        player.id,
+        match.clubId,
+        match.seasonId,
+      );
 
-    // team1 is always the challenger
-    const challengerTeamId = team1Id;
-    const loserTeamId = winnerTeamId === team1Id ? team2Id : team1Id;
+      // team1 is always the challenger
+      const challengerTeamId = team1Id;
+      const loserTeamId = winnerTeamId === team1Id ? team2Id : team1Id;
 
-    await updateStandingsAfterResult(
-      tx,
-      match.seasonId,
-      matchId,
-      winnerTeamId,
-      loserTeamId,
-      challengerTeamId,
-    );
-  });
+      await updateStandingsAfterResult(
+        tx,
+        match.seasonId,
+        matchId,
+        winnerTeamId,
+        loserTeamId,
+        challengerTeamId,
+      );
+    });
+  } catch (e) {
+    console.error("confirmResultAction transaction failed:", e);
+    return { error: "matchDetail.error.serverError" };
+  }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/matches");

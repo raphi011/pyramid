@@ -18,6 +18,7 @@ import {
   getOpenMatches,
   getMatchById,
   getDateProposals,
+  getMatchComments,
   createDateProposal,
   acceptDateProposal,
   declineDateProposal,
@@ -477,6 +478,60 @@ describe("getDateProposals", () => {
   });
 });
 
+// ── getMatchComments ─────────────────────────────
+
+describe("getMatchComments", () => {
+  it("returns comments with player names, ordered by created ASC", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "mc1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "mc2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      // Insert comments directly
+      await tx`
+        INSERT INTO match_comments (match_id, player_id, comment, created)
+        VALUES (${matchId}, ${p1}, 'First comment', NOW() - INTERVAL '1 hour')
+      `;
+      await tx`
+        INSERT INTO match_comments (match_id, player_id, comment, created)
+        VALUES (${matchId}, ${p2}, 'Second comment', NOW())
+      `;
+
+      const comments = await getMatchComments(tx, matchId);
+      expect(comments).toHaveLength(2);
+      expect(comments[0].playerName).toBe("Alice");
+      expect(comments[0].comment).toBe("First comment");
+      expect(comments[1].playerName).toBe("Bob");
+      expect(comments[1].comment).toBe("Second comment");
+    });
+  });
+
+  it("returns empty array for match with no comments", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "mc3@example.com");
+      const p2 = await seedPlayer(tx, "mc4@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      const comments = await getMatchComments(tx, matchId);
+      expect(comments).toEqual([]);
+    });
+  });
+});
+
 // ── createDateProposal ────────────────────────────
 
 describe("createDateProposal", () => {
@@ -601,7 +656,7 @@ describe("declineDateProposal", () => {
 
       const proposalId = await seedDateProposal(tx, matchId, p1);
 
-      await declineDateProposal(tx, proposalId);
+      await declineDateProposal(tx, proposalId, matchId);
 
       const proposals = await getDateProposals(tx, matchId);
       expect(proposals[0].status).toBe("declined");
@@ -656,6 +711,39 @@ describe("enterMatchResult", () => {
       expect(events[0].target_player_id).toBe(p2);
     });
   });
+
+  it("throws when match is not in valid status for result entry", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "emr3@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "emr4@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "pending_confirmation",
+        winnerTeamId: t1,
+        resultEnteredBy: p1,
+        team1Score: [6, 6],
+        team2Score: [3, 4],
+      });
+
+      await expect(
+        enterMatchResult(
+          tx,
+          matchId,
+          p2,
+          [7, 7],
+          [5, 5],
+          t2,
+          clubId,
+          seasonId,
+          p1,
+        ),
+      ).rejects.toThrow("could not be updated");
+    });
+  });
 });
 
 // ── confirmMatchResult ────────────────────────────
@@ -701,6 +789,25 @@ describe("confirmMatchResult", () => {
         SELECT * FROM events WHERE match_id = ${matchId} AND event_type = 'result'
       `;
       expect(events).toHaveLength(1);
+    });
+  });
+
+  it("throws when match is not in pending_confirmation status", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "cmr3@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "cmr4@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      const matchId = await seedMatch(tx, seasonId, t1, t2, {
+        status: "challenged",
+      });
+
+      await expect(
+        confirmMatchResult(tx, matchId, p2, clubId, seasonId),
+      ).rejects.toThrow("not in pending_confirmation status");
     });
   });
 });

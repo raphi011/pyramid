@@ -379,10 +379,18 @@ export async function acceptDateProposal(
   acceptedBy: number,
   proposerPlayerId: number,
 ): Promise<void> {
-  // Mark this proposal as accepted
-  await tx`
-    UPDATE date_proposals SET status = 'accepted' WHERE id = ${proposalId}
+  // Atomically accept the proposal — only if it belongs to this match and is still pending
+  const accepted = await tx`
+    UPDATE date_proposals SET status = 'accepted'
+    WHERE id = ${proposalId} AND match_id = ${matchId} AND status = 'pending'
+    RETURNING proposed_datetime
   `;
+
+  if (accepted.length === 0) {
+    throw new Error(
+      `Proposal ${proposalId} not found, not pending, or does not belong to match ${matchId}`,
+    );
+  }
 
   // Dismiss all other pending proposals for this match
   await tx`
@@ -390,16 +398,12 @@ export async function acceptDateProposal(
     WHERE match_id = ${matchId} AND id != ${proposalId} AND status = 'pending'
   `;
 
-  // Get the accepted proposal's datetime
-  const [proposal] = await tx`
-    SELECT proposed_datetime FROM date_proposals WHERE id = ${proposalId}
-  `;
-
   // Update match status and game_at
   await tx`
     UPDATE season_matches
-    SET status = 'date_set', game_at = ${proposal.proposed_datetime}
+    SET status = 'date_set', game_at = ${accepted[0].proposed_datetime}
     WHERE id = ${matchId}
+      AND status IN ('challenged', 'date_set')
   `;
 
   // Create personal event for the proposer
@@ -412,10 +416,18 @@ export async function acceptDateProposal(
 export async function declineDateProposal(
   tx: postgres.TransactionSql,
   proposalId: number,
+  matchId: number,
 ): Promise<void> {
-  await tx`
-    UPDATE date_proposals SET status = 'declined' WHERE id = ${proposalId}
+  const result = await tx`
+    UPDATE date_proposals SET status = 'declined'
+    WHERE id = ${proposalId} AND match_id = ${matchId} AND status = 'pending'
   `;
+
+  if (result.count === 0) {
+    throw new Error(
+      `Proposal ${proposalId} not found, not pending, or does not belong to match ${matchId}`,
+    );
+  }
 }
 
 export async function enterMatchResult(
@@ -429,7 +441,7 @@ export async function enterMatchResult(
   seasonId: number,
   opponentPlayerId: number,
 ): Promise<void> {
-  await tx`
+  const result = await tx`
     UPDATE season_matches
     SET
       team1_score = ${team1Score},
@@ -441,6 +453,12 @@ export async function enterMatchResult(
     WHERE id = ${matchId}
       AND status IN ('challenged', 'date_set')
   `;
+
+  if (result.count === 0) {
+    throw new Error(
+      `Match ${matchId} could not be updated (status may have changed concurrently)`,
+    );
+  }
 
   await tx`
     INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
@@ -455,13 +473,21 @@ export async function confirmMatchResult(
   clubId: number,
   seasonId: number,
 ): Promise<{ winnerTeamId: number; team1Id: number; team2Id: number }> {
-  const [match] = await tx`
+  const rows = await tx`
     UPDATE season_matches
     SET status = 'completed', confirmed_by = ${confirmedBy}
     WHERE id = ${matchId}
       AND status = 'pending_confirmation'
     RETURNING winner_team_id AS "winnerTeamId", team1_id AS "team1Id", team2_id AS "team2Id"
   `;
+
+  if (rows.length === 0) {
+    throw new Error(
+      `Match ${matchId} is not in pending_confirmation status (may have been confirmed already)`,
+    );
+  }
+
+  const match = rows[0];
 
   // Public result event
   await tx`
@@ -500,12 +526,16 @@ export async function updateStandingsAfterResult(
     const challengerIdx = results.indexOf(challengerTeamId);
     const challengeeIdx = results.indexOf(loserTeamId);
 
-    if (challengerIdx !== -1 && challengeeIdx !== -1) {
-      // Remove challenger from current position
-      results.splice(challengerIdx, 1);
-      // Insert challenger at challengee's position
-      results.splice(challengeeIdx, 0, challengerTeamId);
+    if (challengerIdx === -1 || challengeeIdx === -1) {
+      throw new Error(
+        `Cannot update standings: team not found in rankings (season=${seasonId}, challenger=${challengerTeamId}@${challengerIdx}, loser=${loserTeamId}@${challengeeIdx})`,
+      );
     }
+
+    // Remove challenger from current position
+    results.splice(challengerIdx, 1);
+    // Insert challenger at challengee's position
+    results.splice(challengeeIdx, 0, challengerTeamId);
   }
 
   // Always insert a new snapshot (even if no swap — records the match)

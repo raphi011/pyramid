@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Avatar } from "@/components/ui/avatar";
