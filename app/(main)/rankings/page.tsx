@@ -15,6 +15,7 @@ import {
   getMatchesBySeason,
 } from "@/app/lib/db/match";
 import { canChallenge, computeMovement } from "@/app/lib/pyramid";
+import { imageUrl } from "@/app/lib/image-storage";
 import { RankingsView } from "./rankings-view";
 import type { Season } from "@/app/lib/db/season";
 
@@ -116,6 +117,7 @@ export default async function RankingsPage({
       wins: wl.wins,
       losses: wl.losses,
       variant,
+      avatarSrc: imageUrl(p.imageId),
     };
   });
 
@@ -141,6 +143,7 @@ export default async function RankingsPage({
       losses: wl.losses,
       movement,
       challengeable,
+      avatarSrc: imageUrl(p.imageId),
     };
   });
 
