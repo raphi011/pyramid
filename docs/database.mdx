@@ -194,7 +194,6 @@ Comments on a match. Used for coordination between players.
 | `match_id` | `INT` | `NOT NULL, FK → season_matches(id)` | |
 | `player_id` | `INT` | `NOT NULL, FK → player(id)` | |
 | `comment` | `TEXT` | `NOT NULL` | |
-| `image_id` | `UUID` | `FK → images(id)` | Optional inline image. Served via `/api/images/{uuid}`. |
 | `created` | `TIMESTAMPTZ` | `NOT NULL` | |
 | `edited_at` | `TIMESTAMPTZ` | | NULL if never edited |
 
@@ -317,7 +316,7 @@ If `email_enabled = false`, no emails are sent regardless of other toggles.
 
 #### `images`
 
-Shared image storage for all binary image data (player avatars, club logos, match photos, comment images). Entities reference images via `image_id UUID` foreign keys.
+Shared image storage for all binary image data (player avatars, club logos, match photos). Entities reference images via `image_id UUID` foreign keys.
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
@@ -327,9 +326,10 @@ Shared image storage for all binary image data (player avatars, club logos, matc
 | `width` | `INT` | `NOT NULL` | Width in pixels after resize |
 | `height` | `INT` | `NOT NULL` | Height in pixels after resize |
 | `size_bytes` | `INT` | `NOT NULL` | Size of `data` in bytes |
+| `uploaded_by` | `INT` | `NOT NULL, FK → player(id)` | Player who uploaded this image (ownership tracking) |
 | `created` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | |
 
-**Upload flow:** `POST /api/images` accepts multipart/form-data with an image file. The server validates the file type, resizes to 800×800 max via `sharp`, converts to WebP, and inserts into this table. Returns the UUID. The caller then stores the UUID as `image_id` on the relevant entity (`player`, `clubs`, `season_matches`, `match_comments`).
+**Upload flow:** `POST /api/images` accepts multipart/form-data with an image file. The server detects the actual format via `sharp` metadata (ignoring client-supplied MIME), resizes to 800×800 max, converts to WebP, and inserts into this table with `uploaded_by` set to the current player. Returns the UUID. The caller then stores the UUID as `image_id` on the relevant entity (`player`, `clubs`, `season_matches`).
 
 **Serving:** `GET /api/images/{uuid}` returns the raw bytes with `Content-Type` from `content_type` and `Cache-Control: public, max-age=86400`.
 
@@ -461,7 +461,6 @@ These are enforced at the application layer (not as Postgres `ENUM` types) for f
 | `images` → `player` | 1:N | One image can be referenced by multiple players (rare) |
 | `images` → `clubs` | 1:N | One image can be referenced by multiple clubs (rare) |
 | `images` → `season_matches` | 1:N | Match photo |
-| `images` → `match_comments` | 1:N | Comment inline image |
 
 ### Foreign Key Cascade Rules
 

@@ -1,7 +1,6 @@
 import { cache } from "react";
 import type postgres from "postgres";
-
-type Sql = postgres.Sql | postgres.TransactionSql;
+import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -410,6 +409,16 @@ export async function createMatchComment(
 }
 
 // ── Image ─────────────────────────────────────────────
+
+export async function getMatchImageId(
+  sql: Sql,
+  matchId: number,
+): Promise<string | null> {
+  const [row] = await sql`
+    SELECT image_id::text AS "imageId" FROM season_matches WHERE id = ${matchId}
+  `;
+  return (row?.imageId as string) ?? null;
+}
 
 export async function updateMatchImage(
   sql: Sql,

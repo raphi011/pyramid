@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/app/lib/auth";
+import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { processImage, ImageValidationError } from "@/app/lib/image-processing";
 import { postgresImageStorage } from "@/app/lib/image-storage";
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export async function POST(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
+  const player = await getCurrentPlayer();
+  if (!player) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,9 +20,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // Reject oversized files before reading into memory
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        {
+          error: `File too large: ${Math.round(file.size / 1024 / 1024)}MB. Maximum: 10MB`,
+        },
+        { status: 400 },
+      );
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
-    const processed = await processImage(buffer, file.type);
-    const id = await postgresImageStorage.store(sql, processed);
+    const processed = await processImage(buffer);
+    const id = await postgresImageStorage.store(sql, processed, player.id);
 
     return NextResponse.json({ id });
   } catch (e) {

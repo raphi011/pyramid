@@ -1,23 +1,26 @@
-import type postgres from "postgres";
+import type { Sql } from "./db";
 import type { ProcessedImage } from "./image-processing";
-
-type Sql = postgres.Sql | postgres.TransactionSql;
 
 export type StoredImage = ProcessedImage & {
   id: string;
 };
 
 export interface ImageStorage {
-  store(sql: Sql, image: ProcessedImage): Promise<string>;
+  store(sql: Sql, image: ProcessedImage, uploadedBy: number): Promise<string>;
   get(sql: Sql, id: string): Promise<StoredImage | null>;
   delete(sql: Sql, id: string): Promise<void>;
+  isOwnedBy(sql: Sql, id: string, playerId: number): Promise<boolean>;
 }
 
 export const postgresImageStorage: ImageStorage = {
-  async store(sql: Sql, image: ProcessedImage): Promise<string> {
+  async store(
+    sql: Sql,
+    image: ProcessedImage,
+    uploadedBy: number,
+  ): Promise<string> {
     const [row] = await sql`
-      INSERT INTO images (data, content_type, width, height, size_bytes)
-      VALUES (${image.data}, ${image.contentType}, ${image.width}, ${image.height}, ${image.sizeBytes})
+      INSERT INTO images (data, content_type, width, height, size_bytes, uploaded_by)
+      VALUES (${image.data}, ${image.contentType}, ${image.width}, ${image.height}, ${image.sizeBytes}, ${uploadedBy})
       RETURNING id
     `;
     return row.id as string;
@@ -44,9 +47,16 @@ export const postgresImageStorage: ImageStorage = {
   async delete(sql: Sql, id: string): Promise<void> {
     await sql`DELETE FROM images WHERE id = ${id}`;
   },
+
+  async isOwnedBy(sql: Sql, id: string, playerId: number): Promise<boolean> {
+    const rows = await sql`
+      SELECT 1 FROM images WHERE id = ${id} AND uploaded_by = ${playerId}
+    `;
+    return rows.length > 0;
+  },
 };
 
-export function imageUrl(imageId: string | null | undefined): string | null {
+export function imageUrl(imageId: string | null): string | null {
   if (!imageId) return null;
   return `/api/images/${imageId}`;
 }

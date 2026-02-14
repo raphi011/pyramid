@@ -7,7 +7,6 @@ import {
   getMatchComments,
 } from "@/app/lib/db/match";
 import { getStandingsWithPlayers } from "@/app/lib/db/season";
-import { imageUrl } from "@/app/lib/image-storage";
 import { MatchDetailView } from "./match-detail-view";
 
 type MatchDetailPageProps = {
@@ -71,7 +70,6 @@ export default async function MatchDetailPage({
         seasonBestOf: match.seasonBestOf,
         clubId: match.clubId,
         imageId: match.imageId,
-        imageSrc: imageUrl(match.imageId),
       }}
       proposals={proposals.map((p) => ({
         id: p.id,

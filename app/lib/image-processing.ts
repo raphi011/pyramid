@@ -1,17 +1,12 @@
 import sharp from "sharp";
 
-const MAX_DIMENSION = 800;
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
+export const MAX_DIMENSION = 800;
+const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp", "gif"]);
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
 
 export type ProcessedImage = {
   data: Buffer;
-  contentType: string;
+  contentType: "image/webp";
   width: number;
   height: number;
   sizeBytes: number;
@@ -24,14 +19,6 @@ export class ImageValidationError extends Error {
   }
 }
 
-export function validateMimeType(mimeType: string): void {
-  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
-    throw new ImageValidationError(
-      `Unsupported file type: ${mimeType}. Allowed: JPEG, PNG, WebP, GIF`,
-    );
-  }
-}
-
 export function validateFileSize(bytes: number): void {
   if (bytes > MAX_UPLOAD_BYTES) {
     throw new ImageValidationError(
@@ -40,12 +27,22 @@ export function validateFileSize(bytes: number): void {
   }
 }
 
-export async function processImage(
-  input: Buffer,
-  mimeType: string,
-): Promise<ProcessedImage> {
-  validateMimeType(mimeType);
+export async function processImage(input: Buffer): Promise<ProcessedImage> {
   validateFileSize(input.byteLength);
+
+  // Detect actual format from buffer content, not client-supplied MIME type
+  let metadata: sharp.Metadata;
+  try {
+    metadata = await sharp(input).metadata();
+  } catch {
+    throw new ImageValidationError("File does not appear to be a valid image");
+  }
+
+  if (!metadata.format || !ALLOWED_FORMATS.has(metadata.format)) {
+    throw new ImageValidationError(
+      `Unsupported image format: ${metadata.format ?? "unknown"}. Allowed: JPEG, PNG, WebP, GIF`,
+    );
+  }
 
   const processed = await sharp(input)
     .resize(MAX_DIMENSION, MAX_DIMENSION, {

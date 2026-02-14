@@ -12,8 +12,10 @@ CREATE TABLE images (
     width INT NOT NULL,
     height INT NOT NULL,
     size_bytes INT NOT NULL,
+    uploaded_by INT NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- uploaded_by FK added after player table is created (forward reference).
 
 -----------------------------------------------
 -- 1. clubs
@@ -51,6 +53,9 @@ CREATE TABLE player (
     unavailable_until TIMESTAMPTZ,
     unavailable_reason TEXT NOT NULL DEFAULT ''
 );
+
+-- Deferred FK: images.uploaded_by → player(id)
+ALTER TABLE images ADD CONSTRAINT images_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES player(id);
 
 -----------------------------------------------
 -- 3. club_members

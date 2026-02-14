@@ -14,7 +14,9 @@ import {
   updateStandingsAfterResult,
   createMatchComment,
   updateMatchImage,
+  getMatchImageId,
 } from "@/app/lib/db/match";
+import { postgresImageStorage } from "@/app/lib/image-storage";
 import { validateScores } from "@/app/lib/validate-scores";
 
 export type MatchActionResult = { success: true } | { error: string };
@@ -341,8 +343,21 @@ export async function uploadMatchImageAction(
     return { error: "matchDetail.error.notParticipant" };
   }
 
+  // Verify the image belongs to the current player
+  if (imageId) {
+    const owned = await postgresImageStorage.isOwnedBy(sql, imageId, player.id);
+    if (!owned) return { error: "matchDetail.error.serverError" };
+  }
+
   try {
-    await updateMatchImage(sql, matchId, imageId);
+    await sql.begin(async (tx) => {
+      const oldImageId = await getMatchImageId(tx, matchId);
+      const count = await updateMatchImage(tx, matchId, imageId);
+      if (count === 0) throw new Error(`Match ${matchId} not found`);
+      if (oldImageId && oldImageId !== imageId) {
+        await postgresImageStorage.delete(tx, oldImageId);
+      }
+    });
   } catch (e) {
     console.error("uploadMatchImageAction failed:", e);
     return { error: "matchDetail.error.serverError" };

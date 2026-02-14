@@ -1,6 +1,4 @@
-import type postgres from "postgres";
-
-type Sql = postgres.Sql | postgres.TransactionSql;
+import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 

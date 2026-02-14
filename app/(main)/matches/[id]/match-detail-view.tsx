@@ -26,6 +26,7 @@ import {
   postCommentAction,
   uploadMatchImageAction,
 } from "@/app/lib/actions/match";
+import { imageUrl } from "@/app/lib/image-storage";
 import type { MatchStatus } from "@/app/lib/db/match";
 
 // ── Serialized types (dates as ISO strings) ───────────
@@ -50,7 +51,6 @@ type SerializedMatch = {
   seasonBestOf: number;
   clubId: number;
   imageId: string | null;
-  imageSrc: string | null;
 };
 
 type SerializedProposal = {
@@ -251,8 +251,14 @@ export function MatchDetailView({
             body: formData,
           });
           if (!res.ok) {
-            const data = await res.json();
-            setError(data.error ?? t("error.serverError"));
+            let errorMessage = t("error.serverError");
+            try {
+              const data = await res.json();
+              if (data.error) errorMessage = data.error;
+            } catch {
+              // Response was not JSON (e.g. proxy error page)
+            }
+            setError(errorMessage);
             return;
           }
           const { id } = await res.json();
@@ -260,12 +266,13 @@ export function MatchDetailView({
           if ("error" in result) {
             setError(t(`error.${result.error.split(".").pop()}`));
           }
-        } catch {
+        } catch (e) {
+          console.error("Match image upload failed:", e);
           setError(t("error.serverError"));
         }
       });
     },
-    [match.id, t, startTransition],
+    [match.id, t],
   );
 
   // ── Render ────────────────────────────────────────
@@ -509,23 +516,23 @@ export function MatchDetailView({
       )}
 
       {/* Match Photo */}
-      {(match.imageSrc || isParticipant) && (
+      {(match.imageId || isParticipant) && (
         <Card>
           <CardHeader>
             <CardTitle>{t("matchPhoto")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {match.imageSrc && (
+            {match.imageId && (
               // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
               <img
-                src={match.imageSrc}
+                src={imageUrl(match.imageId)!}
                 alt={t("matchPhoto")}
                 className="w-full rounded-xl object-cover"
               />
             )}
             {isParticipant && (
               <label
-                className={`${match.imageSrc ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
+                className={`${match.imageId ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
               >
                 {t("uploadPhoto")}
                 <input

@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { updatePlayerProfile, updatePlayerImage } from "@/app/lib/db/auth";
+import {
+  updatePlayerProfile,
+  updatePlayerImage,
+  getPlayerImageId,
+} from "@/app/lib/db/auth";
+import { postgresImageStorage } from "@/app/lib/image-storage";
 
 export type ProfileResult = { success: true } | { error: string };
 
@@ -50,8 +55,21 @@ export async function updateProfileImageAction(
     return { error: "profile.error.notAuthenticated" };
   }
 
+  // Verify the image belongs to the current player
+  if (imageId) {
+    const owned = await postgresImageStorage.isOwnedBy(sql, imageId, player.id);
+    if (!owned) return { error: "profile.error.serverError" };
+  }
+
   try {
-    await updatePlayerImage(sql, player.id, imageId);
+    await sql.begin(async (tx) => {
+      const oldImageId = await getPlayerImageId(tx, player.id);
+      const count = await updatePlayerImage(tx, player.id, imageId);
+      if (count === 0) throw new Error(`Player ${player.id} not found`);
+      if (oldImageId && oldImageId !== imageId) {
+        await postgresImageStorage.delete(tx, oldImageId);
+      }
+    });
   } catch (e) {
     console.error("updateProfileImageAction failed:", e);
     return { error: "profile.error.serverError" };

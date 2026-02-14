@@ -2090,6 +2090,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ### US-COMMENT-IMG: Upload image in match comment
 
+> **Status: Future** — `match_comments.image_id` column not yet added. Requires migration + UI work.
+
 **Role**: Player | **Priority**: P2
 
 **Preconditions**: User is a participant in the match.

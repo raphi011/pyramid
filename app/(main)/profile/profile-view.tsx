@@ -85,7 +85,8 @@ function ProfileView({
             setEditOpen(false);
             router.refresh();
           }
-        } catch {
+        } catch (e) {
+          console.error("Profile update failed:", e);
           setEditError(t("error.serverError"));
         }
       });
@@ -109,8 +110,14 @@ function ProfileView({
           body: formData,
         });
         if (!res.ok) {
-          const data = await res.json();
-          setEditError(data.error ?? t("error.serverError"));
+          let errorMessage = t("error.serverError");
+          try {
+            const data = await res.json();
+            if (data.error) errorMessage = data.error;
+          } catch {
+            // Response was not JSON (e.g. proxy error page)
+          }
+          setEditError(errorMessage);
           return;
         }
         const { id } = await res.json();
@@ -120,7 +127,8 @@ function ProfileView({
         } else {
           router.refresh();
         }
-      } catch {
+      } catch (e) {
+        console.error("Profile image upload failed:", e);
         setEditError(t("error.serverError"));
       } finally {
         setIsUploading(false);

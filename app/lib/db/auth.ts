@@ -1,6 +1,4 @@
-import type postgres from "postgres";
-
-type Sql = postgres.Sql | postgres.TransactionSql;
+import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -102,6 +100,16 @@ export async function updatePlayerProfile(
     WHERE id = ${playerId}
   `;
   return result.count;
+}
+
+export async function getPlayerImageId(
+  sql: Sql,
+  playerId: number,
+): Promise<string | null> {
+  const [row] = await sql`
+    SELECT image_id::text AS "imageId" FROM player WHERE id = ${playerId}
+  `;
+  return (row?.imageId as string) ?? null;
 }
 
 export async function updatePlayerImage(
