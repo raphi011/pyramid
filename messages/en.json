@@ -126,6 +126,13 @@
     "seasonEndDesc": "{winner} wins the season"
   },
   "profile": {
+    "title": "Profile",
+    "editTitle": "Edit Profile",
+    "nameLabel": "Name",
+    "phoneLabel": "Phone",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell us about yourself\u2026",
+    "saveSuccess": "Profile saved",
     "rankLabel": "Rank",
     "rank": "Rank {rank}",
     "winsLabel": "Wins",
@@ -133,7 +140,26 @@
     "winRateLabel": "Win rate",
     "edit": "Edit",
     "challenge": "Challenge",
-    "unavailable": "Away"
+    "unavailable": "Away",
+    "matchHistory": "Match History",
+    "seeAllMatches": "All matches",
+    "headToHead": "Head-to-Head",
+    "noHeadToHead": "No records",
+    "noHeadToHeadDesc": "Records against other players will appear here.",
+    "clubs": "Clubs",
+    "signOut": "Sign out",
+    "scopeSeason": "Season",
+    "scopeClub": "Club",
+    "scopeAll": "All",
+    "rankChart": "Rank History",
+    "noMatches": "No matches",
+    "noMatchesDesc": "Your matches will appear here.",
+    "unavailableUntil": "Away until {date}",
+    "record": "{wins}W \u2013 {losses}L",
+    "error": {
+      "nameRequired": "Name is required",
+      "notAuthenticated": "Not authenticated"
+    }
   },
   "club": {
     "inviteCode": "Invite code",

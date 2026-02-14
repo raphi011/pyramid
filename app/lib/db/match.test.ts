@@ -26,6 +26,9 @@ import {
   confirmMatchResult,
   updateStandingsAfterResult,
   ChallengeConflictError,
+  getHeadToHeadRecords,
+  getRecentMatchesByTeam,
+  getAggregatedWinsLosses,
 } from "./match";
 
 const db = withTestDb();
@@ -878,6 +881,111 @@ describe("updateStandingsAfterResult", () => {
       `;
       expect(latest.results).toEqual([t1, t2, t3]);
       expect(latest.match_id).toBe(matchId);
+    });
+  });
+});
+
+// ── getHeadToHeadRecords ────────────────────────
+
+describe("getHeadToHeadRecords", () => {
+  it("returns correct win/loss counts per opponent", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "h2h1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "h2h2@example.com", "Bob");
+      const p3 = await seedPlayer(tx, "h2h3@example.com", "Charlie");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+      const t3 = await seedTeam(tx, seasonId, [p3]);
+
+      // t1 beats t2 twice
+      await seedMatch(tx, seasonId, t1, t2, { winnerTeamId: t1 });
+      await seedMatch(tx, seasonId, t2, t1, { winnerTeamId: t1 });
+      // t1 loses to t3
+      await seedMatch(tx, seasonId, t1, t3, { winnerTeamId: t3 });
+      // Non-completed match (should not count)
+      await seedMatch(tx, seasonId, t1, t2, { status: "challenged" });
+
+      const records = await getHeadToHeadRecords(tx, seasonId, t1);
+      expect(records).toHaveLength(2);
+
+      const vsBob = records.find((r) => r.opponentName === "Bob");
+      expect(vsBob).toEqual(expect.objectContaining({ wins: 2, losses: 0 }));
+
+      const vsCharlie = records.find((r) => r.opponentName === "Charlie");
+      expect(vsCharlie).toEqual(
+        expect.objectContaining({ wins: 0, losses: 1 }),
+      );
+    });
+  });
+
+  it("returns empty when no matches", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "h2h-empty@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+
+      const records = await getHeadToHeadRecords(tx, seasonId, t1);
+      expect(records).toEqual([]);
+    });
+  });
+});
+
+// ── getRecentMatchesByTeam ──────────────────────
+
+describe("getRecentMatchesByTeam", () => {
+  it("returns limited recent matches", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "rm1@example.com", "Alice");
+      const p2 = await seedPlayer(tx, "rm2@example.com", "Bob");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      await seedMatch(tx, seasonId, t1, t2, { winnerTeamId: t1 });
+      await seedMatch(tx, seasonId, t2, t1, { winnerTeamId: t2 });
+      await seedMatch(tx, seasonId, t1, t2, { winnerTeamId: t1 });
+
+      const matches = await getRecentMatchesByTeam(tx, seasonId, t1, 2);
+      expect(matches).toHaveLength(2);
+    });
+  });
+});
+
+// ── getAggregatedWinsLosses ─────────────────────
+
+describe("getAggregatedWinsLosses", () => {
+  it("sums wins/losses across multiple teams", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const s1 = await seedSeason(tx, clubId);
+      const s2 = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "agg1@example.com");
+      const p2 = await seedPlayer(tx, "agg2@example.com");
+      const t1 = await seedTeam(tx, s1, [p1]);
+      const t2 = await seedTeam(tx, s1, [p2]);
+      const t3 = await seedTeam(tx, s2, [p1]);
+      const t4 = await seedTeam(tx, s2, [p2]);
+
+      // Season 1: p1 wins 2, loses 0
+      await seedMatch(tx, s1, t1, t2, { winnerTeamId: t1 });
+      await seedMatch(tx, s1, t2, t1, { winnerTeamId: t1 });
+      // Season 2: p1 wins 1, loses 1
+      await seedMatch(tx, s2, t3, t4, { winnerTeamId: t3 });
+      await seedMatch(tx, s2, t4, t3, { winnerTeamId: t4 });
+
+      const result = await getAggregatedWinsLosses(tx, [t1, t3]);
+      expect(result).toEqual({ wins: 3, losses: 1 });
+    });
+  });
+
+  it("returns zeros for empty team list", async () => {
+    await db.withinTransaction(async (tx) => {
+      const result = await getAggregatedWinsLosses(tx, []);
+      expect(result).toEqual({ wins: 0, losses: 0 });
     });
   });
 });

@@ -50,6 +50,13 @@ export type DateProposal = {
   created: Date;
 };
 
+export type HeadToHeadRecord = {
+  opponentTeamId: number;
+  opponentName: string;
+  wins: number;
+  losses: number;
+};
+
 export type MatchComment = {
   id: number;
   matchId: number;
@@ -543,4 +550,93 @@ export async function updateStandingsAfterResult(
     INSERT INTO season_standings (season_id, match_id, results, created)
     VALUES (${seasonId}, ${matchId}, ${results}, NOW())
   `;
+}
+
+// ── Profile queries ─────────────────────────────
+
+export async function getHeadToHeadRecords(
+  sql: Sql,
+  seasonId: number,
+  teamId: number,
+): Promise<HeadToHeadRecord[]> {
+  const rows = await sql`
+    SELECT
+      opponent_id AS "opponentTeamId",
+      p.name AS "opponentName",
+      SUM(CASE WHEN is_winner THEN 1 ELSE 0 END)::int AS wins,
+      SUM(CASE WHEN NOT is_winner THEN 1 ELSE 0 END)::int AS losses
+    FROM (
+      SELECT
+        team2_id AS opponent_id,
+        (winner_team_id = team1_id) AS is_winner
+      FROM season_matches
+      WHERE season_id = ${seasonId} AND team1_id = ${teamId} AND status = 'completed'
+      UNION ALL
+      SELECT
+        team1_id AS opponent_id,
+        (winner_team_id = team2_id) AS is_winner
+      FROM season_matches
+      WHERE season_id = ${seasonId} AND team2_id = ${teamId} AND status = 'completed'
+    ) matches
+    JOIN teams t ON t.id = opponent_id
+    JOIN team_players tp ON tp.team_id = t.id
+    JOIN player p ON p.id = tp.player_id
+    GROUP BY opponent_id, p.name
+    ORDER BY (SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) + SUM(CASE WHEN NOT is_winner THEN 1 ELSE 0 END)) DESC
+  `;
+
+  return rows.map((row) => ({
+    opponentTeamId: row.opponentTeamId as number,
+    opponentName: row.opponentName as string,
+    wins: row.wins as number,
+    losses: row.losses as number,
+  }));
+}
+
+export async function getRecentMatchesByTeam(
+  sql: Sql,
+  seasonId: number,
+  teamId: number,
+  limit = 5,
+): Promise<Match[]> {
+  const rows = await sql.unsafe(
+    `SELECT ${MATCH_SELECT} ${MATCH_JOIN} WHERE sm.season_id = $1 AND (sm.team1_id = $2 OR sm.team2_id = $2) ORDER BY sm.created DESC LIMIT $3`,
+    [seasonId, teamId, limit],
+  );
+
+  return rows.map(toMatch);
+}
+
+export async function getAggregatedWinsLosses(
+  sql: Sql,
+  teamIds: number[],
+): Promise<{ wins: number; losses: number }> {
+  if (teamIds.length === 0) return { wins: 0, losses: 0 };
+
+  const rows = await sql`
+    SELECT
+      COALESCE(SUM(wins), 0)::int AS wins,
+      COALESCE(SUM(losses), 0)::int AS losses
+    FROM (
+      SELECT
+        team_id,
+        COUNT(*) FILTER (WHERE is_winner) AS wins,
+        COUNT(*) FILTER (WHERE NOT is_winner) AS losses
+      FROM (
+        SELECT team1_id AS team_id, (winner_team_id = team1_id) AS is_winner
+        FROM season_matches
+        WHERE status = 'completed' AND team1_id = ANY(${teamIds})
+        UNION ALL
+        SELECT team2_id AS team_id, (winner_team_id = team2_id) AS is_winner
+        FROM season_matches
+        WHERE status = 'completed' AND team2_id = ANY(${teamIds})
+      ) matches
+      GROUP BY team_id
+    ) stats
+  `;
+
+  return {
+    wins: rows[0].wins as number,
+    losses: rows[0].losses as number,
+  };
 }

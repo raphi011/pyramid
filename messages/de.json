@@ -126,6 +126,13 @@
     "seasonEndDesc": "{winner} gewinnt die Saison"
   },
   "profile": {
+    "title": "Profil",
+    "editTitle": "Profil bearbeiten",
+    "nameLabel": "Name",
+    "phoneLabel": "Telefon",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Erz\u00e4hle etwas \u00fcber dich\u2026",
+    "saveSuccess": "Profil gespeichert",
     "rankLabel": "Rang",
     "rank": "Rang {rank}",
     "winsLabel": "Siege",
@@ -133,7 +140,26 @@
     "winRateLabel": "Siegquote",
     "edit": "Bearbeiten",
     "challenge": "Herausfordern",
-    "unavailable": "Abwesend"
+    "unavailable": "Abwesend",
+    "matchHistory": "Spielverlauf",
+    "seeAllMatches": "Alle Spiele",
+    "headToHead": "Direktvergleich",
+    "noHeadToHead": "Keine Daten",
+    "noHeadToHeadDesc": "Spiele gegen andere Spieler erscheinen hier.",
+    "clubs": "Vereine",
+    "signOut": "Abmelden",
+    "scopeSeason": "Saison",
+    "scopeClub": "Verein",
+    "scopeAll": "Alle",
+    "rankChart": "Rangverlauf",
+    "noMatches": "Keine Spiele",
+    "noMatchesDesc": "Deine Spiele erscheinen hier.",
+    "unavailableUntil": "Abwesend bis {date}",
+    "record": "{wins}S \u2013 {losses}N",
+    "error": {
+      "nameRequired": "Name ist erforderlich",
+      "notAuthenticated": "Nicht angemeldet"
+    }
   },
   "club": {
     "inviteCode": "Einladungscode",

@@ -4,6 +4,7 @@ import { seedPlayer } from "./seed";
 import {
   getPlayerByEmail,
   getPlayerById,
+  getPlayerProfile,
   updatePlayerProfile,
   createMagicLink,
   verifyMagicLink,
@@ -62,7 +63,53 @@ describe("getPlayerById", () => {
   });
 });
 
-// ── updatePlayerProfile ────────────────────────────────
+// ── getPlayerProfile ───────────────────────────────
+
+describe("getPlayerProfile", () => {
+  it("returns all profile fields", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "profile@example.com", "Profile User");
+      await tx`UPDATE player SET phone_number = '+49 999', bio = 'Hello world' WHERE id = ${id}`;
+
+      const profile = await getPlayerProfile(tx, id);
+      expect(profile).toEqual(
+        expect.objectContaining({
+          id,
+          name: "Profile User",
+          email: "profile@example.com",
+          phoneNumber: "+49 999",
+          bio: "Hello world",
+          unavailableFrom: null,
+          unavailableUntil: null,
+        }),
+      );
+    });
+  });
+
+  it("returns null for nonexistent player", async () => {
+    await db.withinTransaction(async (tx) => {
+      const profile = await getPlayerProfile(tx, 999999);
+      expect(profile).toBeNull();
+    });
+  });
+
+  it("includes unavailability dates when set", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "unavail-profile@example.com");
+      await tx`
+        UPDATE player
+        SET unavailable_from = '2026-03-01', unavailable_until = '2026-03-15'
+        WHERE id = ${id}
+      `;
+
+      const profile = await getPlayerProfile(tx, id);
+      expect(profile!.unavailableFrom).toBeTruthy();
+      expect(profile!.unavailableUntil).toBeTruthy();
+    });
+  });
+});
+
+// ── updatePlayerProfile ────────────────────────────
 
 describe("updatePlayerProfile", () => {
   it("updates name and phone_number", async () => {
@@ -76,6 +123,18 @@ describe("updatePlayerProfile", () => {
         await tx`SELECT name, phone_number FROM player WHERE id = ${id}`;
       expect(row.name).toBe("New Name");
       expect(row.phone_number).toBe("+49 123");
+    });
+  });
+
+  it("updates bio", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "bio@example.com", "Bio Test");
+      await updatePlayerProfile(tx, id, {
+        name: "Bio Test",
+        bio: "My cool bio",
+      });
+      const [row] = await tx`SELECT bio FROM player WHERE id = ${id}`;
+      expect(row.bio).toBe("My cool bio");
     });
   });
 

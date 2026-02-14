@@ -18,10 +18,17 @@ type RankDataPoint = {
 
 type RankChartProps = {
   data: RankDataPoint[];
+  emptyLabel?: string;
+  tooltipLabel?: string;
   className?: string;
 };
 
-function RankChart({ data, className }: RankChartProps) {
+function RankChart({
+  data,
+  emptyLabel = "Keine Rangdaten vorhanden",
+  tooltipLabel = "Rang",
+  className,
+}: RankChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -49,7 +56,7 @@ function RankChart({ data, className }: RankChartProps) {
           className,
         )}
       >
-        Keine Rangdaten vorhanden
+        {emptyLabel}
       </div>
     );
   }
@@ -91,7 +98,10 @@ function RankChart({ data, className }: RankChartProps) {
               border: "none",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
             }}
-            formatter={(value: number) => [`Rang ${value}`, "Rang"]}
+            formatter={(value: number) => [
+              `${tooltipLabel} ${value}`,
+              tooltipLabel,
+            ]}
           />
           <Line
             type="monotone"
