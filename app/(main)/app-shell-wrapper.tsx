@@ -9,6 +9,7 @@ import {
   BoltIcon,
   BellIcon,
   Cog6ToothIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/app-shell";
 import { ClubSwitcher } from "@/components/club-switcher";
@@ -21,6 +22,7 @@ type AppShellWrapperProps = {
   clubs: [Club, ...Club[]];
   activeMatchId: number | null;
   unreadCount: number;
+  adminClubId: number | null;
   children: React.ReactNode;
 };
 
@@ -29,6 +31,7 @@ export function AppShellWrapper({
   clubs,
   activeMatchId,
   unreadCount,
+  adminClubId,
   children,
 }: AppShellWrapperProps) {
   const t = useTranslations("nav");
@@ -47,10 +50,21 @@ export function AppShellWrapper({
     { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
   ];
 
+  const adminItems = adminClubId
+    ? [
+        {
+          icon: <ShieldCheckIcon />,
+          label: t("manageClub"),
+          href: `/admin/club/${adminClubId}`,
+        },
+      ]
+    : undefined;
+
   return (
     <AppShell
       navItems={navItems}
       sidebarItems={sidebarItems}
+      adminItems={adminItems}
       profile={{
         name: fullName(player.firstName, player.lastName),
         href: "/profile",

@@ -29,6 +29,8 @@ export default async function MainLayout({
     redirect("/join");
   }
 
+  const adminClub = clubs.find((c) => c.role === "admin");
+
   // Check if player has an active match (for FAB navigation)
   // Non-essential — fallback to default "Challenge" FAB on failure
   let activeMatchId: number | null = null;
@@ -64,6 +66,7 @@ export default async function MainLayout({
       )}
       activeMatchId={activeMatchId}
       unreadCount={unreadCount}
+      adminClubId={adminClub?.clubId ?? null}
     >
       {children}
     </AppShellWrapper>
