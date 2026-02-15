@@ -1,3 +1,4 @@
+import "server-only";
 import sharp from "sharp";
 
 export const MAX_DIMENSION = 800;

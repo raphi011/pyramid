@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
@@ -13,6 +14,19 @@ import { MatchDetailView } from "./match-detail-view";
 type MatchDetailPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: MatchDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const matchId = Number(id);
+  if (!matchId || Number.isNaN(matchId)) return { title: "Spiel" };
+
+  const match = await getMatchById(sql, matchId);
+  if (!match) return { title: "Spiel" };
+
+  return { title: `${match.team1Name} vs ${match.team2Name}` };
+}
 
 export default async function MatchDetailPage({
   params,

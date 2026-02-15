@@ -1,5 +1,8 @@
 "use client";
 
+// Hardcoded German strings are intentional here — global-error replaces the
+// entire HTML document (including <html>) so NextIntlClientProvider is not
+// available. Translations cannot be used in this boundary.
 export default function GlobalError({
   reset,
 }: {

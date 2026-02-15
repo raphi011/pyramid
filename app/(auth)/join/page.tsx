@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { JoinFlow } from "./join-flow";
+
+export const metadata: Metadata = { title: "Verein beitreten" };
 
 type JoinPageProps = {
   searchParams: Promise<{ code?: string }>;

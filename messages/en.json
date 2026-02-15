@@ -187,6 +187,7 @@
     "emailLabel": "Email address",
     "emailPlaceholder": "name@example.com",
     "emailDesc": "Enter the email address you registered with.",
+    "guestEmailSubtitle": "Sign in to join the club.",
     "submitEmail": "Continue",
     "checkEmail": "Check your email",
     "checkEmailDesc": "If an account with this email exists, we've sent you a login link.",
@@ -202,6 +203,31 @@
     "title": "Something went wrong",
     "description": "An unexpected error occurred. Please try again.",
     "retry": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The requested page does not exist or has been moved.",
+    "backHome": "Back to home"
+  },
+  "login": {
+    "title": "Sign in",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "name@example.com",
+    "submit": "Request login link",
+    "submitting": "Sending\u2026",
+    "hint": "We'll send you a link to sign in via email.",
+    "error": {
+      "missing_token": "Invalid link. Please request a new one.",
+      "invalid_token": "This link has expired or has already been used.",
+      "server_error": "An error occurred. Please try again.",
+      "generic": "An error occurred. Please try again."
+    }
+  },
+  "checkEmail": {
+    "title": "Check your email",
+    "description": "We've sent you a login link. Click the link in the email to sign in.",
+    "expiry": "The link is valid for 15 minutes.",
+    "backToLogin": "Back to sign in"
   },
   "onboarding": {
     "welcome": "Welcome!",

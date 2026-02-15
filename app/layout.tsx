@@ -9,7 +9,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Pyramid Rankings",
+  metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
+  title: {
+    template: "%s | Pyramid",
+    default: "Pyramid",
+  },
   description: "",
 };
 

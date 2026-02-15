@@ -187,6 +187,7 @@
     "emailLabel": "E-Mail-Adresse",
     "emailPlaceholder": "name@beispiel.de",
     "emailDesc": "Gib die E-Mail-Adresse ein, mit der du registriert bist.",
+    "guestEmailSubtitle": "Melde dich an, um dem Verein beizutreten.",
     "submitEmail": "Weiter",
     "checkEmail": "Prüfe deine E-Mails",
     "checkEmailDesc": "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Login-Link geschickt.",
@@ -202,6 +203,31 @@
     "title": "Etwas ist schiefgelaufen",
     "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "retry": "Erneut versuchen"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die angeforderte Seite existiert nicht oder wurde verschoben.",
+    "backHome": "Zur Startseite"
+  },
+  "login": {
+    "title": "Anmelden",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "name@beispiel.de",
+    "submit": "Login-Link anfordern",
+    "submitting": "Wird gesendet\u2026",
+    "hint": "Wir senden dir einen Link zum Anmelden per E-Mail.",
+    "error": {
+      "missing_token": "Ung\u00fcltiger Link. Bitte fordere einen neuen an.",
+      "invalid_token": "Der Link ist abgelaufen oder wurde bereits verwendet.",
+      "server_error": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
+  },
+  "checkEmail": {
+    "title": "Pr\u00fcfe deine E-Mails",
+    "description": "Wir haben dir einen Login-Link geschickt. Klicke auf den Link in der E-Mail, um dich anzumelden.",
+    "expiry": "Der Link ist 15 Minuten g\u00fcltig.",
+    "backToLogin": "Zur\u00fcck zur Anmeldung"
   },
   "onboarding": {
     "welcome": "Willkommen!",

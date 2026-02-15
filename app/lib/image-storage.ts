@@ -1,3 +1,4 @@
+import "server-only";
 import type { Sql } from "./db";
 import type { ProcessedImage } from "./image-processing";
 
@@ -59,8 +60,3 @@ export const postgresImageStorage: ImageStorage = {
     return rows.length > 0;
   },
 };
-
-export function imageUrl(imageId: string | null): string | null {
-  if (!imageId) return null;
-  return `/api/images/${imageId}`;
-}

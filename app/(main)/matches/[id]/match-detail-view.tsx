@@ -32,7 +32,7 @@ import {
   postCommentAction,
   uploadMatchImageAction,
 } from "@/app/lib/actions/match";
-import { imageUrl } from "@/app/lib/image-storage";
+import { imageUrl } from "@/app/lib/image-url";
 import type { MatchStatus } from "@/app/lib/db/match";
 
 // ── Serialized types (dates as ISO strings) ───────────
