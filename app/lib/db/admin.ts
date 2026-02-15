@@ -40,6 +40,7 @@ export async function getClubStats(
        FROM season_matches sm
        JOIN seasons s ON s.id = sm.season_id
        WHERE s.club_id = ${clubId}
+         AND s.status = 'active'
          AND sm.status IN ('challenged', 'date_set'))
         AS "openChallengeCount"
   `;
@@ -92,7 +93,7 @@ export async function getOverdueMatches(
       sm.season_id AS "seasonId",
       CONCAT(p1.first_name, ' ', p1.last_name) AS "player1Name",
       CONCAT(p2.first_name, ' ', p2.last_name) AS "player2Name",
-      EXTRACT(DAY FROM NOW() - sm.created)::int AS "daysSinceCreated"
+      (NOW()::date - sm.created::date) AS "daysSinceCreated"
     FROM season_matches sm
     JOIN seasons s ON s.id = sm.season_id
     JOIN teams t1 ON t1.id = sm.team1_id
