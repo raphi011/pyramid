@@ -192,7 +192,12 @@
     "checkEmail": "Check your email",
     "checkEmailDesc": "If an account with this email exists, we've sent you a login link.",
     "invalidCode": "Invalid invite code",
-    "clubDisabled": "This club is not accepting new members at this time"
+    "clubDisabled": "This club is not accepting new members at this time",
+    "error": {
+      "serverError": "An error occurred. Please try again.",
+      "joinFailed": "Join failed. Please try again.",
+      "invalidEmail": "Please enter a valid email address."
+    }
   },
   "season": {
     "archived": "(Archive)",

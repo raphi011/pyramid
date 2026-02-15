@@ -10,7 +10,11 @@ import { fullName } from "@/lib/utils";
 import { parseFormData } from "@/app/lib/action-utils";
 
 const codeSchema = z.object({
-  code: z.string().trim().toUpperCase().length(6),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6}$/),
 });
 
 const inviteCodeSchema = z.object({
@@ -51,7 +55,7 @@ export async function validateCode(
 ): Promise<JoinState> {
   const parsed = parseFormData(codeSchema, formData);
   if (!parsed.success) {
-    return { step: "code-input", error: "Ungültiger Einladungscode" };
+    return { step: "code-input", error: "invalidCode" };
   }
   const { code } = parsed.data;
 
@@ -59,13 +63,13 @@ export async function validateCode(
     const club = await getClubByInviteCode(sql, code);
 
     if (!club) {
-      return { step: "code-input", error: "Ungültiger Einladungscode" };
+      return { step: "code-input", error: "invalidCode" };
     }
 
     if (club.isDisabled) {
       return {
         step: "code-input",
-        error: "Dieser Verein nimmt derzeit keine Mitglieder auf",
+        error: "clubDisabled",
       };
     }
 
@@ -98,7 +102,7 @@ export async function validateCode(
     console.error("validateCode failed:", error);
     return {
       step: "code-input",
-      error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      error: "error.serverError",
     };
   }
 }
@@ -114,7 +118,7 @@ export async function joinClubAction(
 
   const parsed = parseFormData(inviteCodeSchema, formData);
   if (!parsed.success) {
-    return { step: "code-input", error: "Ungültiger Einladungscode" };
+    return { step: "code-input", error: "invalidCode" };
   }
   const { inviteCode } = parsed.data;
 
@@ -125,12 +129,12 @@ export async function joinClubAction(
     console.error("joinClubAction lookup failed:", error);
     return {
       step: "code-input",
-      error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      error: "error.serverError",
     };
   }
 
   if (!club || club.isDisabled) {
-    return { step: "code-input", error: "Ungültiger Einladungscode" };
+    return { step: "code-input", error: "invalidCode" };
   }
 
   try {
@@ -141,7 +145,7 @@ export async function joinClubAction(
       step: "confirm-join",
       clubName: club.name,
       inviteCode,
-      error: "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
+      error: "error.joinFailed",
     };
   }
 
@@ -155,20 +159,16 @@ export async function requestJoinAction(
 ): Promise<JoinState> {
   const parsed = parseFormData(requestJoinSchema, formData);
   if (!parsed.success) {
-    // Preserve form state for the user
-    const rawInviteCode = (formData.get("inviteCode") as string)
-      ?.trim()
-      .toUpperCase();
-    const rawClubName = formData.get("clubName") as string;
-
-    if (!rawInviteCode || !/^[A-Z0-9]{6}$/.test(rawInviteCode)) {
-      return { step: "code-input", error: "Ungültiger Einladungscode" };
+    if (parsed.fieldErrors.inviteCode) {
+      return { step: "code-input", error: "invalidCode" };
     }
+    // Email failed — preserve form state
     return {
       step: "guest-email",
-      clubName: rawClubName,
-      inviteCode: rawInviteCode,
-      error: "Bitte gib eine gültige E-Mail-Adresse ein",
+      clubName: (formData.get("clubName") as string) ?? "",
+      inviteCode:
+        (formData.get("inviteCode") as string)?.trim().toUpperCase() ?? "",
+      error: "error.invalidEmail",
     };
   }
   const { email, inviteCode, clubName } = parsed.data;

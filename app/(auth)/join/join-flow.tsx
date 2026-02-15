@@ -103,7 +103,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
 
           {currentState.error && (
             <p className="text-center text-sm text-red-600" role="alert">
-              {currentState.error}
+              {t(currentState.error)}
             </p>
           )}
 
@@ -150,7 +150,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
               label={t("emailLabel")}
               type="email"
               placeholder={t("emailPlaceholder")}
-              error={currentState.error}
+              error={currentState.error ? t(currentState.error) : undefined}
               inputProps={{
                 name: "email",
                 required: true,
@@ -194,7 +194,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
 
           {currentState.error && (
             <p className="text-center text-sm text-red-600" role="alert">
-              {currentState.error}
+              {t(currentState.error)}
             </p>
           )}
 

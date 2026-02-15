@@ -192,7 +192,12 @@
     "checkEmail": "Prüfe deine E-Mails",
     "checkEmailDesc": "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Login-Link geschickt.",
     "invalidCode": "Ungültiger Einladungscode",
-    "clubDisabled": "Dieser Verein nimmt derzeit keine Mitglieder auf"
+    "clubDisabled": "Dieser Verein nimmt derzeit keine Mitglieder auf",
+    "error": {
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "joinFailed": "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein."
+    }
   },
   "season": {
     "archived": "(Archiv)",

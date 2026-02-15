@@ -8,6 +8,7 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const themeScriptHash = "sha256-+DIFQ9jI70f9oJcQ98WgFxZCQiEQzba2AqCxgI9q600=";
 
 const cspHeader = [
+  "default-src 'self'",
   `script-src 'self' '${themeScriptHash}'`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data:",

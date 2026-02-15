@@ -44,7 +44,14 @@ const proposeDateSchema = z.object({
   proposedDatetime: z
     .string()
     .min(1)
-    .refine((v) => !isNaN(new Date(v).getTime()), { message: "Invalid date" }),
+    .transform((v, ctx) => {
+      const d = new Date(v);
+      if (isNaN(d.getTime())) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid date" });
+        return z.NEVER;
+      }
+      return d;
+    }),
 });
 
 const scoreArray = z
@@ -66,14 +73,17 @@ const enterResultSchema = z.object({
   imageId: z.string().default(""),
 });
 
+const EMPTY = "empty" as const;
+const TOO_LONG = "too_long" as const;
+
 const disputeSchema = z.object({
   matchId: z.coerce.number().int().positive(),
-  reason: z.string().trim().min(1, "empty").max(500, "too_long"),
+  reason: z.string().trim().min(1, EMPTY).max(500, TOO_LONG),
 });
 
 const commentSchema = z.object({
   matchId: z.coerce.number().int().positive(),
-  comment: z.string().trim().min(1, "empty").max(2000, "too_long"),
+  comment: z.string().trim().min(1, EMPTY).max(2000, TOO_LONG),
 });
 
 // ── Propose Date ──────────────────────────────────────
@@ -83,9 +93,7 @@ export async function proposeDateAction(
 ): Promise<MatchActionResult> {
   const parsed = parseFormData(proposeDateSchema, formData);
   if (!parsed.success) return { error: "matchDetail.error.invalidInput" };
-  const { matchId, proposedDatetime } = parsed.data;
-
-  const parsedDate = new Date(proposedDatetime);
+  const { matchId, proposedDatetime: parsedDate } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -523,9 +531,9 @@ export async function disputeAction(
 ): Promise<MatchActionResult> {
   const parsed = parseFormData(disputeSchema, formData);
   if (!parsed.success) {
-    if (parsed.error === "too_long")
+    if (parsed.fieldErrors.reason === TOO_LONG)
       return { error: "matchDetail.error.disputeReasonTooLong" };
-    if (parsed.error === "empty")
+    if (parsed.fieldErrors.reason === EMPTY)
       return { error: "matchDetail.error.disputeReasonEmpty" };
     return { error: "matchDetail.error.notFound" };
   }
@@ -630,9 +638,9 @@ export async function postCommentAction(
 ): Promise<MatchActionResult> {
   const parsed = parseFormData(commentSchema, formData);
   if (!parsed.success) {
-    if (parsed.error === "too_long")
+    if (parsed.fieldErrors.comment === TOO_LONG)
       return { error: "matchDetail.error.commentTooLong" };
-    if (parsed.error === "empty")
+    if (parsed.fieldErrors.comment === EMPTY)
       return { error: "matchDetail.error.commentEmpty" };
     return { error: "matchDetail.error.notFound" };
   }

@@ -21,7 +21,7 @@ export async function loginAction(
 ): Promise<LoginState> {
   const parsed = parseFormData(loginSchema, formData);
   if (!parsed.success) {
-    return { error: "login.error.emailRequired" };
+    return { error: "error.emailRequired" };
   }
   const { email } = parsed.data;
 
@@ -46,7 +46,7 @@ export async function loginAction(
     }
   } catch (error) {
     console.error("Login error:", error);
-    return { error: "login.error.generic" };
+    return { error: "error.generic" };
   }
 
   // redirect() throws — must be outside try/catch
