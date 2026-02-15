@@ -84,10 +84,12 @@ export const Default = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Stat blocks render correct values
-    await expect(canvas.getByText("24")).toBeInTheDocument();
-    await expect(canvas.getByText("3")).toBeInTheDocument();
-    await expect(canvas.getByText("12")).toBeInTheDocument();
+    // Stat blocks render correct values (scoped to the stats grid)
+    const statsGrid = canvasElement.querySelector(".grid.grid-cols-3")!;
+    const statsArea = within(statsGrid as HTMLElement);
+    await expect(statsArea.getByText("24")).toBeInTheDocument();
+    await expect(statsArea.getByText("3")).toBeInTheDocument();
+    await expect(statsArea.getByText("12")).toBeInTheDocument();
 
     // Seasons are listed
     await expect(canvas.getByText("Sommer 2026")).toBeInTheDocument();
