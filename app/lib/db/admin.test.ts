@@ -79,14 +79,14 @@ describe("getClubStats", () => {
         winnerTeamId: t1,
       });
 
-      // Match in ended season (should still count since query counts all club matches with open status)
+      // Match in ended season (excluded — openChallengeCount only counts active seasons)
       await seedMatch(tx, endedSeason, t5, t6, { status: "challenged" });
 
       const stats = await getClubStats(tx, clubId);
       expect(stats).toEqual({
         playerCount: 3,
         activeSeasonCount: 2,
-        openChallengeCount: 3, // 2 in active seasons + 1 in ended season
+        openChallengeCount: 2, // only active seasons counted
       });
     });
   });
