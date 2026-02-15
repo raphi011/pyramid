@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
+
+export const metadata: Metadata = { title: "Profil" };
 import { sql } from "@/app/lib/db";
 import { getPlayerProfile } from "@/app/lib/db/auth";
 import { getPlayerClubs } from "@/app/lib/db/club";
@@ -18,7 +21,7 @@ import {
 } from "@/app/lib/db/match";
 import { computeMovement } from "@/app/lib/pyramid";
 import type { SeasonStatsScope } from "../player/shared";
-import { imageUrl } from "@/app/lib/image-storage";
+import { imageUrl } from "@/app/lib/image-url";
 import { ProfileView } from "./profile-view";
 
 export default async function ProfilePage() {

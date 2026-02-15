@@ -1,4 +1,6 @@
+import "server-only";
 import postgres from "postgres";
+import { env } from "./env";
 
 /*
  * postgres.TransactionSql extends Omit<Sql, ...> which strips call signatures
@@ -27,14 +29,7 @@ export type Sql = postgres.Sql | postgres.TransactionSql;
 const globalForDb = globalThis as unknown as { sql: postgres.Sql | undefined };
 
 function createSql(): postgres.Sql {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error(
-      "DATABASE_URL environment variable is not set. " +
-        "See CLAUDE.md for local database setup instructions.",
-    );
-  }
-  return postgres(url, { max: 10, idle_timeout: 20 });
+  return postgres(env.DATABASE_URL, { max: 10, idle_timeout: 20 });
 }
 
 const sql = globalForDb.sql ?? createSql();

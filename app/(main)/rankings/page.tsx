@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
+
+export const metadata: Metadata = { title: "Rangliste" };
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import {
@@ -15,7 +18,7 @@ import {
   getMatchesBySeason,
 } from "@/app/lib/db/match";
 import { canChallenge, computeMovement } from "@/app/lib/pyramid";
-import { imageUrl } from "@/app/lib/image-storage";
+import { imageUrl } from "@/app/lib/image-url";
 import { RankingsView } from "./rankings-view";
 import type { Season } from "@/app/lib/db/season";
 

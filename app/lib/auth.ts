@@ -1,8 +1,10 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { sql } from "./db";
 import * as authRepo from "./db/auth";
 import type { Theme } from "./db/auth";
 import crypto from "crypto";
+import { env } from "./env";
 
 const SESSION_COOKIE_NAME = "session_token";
 const THEME_COOKIE_NAME = "theme";
@@ -46,7 +48,7 @@ export async function setSessionCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: SESSION_EXPIRY_DAYS * 24 * 60 * 60,
     path: "/",
@@ -103,7 +105,7 @@ export async function setThemeCookie(theme: Theme): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(THEME_COOKIE_NAME, theme, {
     httpOnly: false, // readable by inline <script> for FOUC prevention
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: THEME_COOKIE_MAX_AGE,
     path: "/",

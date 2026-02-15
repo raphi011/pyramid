@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
@@ -23,25 +24,76 @@ import {
 } from "@/app/lib/db/match";
 import { postgresImageStorage } from "@/app/lib/image-storage";
 import { validateScores } from "@/app/lib/validate-scores";
+import { parseFormData } from "@/app/lib/action-utils";
 
 export type MatchActionResult = { success: true } | { error: string };
+
+// ── Schemas ──────────────────────────────────────────
+
+const matchIdSchema = z.object({
+  matchId: z.coerce.number().int().positive(),
+});
+
+const proposalAndMatchSchema = z.object({
+  proposalId: z.coerce.number().int().positive(),
+  matchId: z.coerce.number().int().positive(),
+});
+
+const proposeDateSchema = z.object({
+  matchId: z.coerce.number().int().positive(),
+  proposedDatetime: z
+    .string()
+    .min(1)
+    .transform((v, ctx) => {
+      const d = new Date(v);
+      if (isNaN(d.getTime())) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid date" });
+        return z.NEVER;
+      }
+      return d;
+    }),
+});
+
+const scoreArray = z
+  .string()
+  .transform((v, ctx) => {
+    try {
+      return JSON.parse(v) as unknown;
+    } catch {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid JSON" });
+      return z.NEVER;
+    }
+  })
+  .pipe(z.array(z.number().int().min(0)));
+
+const enterResultSchema = z.object({
+  matchId: z.coerce.number().int().positive(),
+  team1Score: scoreArray,
+  team2Score: scoreArray,
+  imageId: z.string().default(""),
+});
+
+const EMPTY = "empty" as const;
+const TOO_LONG = "too_long" as const;
+
+const disputeSchema = z.object({
+  matchId: z.coerce.number().int().positive(),
+  reason: z.string().trim().min(1, EMPTY).max(500, TOO_LONG),
+});
+
+const commentSchema = z.object({
+  matchId: z.coerce.number().int().positive(),
+  comment: z.string().trim().min(1, EMPTY).max(2000, TOO_LONG),
+});
 
 // ── Propose Date ──────────────────────────────────────
 
 export async function proposeDateAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-  const proposedDatetime = formData.get("proposedDatetime") as string;
-
-  if (!matchId || !proposedDatetime) {
-    return { error: "matchDetail.error.invalidInput" };
-  }
-
-  const parsedDate = new Date(proposedDatetime);
-  if (isNaN(parsedDate.getTime())) {
-    return { error: "matchDetail.error.invalidInput" };
-  }
+  const parsed = parseFormData(proposeDateSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.invalidInput" };
+  const { matchId, proposedDatetime: parsedDate } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -90,12 +142,9 @@ export async function proposeDateAction(
 export async function acceptDateAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const proposalId = Number(formData.get("proposalId"));
-  const matchId = Number(formData.get("matchId"));
-
-  if (!proposalId || !matchId) {
-    return { error: "matchDetail.error.proposalNotFound" };
-  }
+  const parsed = parseFormData(proposalAndMatchSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.proposalNotFound" };
+  const { proposalId, matchId } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -148,12 +197,9 @@ export async function acceptDateAction(
 export async function declineDateAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const proposalId = Number(formData.get("proposalId"));
-  const matchId = Number(formData.get("matchId"));
-
-  if (!proposalId || !matchId) {
-    return { error: "matchDetail.error.proposalNotFound" };
-  }
+  const parsed = parseFormData(proposalAndMatchSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.proposalNotFound" };
+  const { proposalId, matchId } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -191,12 +237,9 @@ export async function declineDateAction(
 export async function removeDateProposalAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const proposalId = Number(formData.get("proposalId"));
-  const matchId = Number(formData.get("matchId"));
-
-  if (!proposalId || !matchId) {
-    return { error: "matchDetail.error.proposalNotFound" };
-  }
+  const parsed = parseFormData(proposalAndMatchSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.proposalNotFound" };
+  const { proposalId, matchId } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -234,22 +277,10 @@ export async function removeDateProposalAction(
 export async function enterResultAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-  const team1ScoreRaw = formData.get("team1Score") as string;
-  const team2ScoreRaw = formData.get("team2Score") as string;
-
-  if (!matchId || !team1ScoreRaw || !team2ScoreRaw) {
-    return { error: "matchDetail.error.invalidScores" };
-  }
-
-  let team1Score: number[];
-  let team2Score: number[];
-  try {
-    team1Score = JSON.parse(team1ScoreRaw);
-    team2Score = JSON.parse(team2ScoreRaw);
-  } catch {
-    return { error: "matchDetail.error.invalidScores" };
-  }
+  const parsed = parseFormData(enterResultSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.invalidScores" };
+  const { matchId, team1Score, team2Score } = parsed.data;
+  const imageId = parsed.data.imageId || null;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -270,8 +301,6 @@ export async function enterResultAction(
   if (!validateScores(team1Score, team2Score, match.seasonBestOf)) {
     return { error: "matchDetail.error.invalidScores" };
   }
-
-  const imageId = (formData.get("imageId") as string) || null;
 
   if (imageId) {
     const owned = await postgresImageStorage.isOwnedBy(sql, imageId, player.id);
@@ -322,11 +351,9 @@ export async function enterResultAction(
 export async function confirmResultAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-
-  if (!matchId) {
-    return { error: "matchDetail.error.notFound" };
-  }
+  const parsed = parseFormData(matchIdSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.notFound" };
+  const { matchId } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -387,8 +414,9 @@ export async function confirmResultAction(
 export async function withdrawAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-  if (!matchId) return { error: "matchDetail.error.notFound" };
+  const parsed = parseFormData(matchIdSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.notFound" };
+  const { matchId } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -435,8 +463,9 @@ export async function withdrawAction(
 export async function forfeitAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-  if (!matchId) return { error: "matchDetail.error.notFound" };
+  const parsed = parseFormData(matchIdSchema, formData);
+  if (!parsed.success) return { error: "matchDetail.error.notFound" };
+  const { matchId } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -500,14 +529,15 @@ export async function forfeitAction(
 export async function disputeAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-  if (!matchId) return { error: "matchDetail.error.notFound" };
-
-  const reason = ((formData.get("reason") as string) ?? "").trim();
-  if (!reason) return { error: "matchDetail.error.disputeReasonEmpty" };
-  if (reason.length > 500) {
-    return { error: "matchDetail.error.disputeReasonTooLong" };
+  const parsed = parseFormData(disputeSchema, formData);
+  if (!parsed.success) {
+    if (parsed.fieldErrors.reason === TOO_LONG)
+      return { error: "matchDetail.error.disputeReasonTooLong" };
+    if (parsed.fieldErrors.reason === EMPTY)
+      return { error: "matchDetail.error.disputeReasonEmpty" };
+    return { error: "matchDetail.error.notFound" };
   }
+  const { matchId, reason } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -606,20 +636,15 @@ export async function uploadMatchImageAction(
 export async function postCommentAction(
   formData: FormData,
 ): Promise<MatchActionResult> {
-  const matchId = Number(formData.get("matchId"));
-  const comment = (formData.get("comment") as string | null) ?? "";
-
-  if (!matchId) {
+  const parsed = parseFormData(commentSchema, formData);
+  if (!parsed.success) {
+    if (parsed.fieldErrors.comment === TOO_LONG)
+      return { error: "matchDetail.error.commentTooLong" };
+    if (parsed.fieldErrors.comment === EMPTY)
+      return { error: "matchDetail.error.commentEmpty" };
     return { error: "matchDetail.error.notFound" };
   }
-
-  const trimmed = comment.trim();
-  if (!trimmed) {
-    return { error: "matchDetail.error.commentEmpty" };
-  }
-  if (trimmed.length > 2000) {
-    return { error: "matchDetail.error.commentTooLong" };
-  }
+  const { matchId, comment } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) return { error: "matchDetail.error.notParticipant" };
@@ -636,7 +661,7 @@ export async function postCommentAction(
 
   try {
     await sql.begin(async (tx) => {
-      await createMatchComment(tx, matchId, player.id, trimmed);
+      await createMatchComment(tx, matchId, player.id, comment);
     });
   } catch (e) {
     console.error("postCommentAction failed:", e);

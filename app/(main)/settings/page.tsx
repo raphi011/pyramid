@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
+
+export const metadata: Metadata = { title: "Einstellungen" };
 import { getPlayerProfile } from "@/app/lib/db/auth";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";

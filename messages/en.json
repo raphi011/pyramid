@@ -187,11 +187,17 @@
     "emailLabel": "Email address",
     "emailPlaceholder": "name@example.com",
     "emailDesc": "Enter the email address you registered with.",
+    "guestEmailSubtitle": "Sign in to join the club.",
     "submitEmail": "Continue",
     "checkEmail": "Check your email",
     "checkEmailDesc": "If an account with this email exists, we've sent you a login link.",
     "invalidCode": "Invalid invite code",
-    "clubDisabled": "This club is not accepting new members at this time"
+    "clubDisabled": "This club is not accepting new members at this time",
+    "error": {
+      "serverError": "An error occurred. Please try again.",
+      "joinFailed": "Join failed. Please try again.",
+      "invalidEmail": "Please enter a valid email address."
+    }
   },
   "season": {
     "archived": "(Archive)",
@@ -202,6 +208,32 @@
     "title": "Something went wrong",
     "description": "An unexpected error occurred. Please try again.",
     "retry": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The requested page does not exist or has been moved.",
+    "backHome": "Back to home"
+  },
+  "login": {
+    "title": "Sign in",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "name@example.com",
+    "submit": "Request login link",
+    "submitting": "Sending\u2026",
+    "hint": "We'll send you a link to sign in via email.",
+    "error": {
+      "missing_token": "Invalid link. Please request a new one.",
+      "invalid_token": "This link has expired or has already been used.",
+      "server_error": "An error occurred. Please try again.",
+      "generic": "An error occurred. Please try again.",
+      "emailRequired": "Please enter your email address."
+    }
+  },
+  "checkEmail": {
+    "title": "Check your email",
+    "description": "We've sent you a login link. Click the link in the email to sign in.",
+    "expiry": "The link is valid for 15 minutes.",
+    "backToLogin": "Back to sign in"
   },
   "onboarding": {
     "welcome": "Welcome!",
@@ -313,6 +345,30 @@
     "deleteAccountDesc": "Your account and all data will be permanently deleted.",
     "deleteAccount": "Delete account",
     "signOut": "Sign out"
+  },
+  "adminDashboard": {
+    "title": "Manage club",
+    "members": "Members",
+    "seasons": "Seasons",
+    "openChallenges": "Open challenges",
+    "activeSeasons": "Active seasons",
+    "noActiveSeasons": "No active seasons",
+    "noActiveSeasonsDesc": "Create a new season to get started.",
+    "teamCount": "{count, plural, one {# team} other {# teams}}",
+    "matchCount": "{count, plural, one {# match} other {# matches}}",
+    "overdueCount": "{count} overdue",
+    "manage": "Manage",
+    "overdueMatches": "Overdue matches",
+    "daysOverdue": "{days, plural, one {# day overdue} other {# days overdue}}",
+    "nudge": "Nudge",
+    "resolve": "Resolve",
+    "actions": "Actions",
+    "manageMembers": "Manage members",
+    "createSeason": "Create season",
+    "sendAnnouncement": "Send announcement",
+    "clubSettings": "Club settings",
+    "accessDenied": "Access denied",
+    "accessDeniedDesc": "You don't have admin permissions for this club."
   },
   "feed": {
     "title": "News",

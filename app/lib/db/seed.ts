@@ -62,13 +62,27 @@ export async function seedSeason(
     status = "active",
     minTeamSize = 1,
     maxTeamSize = 1,
+    matchDeadlineDays,
+  }: {
+    name?: string;
+    status?: string;
+    minTeamSize?: number;
+    maxTeamSize?: number;
+    matchDeadlineDays?: number;
   } = {},
 ): Promise<number> {
-  const [row] = await tx`
-    INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, created)
-    VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, NOW())
-    RETURNING id
-  `;
+  const [row] =
+    matchDeadlineDays != null
+      ? await tx`
+        INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, match_deadline_days, created)
+        VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, ${matchDeadlineDays}, NOW())
+        RETURNING id
+      `
+      : await tx`
+        INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, created)
+        VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, NOW())
+        RETURNING id
+      `;
   return row.id as number;
 }
 
@@ -111,6 +125,7 @@ export async function seedMatch(
     team1Score,
     team2Score,
     gameAt,
+    created,
   }: {
     status?: string;
     winnerTeamId?: number;
@@ -118,11 +133,12 @@ export async function seedMatch(
     team1Score?: number[];
     team2Score?: number[];
     gameAt?: Date;
+    created?: Date;
   } = {},
 ): Promise<number> {
   const [row] = await tx`
     INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, result_entered_by, team1_score, team2_score, game_at, status, created)
-    VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${resultEnteredBy ?? null}, ${team1Score ?? null}, ${team2Score ?? null}, ${gameAt ?? null}, ${status}, NOW())
+    VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${resultEnteredBy ?? null}, ${team1Score ?? null}, ${team2Score ?? null}, ${gameAt ?? null}, ${status}, COALESCE(${created ?? null}::timestamptz, NOW()))
     RETURNING id
   `;
   return row.id as number;
@@ -201,16 +217,10 @@ export async function seedEvent(
     created?: Date;
   } = {},
 ): Promise<number> {
-  const [row] = created
-    ? await tx`
-        INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-        VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, ${created})
-        RETURNING id
-      `
-    : await tx`
-        INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
-        VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, NOW())
-        RETURNING id
-      `;
+  const [row] = await tx`
+    INSERT INTO events (club_id, season_id, match_id, player_id, target_player_id, event_type, metadata, created)
+    VALUES (${clubId}, ${seasonId ?? null}, ${matchId ?? null}, ${playerId ?? null}, ${targetPlayerId ?? null}, ${eventType}, ${tx.json(metadata)}, COALESCE(${created ?? null}::timestamptz, NOW()))
+    RETURNING id
+  `;
   return row.id as number;
 }

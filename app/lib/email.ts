@@ -1,12 +1,14 @@
+import "server-only";
 import nodemailer from "nodemailer";
+import { env } from "./env";
 
 let _transporter: nodemailer.Transporter | null = null;
 
 function getTransporter(): nodemailer.Transporter {
   if (!_transporter) {
     _transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "postfix-relay.postfix.svc.cluster.local",
-      port: parseInt(process.env.SMTP_PORT || "587"),
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
       secure: false,
       tls: { rejectUnauthorized: false },
     });
@@ -15,11 +17,7 @@ function getTransporter(): nodemailer.Transporter {
 }
 
 export function getAppUrl(): string {
-  const appUrl = process.env.APP_URL;
-  if (!appUrl && process.env.NODE_ENV === "production") {
-    throw new Error("APP_URL environment variable is required in production");
-  }
-  return appUrl || "http://localhost:3000";
+  return env.APP_URL;
 }
 
 export async function sendMagicLinkEmail(
@@ -35,7 +33,7 @@ export async function sendMagicLinkEmail(
 
   try {
     await getTransporter().sendMail({
-      from: process.env.SMTP_FROM || "Pyramid <pyramid@raphi011.dev>",
+      from: env.SMTP_FROM,
       to: email,
       subject: "Dein Login-Link für Pyramid",
       html: `

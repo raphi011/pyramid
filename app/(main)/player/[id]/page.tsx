@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
@@ -25,6 +26,19 @@ import { PlayerDetailView } from "./player-detail-view";
 type PlayerPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: PlayerPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const playerId = Number(id);
+  if (!Number.isInteger(playerId) || playerId <= 0) return { title: "Spieler" };
+
+  const profile = await getPlayerProfile(sql, playerId);
+  if (!profile) return { title: "Spieler" };
+
+  return { title: `${profile.firstName} ${profile.lastName}` };
+}
 
 export default async function PlayerPage({ params }: PlayerPageProps) {
   const { id } = await params;

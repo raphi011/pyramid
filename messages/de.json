@@ -187,11 +187,17 @@
     "emailLabel": "E-Mail-Adresse",
     "emailPlaceholder": "name@beispiel.de",
     "emailDesc": "Gib die E-Mail-Adresse ein, mit der du registriert bist.",
+    "guestEmailSubtitle": "Melde dich an, um dem Verein beizutreten.",
     "submitEmail": "Weiter",
     "checkEmail": "Prüfe deine E-Mails",
     "checkEmailDesc": "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Login-Link geschickt.",
     "invalidCode": "Ungültiger Einladungscode",
-    "clubDisabled": "Dieser Verein nimmt derzeit keine Mitglieder auf"
+    "clubDisabled": "Dieser Verein nimmt derzeit keine Mitglieder auf",
+    "error": {
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "joinFailed": "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein."
+    }
   },
   "season": {
     "archived": "(Archiv)",
@@ -202,6 +208,32 @@
     "title": "Etwas ist schiefgelaufen",
     "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "retry": "Erneut versuchen"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die angeforderte Seite existiert nicht oder wurde verschoben.",
+    "backHome": "Zur Startseite"
+  },
+  "login": {
+    "title": "Anmelden",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "name@beispiel.de",
+    "submit": "Login-Link anfordern",
+    "submitting": "Wird gesendet\u2026",
+    "hint": "Wir senden dir einen Link zum Anmelden per E-Mail.",
+    "error": {
+      "missing_token": "Ung\u00fcltiger Link. Bitte fordere einen neuen an.",
+      "invalid_token": "Der Link ist abgelaufen oder wurde bereits verwendet.",
+      "server_error": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "emailRequired": "Bitte gib deine E-Mail-Adresse ein."
+    }
+  },
+  "checkEmail": {
+    "title": "Pr\u00fcfe deine E-Mails",
+    "description": "Wir haben dir einen Login-Link geschickt. Klicke auf den Link in der E-Mail, um dich anzumelden.",
+    "expiry": "Der Link ist 15 Minuten g\u00fcltig.",
+    "backToLogin": "Zur\u00fcck zur Anmeldung"
   },
   "onboarding": {
     "welcome": "Willkommen!",
@@ -313,6 +345,30 @@
     "deleteAccountDesc": "Dein Konto und alle Daten werden unwiderruflich gel\u00f6scht.",
     "deleteAccount": "Konto l\u00f6schen",
     "signOut": "Abmelden"
+  },
+  "adminDashboard": {
+    "title": "Club verwalten",
+    "members": "Mitglieder",
+    "seasons": "Saisons",
+    "openChallenges": "Offene Spiele",
+    "activeSeasons": "Aktive Saisons",
+    "noActiveSeasons": "Keine aktiven Saisons",
+    "noActiveSeasonsDesc": "Erstelle eine neue Saison, um loszulegen.",
+    "teamCount": "{count, plural, one {# Team} other {# Teams}}",
+    "matchCount": "{count, plural, one {# Spiel} other {# Spiele}}",
+    "overdueCount": "{count, plural, one {# \u00fcberf\u00e4llig} other {# \u00fcberf\u00e4llig}}",
+    "manage": "Verwalten",
+    "overdueMatches": "\u00dcberf\u00e4llige Spiele",
+    "daysOverdue": "{days, plural, one {# Tag \u00fcberf\u00e4llig} other {# Tage \u00fcberf\u00e4llig}}",
+    "nudge": "Erinnern",
+    "resolve": "L\u00f6sen",
+    "actions": "Aktionen",
+    "manageMembers": "Mitglieder verwalten",
+    "createSeason": "Saison erstellen",
+    "sendAnnouncement": "Ank\u00fcndigung senden",
+    "clubSettings": "Club-Einstellungen",
+    "accessDenied": "Kein Zugriff",
+    "accessDeniedDesc": "Du hast keine Adminrechte f\u00fcr diesen Club."
   },
   "feed": {
     "title": "Neuigkeiten",

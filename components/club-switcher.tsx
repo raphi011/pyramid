@@ -35,7 +35,6 @@ function ClubSwitcher({
       <div
         className={cn(
           "flex items-center gap-2 rounded-xl px-3 py-2",
-          "bg-slate-100 dark:bg-slate-800",
           className,
         )}
       >
@@ -55,8 +54,8 @@ function ClubSwitcher({
           aria-label={`${activeClub.name} – Verein wechseln`}
           className={cn(
             "flex w-full items-center gap-2 rounded-xl px-3 py-2",
-            "bg-slate-100 transition-colors hover:bg-slate-200",
-            "dark:bg-slate-800 dark:hover:bg-slate-700",
+            "transition-colors hover:bg-slate-100",
+            "dark:hover:bg-slate-800",
             className,
           )}
         >

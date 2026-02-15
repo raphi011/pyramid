@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/card";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ type JoinFlowProps = {
 const initialState: JoinState = { step: "code-input" };
 
 export function JoinFlow({ initialCode }: JoinFlowProps) {
+  const t = useTranslations("club");
+  const tCommon = useTranslations("common");
   const [state, validateAction, isValidating] = useActionState(
     validateCode,
     initialState,
@@ -57,11 +60,10 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
       <Card>
         <CardContent className="mt-0 space-y-4 p-6 text-center">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Prüfe deine E-Mails
+            {t("checkEmail")}
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen
-            Login-Link geschickt.
+            {t("checkEmailDesc")}
           </p>
         </CardContent>
       </Card>
@@ -73,13 +75,13 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
       <Card>
         <CardContent className="mt-0 space-y-4 p-6 text-center">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Du bist bereits Mitglied von {currentState.clubName}
+            {t("alreadyMember", { club: currentState.clubName ?? "" })}
           </h2>
           <Link
             href="/"
             className="inline-block text-sm font-medium text-court-600 hover:text-court-700 dark:text-court-400"
           >
-            Zur Startseite
+            {t("goHome")}
           </Link>
         </CardContent>
       </Card>
@@ -92,16 +94,16 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
         <CardContent className="mt-0 space-y-4 p-6">
           <div className="text-center">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {currentState.clubName} beitreten?
+              {t("confirmJoin", { club: currentState.clubName ?? "" })}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Du kannst dich danach für aktive Saisons anmelden.
+              {t("confirmJoinDesc")}
             </p>
           </div>
 
           {currentState.error && (
             <p className="text-center text-sm text-red-600" role="alert">
-              {currentState.error}
+              {t(currentState.error)}
             </p>
           )}
 
@@ -112,7 +114,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
               value={currentState.inviteCode}
             />
             <Button type="submit" className="w-full" loading={isJoining}>
-              Beitreten
+              {t("join")}
             </Button>
           </form>
         </CardContent>
@@ -126,10 +128,10 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
         <CardContent className="mt-0 space-y-4 p-6">
           <div className="text-center">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {currentState.clubName} beitreten
+              {t("joinTitle")}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Melde dich an, um dem Verein beizutreten.
+              {t("guestEmailSubtitle")}
             </p>
           </div>
 
@@ -145,10 +147,10 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
               value={currentState.clubName}
             />
             <FormField
-              label="E-Mail-Adresse"
+              label={t("emailLabel")}
               type="email"
-              placeholder="name@beispiel.de"
-              error={currentState.error}
+              placeholder={t("emailPlaceholder")}
+              error={currentState.error ? t(currentState.error) : undefined}
               inputProps={{
                 name: "email",
                 required: true,
@@ -157,12 +159,12 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
             />
 
             <Button type="submit" className="w-full" loading={isRequesting}>
-              Weiter
+              {t("submitEmail")}
             </Button>
           </form>
 
           <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-            Gib die E-Mail-Adresse ein, mit der du registriert bist.
+            {t("emailDesc")}
           </p>
         </CardContent>
       </Card>
@@ -175,10 +177,10 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
       <CardContent className="mt-0 space-y-6 p-6">
         <div className="text-center">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Verein beitreten
+            {t("joinTitle")}
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Gib den Einladungscode ein, den du von deinem Verein erhalten hast.
+            {t("joinDesc")}
           </p>
         </div>
 
@@ -192,7 +194,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
 
           {currentState.error && (
             <p className="text-center text-sm text-red-600" role="alert">
-              {currentState.error}
+              {t(currentState.error)}
             </p>
           )}
 
@@ -202,7 +204,7 @@ export function JoinFlow({ initialCode }: JoinFlowProps) {
             disabled={code.length !== 6}
             loading={isValidating}
           >
-            Weiter
+            {tCommon("confirm")}
           </Button>
         </form>
       </CardContent>
