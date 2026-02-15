@@ -43,13 +43,13 @@ describe("transaction isolation", () => {
   it("rolls back inserts after test", async () => {
     await db.withinTransaction(async (tx) => {
       await tx`
-        INSERT INTO player (name, email_address, created)
-        VALUES ('Test Player', 'isolation-test@example.com', NOW())
+        INSERT INTO player (first_name, last_name, email_address, created)
+        VALUES ('Test', 'Player', 'isolation-test@example.com', NOW())
       `;
       const [row] = await tx`
-        SELECT name FROM player WHERE email_address = 'isolation-test@example.com'
+        SELECT first_name FROM player WHERE email_address = 'isolation-test@example.com'
       `;
-      expect(row.name).toBe("Test Player");
+      expect(row.first_name).toBe("Test");
     });
 
     // Verify it was rolled back

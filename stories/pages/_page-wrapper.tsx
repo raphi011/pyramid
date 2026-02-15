@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/app-shell";
 import { ClubSwitcher } from "@/components/club-switcher";
+import { fullName } from "@/lib/utils";
 import { clubs, currentPlayer } from "./_mock-data";
 
 type PageWrapperProps = {
@@ -56,7 +57,10 @@ export function PageWrapper({
       navItems={navItems}
       sidebarItems={sidebarItems}
       adminItems={isAdmin ? adminItems : undefined}
-      profile={{ name: currentPlayer.name, href: "/profile" }}
+      profile={{
+        name: fullName(currentPlayer.firstName, currentPlayer.lastName),
+        href: "/profile",
+      }}
       activeHref={active}
       onNavigate={setActive}
       fab={{

@@ -40,7 +40,8 @@ CREATE TABLE clubs (
 -----------------------------------------------
 CREATE TABLE player (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
     phone_number TEXT NOT NULL DEFAULT '',
     email_address TEXT NOT NULL UNIQUE,
     image_id UUID REFERENCES images(id),

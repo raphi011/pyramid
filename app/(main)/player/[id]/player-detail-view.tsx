@@ -9,6 +9,7 @@ import { PlayerProfile } from "@/components/domain/player-profile";
 import { RankChart } from "@/components/domain/rank-chart";
 import { MatchCard } from "@/components/domain/match-card";
 import { ChallengeSheet } from "@/components/domain/challenge-sheet";
+import { fullName } from "@/lib/utils";
 import { StatsCard } from "@/components/domain/stats-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Tabs } from "@/components/ui/tabs";
@@ -62,9 +63,9 @@ function PlayerDetailView({
     new Date(profile.unavailableUntil) >= new Date();
 
   return (
-    <PageLayout title={profile.name}>
+    <PageLayout title={fullName(profile.firstName, profile.lastName)}>
       <PlayerProfile
-        name={profile.name}
+        name={fullName(profile.firstName, profile.lastName)}
         rank={seasonStats.rank}
         wins={seasonStats.wins}
         losses={seasonStats.losses}
@@ -195,7 +196,8 @@ function PlayerDetailView({
           onClose={() => setChallengeOpen(false)}
           target={{
             teamId: targetTeamId,
-            name: profile.name,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
             rank: seasonStats.rank,
           }}
           opponents={[]}

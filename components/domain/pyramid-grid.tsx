@@ -1,16 +1,17 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import {
   PlayerCard,
   type PlayerCardVariant,
 } from "@/components/domain/player-card";
-import { cn, abbreviateName } from "@/lib/utils";
+import { cn, abbreviateName, fullName } from "@/lib/utils";
 
 type PyramidPlayer = {
   id: string | number;
   playerId?: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   rank: number;
   avatarSrc?: string | null;
   wins?: number;
@@ -42,50 +43,9 @@ function buildRows(players: PyramidPlayer[]): PyramidPlayer[][] {
   return rows;
 }
 
-function useDragScroll(ref: React.RefObject<HTMLDivElement | null>) {
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const startScrollLeft = useRef(0);
-
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      const el = ref.current;
-      if (!el || el.scrollWidth <= el.clientWidth) return;
-      isDragging.current = true;
-      startX.current = e.clientX;
-      startScrollLeft.current = el.scrollLeft;
-      el.setPointerCapture(e.pointerId);
-      el.style.cursor = "grabbing";
-    },
-    [ref],
-  );
-
-  const onPointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isDragging.current || !ref.current) return;
-      ref.current.scrollLeft =
-        startScrollLeft.current - (e.clientX - startX.current);
-    },
-    [ref],
-  );
-
-  const onPointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isDragging.current || !ref.current) return;
-      isDragging.current = false;
-      ref.current.releasePointerCapture(e.pointerId);
-      ref.current.style.cursor = "";
-    },
-    [ref],
-  );
-
-  return { onPointerDown, onPointerMove, onPointerUp };
-}
-
 function PyramidGrid({ players, onPlayerClick, className }: PyramidGridProps) {
   const rows = buildRows(players);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const dragHandlers = useDragScroll(scrollRef);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -101,7 +61,6 @@ function PyramidGrid({ players, onPlayerClick, className }: PyramidGridProps) {
         "-mx-[calc((100cqw-100%)/2)] px-[max(1rem,calc((100cqw-100%)/2))]",
         className,
       )}
-      {...dragHandlers}
     >
       <div className="min-w-fit space-y-2 py-1">
         {rows.map((row, rowIdx) => {
@@ -114,7 +73,7 @@ function PyramidGrid({ players, onPlayerClick, className }: PyramidGridProps) {
               {row.map((player) => (
                 <PlayerCard
                   key={player.id}
-                  name={abbreviateName(player.name)}
+                  name={abbreviateName(player.firstName, player.lastName)}
                   rank={player.rank}
                   avatarSrc={player.avatarSrc}
                   wins={player.wins}

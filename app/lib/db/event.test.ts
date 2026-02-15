@@ -29,8 +29,8 @@ describe("getFeedEvents", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "feed1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "feed2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "feed1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "feed2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
       const matchId = await seedMatch(tx, seasonId, t1, t2, {
@@ -60,7 +60,7 @@ describe("getFeedEvents", () => {
       expect(events).toHaveLength(1);
       expect(events[0].eventType).toBe("challenge");
       expect(events[0].clubName).toBeTruthy();
-      expect(events[0].actorName).toBe("Alice");
+      expect(events[0].actorName).toBe("Alice Archer");
     });
   });
 
@@ -68,8 +68,13 @@ describe("getFeedEvents", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "feed-join1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "feed-join2@example.com", "Bob");
+      const p1 = await seedPlayer(
+        tx,
+        "feed-join1@example.com",
+        "Alice",
+        "Archer",
+      );
+      const p2 = await seedPlayer(tx, "feed-join2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
       const matchId = await seedMatch(tx, seasonId, t1, t2, {
@@ -88,8 +93,8 @@ describe("getFeedEvents", () => {
 
       const events = await getFeedEvents(tx, [clubId], null, 10);
       expect(events).toHaveLength(1);
-      expect(events[0].team1Name).toBe("Alice");
-      expect(events[0].team2Name).toBe("Bob");
+      expect(events[0].team1Name).toBe("Alice Archer");
+      expect(events[0].team2Name).toBe("Bob Baker");
       expect(events[0].team1Score).toEqual([6, 7]);
       expect(events[0].team2Score).toEqual([4, 5]);
       expect(events[0].winnerTeamId).toBe(t1);
@@ -144,8 +149,8 @@ describe("getNotifications", () => {
   it("returns personal events for target player only", async () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
-      const p1 = await seedPlayer(tx, "notif1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "notif2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "notif1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "notif2@example.com", "Bob", "Baker");
 
       // Personal for p2
       await seedEvent(tx, clubId, {
@@ -168,7 +173,7 @@ describe("getNotifications", () => {
       const p2Notifs = await getNotifications(tx, p2, [clubId], null, 10);
       expect(p2Notifs).toHaveLength(1);
       expect(p2Notifs[0].eventType).toBe("challenged");
-      expect(p2Notifs[0].actorName).toBe("Alice");
+      expect(p2Notifs[0].actorName).toBe("Alice Archer");
 
       const p1Notifs = await getNotifications(tx, p1, [clubId], null, 10);
       expect(p1Notifs).toHaveLength(1);

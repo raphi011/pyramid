@@ -12,13 +12,14 @@ const sql = postgres(DATABASE_URL);
  * Returns player id and email.
  */
 export async function createTestPlayer({
-  name = "",
+  firstName = "",
+  lastName = "",
   emailPrefix = "e2e-test",
-}: { name?: string; emailPrefix?: string } = {}) {
+}: { firstName?: string; lastName?: string; emailPrefix?: string } = {}) {
   const email = `${emailPrefix}-${crypto.randomUUID()}@test.local`;
   const [row] = await sql`
-    INSERT INTO player (name, email_address, created)
-    VALUES (${name}, ${email}, NOW())
+    INSERT INTO player (first_name, last_name, email_address, created)
+    VALUES (${firstName}, ${lastName}, ${email}, NOW())
     RETURNING id
   `;
   return { id: row.id as number, email };

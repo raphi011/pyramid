@@ -26,7 +26,10 @@ test.describe("auth flow", () => {
   test("valid magic link with named player redirects to /join", async ({
     page,
   }) => {
-    const player = await createTestPlayer({ name: "Named Player" });
+    const player = await createTestPlayer({
+      firstName: "Named",
+      lastName: "Player",
+    });
 
     try {
       const token = await createTestMagicLink(player.id);
@@ -42,7 +45,7 @@ test.describe("auth flow", () => {
   test("valid magic link with unnamed player redirects to /onboarding", async ({
     page,
   }) => {
-    const player = await createTestPlayer({ name: "" });
+    const player = await createTestPlayer();
 
     try {
       const token = await createTestMagicLink(player.id);
@@ -56,7 +59,10 @@ test.describe("auth flow", () => {
   });
 
   test("expired token redirects to /login with error", async ({ page }) => {
-    const player = await createTestPlayer({ name: "Expired" });
+    const player = await createTestPlayer({
+      firstName: "Expired",
+      lastName: "Token",
+    });
 
     try {
       const token = await createTestMagicLink(player.id, { expired: true });
@@ -76,7 +82,7 @@ test.describe("auth flow", () => {
   test("complete onboarding sets name and redirects to /join", async ({
     page,
   }) => {
-    const player = await createTestPlayer({ name: "" });
+    const player = await createTestPlayer();
 
     try {
       // Log in via magic link → should land on onboarding
@@ -84,8 +90,9 @@ test.describe("auth flow", () => {
       await page.goto(`/api/auth/verify?token=${token}`);
       await expect(page).toHaveURL(/\/onboarding/);
 
-      // Fill in name and submit
-      await page.getByPlaceholder("Max Mustermann").fill("E2E Tester");
+      // Fill in first name and last name
+      await page.getByPlaceholder("Max").fill("E2E");
+      await page.getByPlaceholder("Mustermann").fill("Tester");
       await page.getByPlaceholder("+49 170 1234567").fill("+49 170 0000000");
       await page.getByRole("button", { name: /weiter/i }).click();
 
@@ -101,7 +108,10 @@ test.describe("auth flow", () => {
   test.skip("logout clears session and redirects to /login", async ({
     page,
   }) => {
-    const player = await createTestPlayer({ name: "Logout Tester" });
+    const player = await createTestPlayer({
+      firstName: "Logout",
+      lastName: "Tester",
+    });
 
     try {
       const token = await createTestMagicLink(player.id);

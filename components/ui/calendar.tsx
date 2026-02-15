@@ -72,6 +72,7 @@ function Calendar({ value, onChange, className }: CalendarProps) {
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <button
+          type="button"
           onClick={prevMonth}
           aria-label="Vorheriger Monat"
           className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
@@ -82,6 +83,7 @@ function Calendar({ value, onChange, className }: CalendarProps) {
           {MONTHS[month]} {year}
         </span>
         <button
+          type="button"
           onClick={nextMonth}
           aria-label="Nächster Monat"
           className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
@@ -111,6 +113,7 @@ function Calendar({ value, onChange, className }: CalendarProps) {
 
           return (
             <button
+              type="button"
               key={day.getDate()}
               onClick={() => onChange?.(day)}
               className={cn(

@@ -57,7 +57,7 @@ function BottomNav({
         ))}
 
         {fab && (
-          <div className="flex flex-col items-center -mt-3">
+          <div className="flex flex-col items-center -mt-3 pb-2">
             <button
               onClick={fab.onClick}
               disabled={fab.disabled}
@@ -68,7 +68,7 @@ function BottomNav({
                 "disabled:opacity-50 disabled:shadow-sm",
                 "[&_svg]:size-6",
                 fab.variant === "active"
-                  ? "bg-trophy-500 text-slate-900 active:bg-trophy-600"
+                  ? "bg-trophy-400 text-white active:bg-trophy-500"
                   : "bg-court-500 text-white active:bg-court-700 active:shadow-md",
               )}
               aria-label={fab.label}

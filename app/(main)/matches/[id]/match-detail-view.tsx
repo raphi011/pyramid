@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Avatar } from "@/components/ui/avatar";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DataList } from "@/components/data-list";
+import { ResponsiveActions } from "@/components/responsive-actions";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { FormField } from "@/components/form-field";
@@ -21,6 +23,7 @@ import {
   proposeDateAction,
   acceptDateAction,
   declineDateAction,
+  removeDateProposalAction,
   enterResultAction,
   confirmResultAction,
   withdrawAction,
@@ -84,6 +87,7 @@ type MatchDetailViewProps = {
   currentPlayerId: number;
   team1Rank: number | null;
   team2Rank: number | null;
+  isAdmin: boolean;
 };
 
 // ── Status config (shared with match-card) ────────────
@@ -153,6 +157,7 @@ export function MatchDetailView({
   currentPlayerId,
   team1Rank,
   team2Rank,
+  isAdmin,
 }: MatchDetailViewProps) {
   const t = useTranslations("matchDetail");
   const tMatch = useTranslations("match");
@@ -173,6 +178,9 @@ export function MatchDetailView({
     })),
   );
 
+  // Result photo state
+  const [resultPhoto, setResultPhoto] = useState<File | null>(null);
+
   // Confirm/dispute dialog state
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [showForfeitConfirm, setShowForfeitConfirm] = useState(false);
@@ -190,6 +198,7 @@ export function MatchDetailView({
     match.resultEnteredBy !== currentPlayerId;
   const isResultEnterer =
     isPendingConfirmation && match.resultEnteredBy === currentPlayerId;
+  const hasScores = !!(match.team1Score && match.team2Score);
 
   // Status line
   const { variant: statusVariant, key: statusKey } = getStatusBadge(
@@ -203,7 +212,7 @@ export function MatchDetailView({
   } else if (isCompleted) {
     dateLine = t("completedOn", { date: formatDate(match.created) });
   } else {
-    dateLine = t("openSince", { date: formatDate(match.created) });
+    dateLine = t("challengedOn", { date: formatDate(match.created) });
   }
 
   // ── Action handlers ───────────────────────────────
@@ -211,52 +220,81 @@ export function MatchDetailView({
   function handleAction(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      // Determine which action based on form intent
-      const intent = formData.get("intent") as string;
-      let result;
-      switch (intent) {
-        case "proposeDate":
-          result = await proposeDateAction(formData);
-          if ("success" in result) setShowProposeDateDialog(false);
-          break;
-        case "acceptDate":
-          result = await acceptDateAction(formData);
-          break;
-        case "declineDate":
-          result = await declineDateAction(formData);
-          break;
-        case "enterResult":
-          result = await enterResultAction(formData);
-          if ("success" in result) setShowEnterResultDialog(false);
-          break;
-        case "confirmResult":
-          result = await confirmResultAction(formData);
-          break;
-        case "withdraw":
-          result = await withdrawAction(formData);
-          if ("success" in result) setShowWithdrawConfirm(false);
-          break;
-        case "forfeit":
-          result = await forfeitAction(formData);
-          if ("success" in result) setShowForfeitConfirm(false);
-          break;
-        case "dispute":
-          result = await disputeAction(formData);
-          if ("success" in result) {
-            setShowDisputeDialog(false);
-            setDisputeReason("");
-          }
-          break;
-        case "postComment":
-          result = await postCommentAction(formData);
-          if (result && "success" in result) setCommentText("");
-          break;
-        default:
-          result = { error: "matchDetail.error.serverError" };
-          break;
-      }
-      if (result && "error" in result) {
-        setError(t(`error.${result.error.split(".").pop()}`));
+      try {
+        // Determine which action based on form intent
+        const intent = formData.get("intent") as string;
+        let result;
+        switch (intent) {
+          case "proposeDate":
+            result = await proposeDateAction(formData);
+            if ("success" in result) setShowProposeDateDialog(false);
+            break;
+          case "acceptDate":
+            result = await acceptDateAction(formData);
+            break;
+          case "declineDate":
+            result = await declineDateAction(formData);
+            break;
+          case "removeProposal":
+            result = await removeDateProposalAction(formData);
+            break;
+          case "enterResult":
+            if (resultPhoto) {
+              const uploadData = new FormData();
+              uploadData.append("file", resultPhoto);
+              const res = await fetch("/api/images", {
+                method: "POST",
+                body: uploadData,
+              });
+              if (!res.ok) {
+                result = { error: "matchDetail.error.serverError" };
+                break;
+              }
+              const data = await res.json();
+              if (!data.id) {
+                result = { error: "matchDetail.error.serverError" };
+                break;
+              }
+              formData.set("imageId", data.id);
+            }
+            result = await enterResultAction(formData);
+            if ("success" in result) {
+              setShowEnterResultDialog(false);
+              setResultPhoto(null);
+            }
+            break;
+          case "confirmResult":
+            result = await confirmResultAction(formData);
+            break;
+          case "withdraw":
+            result = await withdrawAction(formData);
+            if ("success" in result) setShowWithdrawConfirm(false);
+            break;
+          case "forfeit":
+            result = await forfeitAction(formData);
+            if ("success" in result) setShowForfeitConfirm(false);
+            break;
+          case "dispute":
+            result = await disputeAction(formData);
+            if ("success" in result) {
+              setShowDisputeDialog(false);
+              setDisputeReason("");
+            }
+            break;
+          case "postComment":
+            result = await postCommentAction(formData);
+            if (result && "success" in result) setCommentText("");
+            break;
+          default:
+            result = { error: "matchDetail.error.serverError" };
+            break;
+        }
+        if (result && "error" in result) {
+          setError(t(`error.${result.error.split(".").pop()}`));
+        }
+      } catch (e) {
+        console.error("handleAction failed:", e);
+        setError(t("error.serverError"));
       }
     });
   }
@@ -306,31 +344,32 @@ export function MatchDetailView({
       title={t("title")}
       action={
         canEnterResult ? (
-          <div className="flex items-center gap-3">
-            {userRole === "team1" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-slate-500 dark:text-slate-400"
-                onClick={() => setShowWithdrawConfirm(true)}
-                disabled={isPending}
-              >
-                {t("withdraw")}
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-              onClick={() => setShowForfeitConfirm(true)}
-              disabled={isPending}
-            >
-              {t("forfeit")}
-            </Button>
-            <Button size="sm" onClick={() => setShowEnterResultDialog(true)}>
-              {t("enterResult")}
-            </Button>
-          </div>
+          <ResponsiveActions
+            mobileLabel={t("actions")}
+            actions={[
+              {
+                label: t("enterResult"),
+                onClick: () => setShowEnterResultDialog(true),
+                disabled: isPending,
+              },
+              ...(userRole === "team1"
+                ? [
+                    {
+                      label: t("withdraw"),
+                      onClick: () => setShowWithdrawConfirm(true),
+                      variant: "ghost" as const,
+                      disabled: isPending,
+                    },
+                  ]
+                : []),
+              {
+                label: t("forfeit"),
+                onClick: () => setShowForfeitConfirm(true),
+                variant: "destructive" as const,
+                disabled: isPending,
+              },
+            ]}
+          />
         ) : undefined
       }
     >
@@ -346,7 +385,7 @@ export function MatchDetailView({
 
       {/* Match Header */}
       <Card>
-        <CardContent className="mt-0 p-4">
+        <CardContent className="mt-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar name={match.team1Name} size="lg" />
@@ -362,9 +401,67 @@ export function MatchDetailView({
               </div>
             </div>
 
-            <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
-              vs
-            </span>
+            {hasScores ? (
+              <div className="flex items-center gap-5">
+                <div className="flex flex-col items-end gap-0.5">
+                  {match.team1Score!.map((s1, i) => {
+                    const s2 = match.team2Score![i];
+                    const won = s1 > s2;
+                    return (
+                      <span
+                        key={i}
+                        className={`text-base font-semibold tabular-nums ${won ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}
+                      >
+                        {s1}
+                      </span>
+                    );
+                  })}
+                </div>
+                <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
+                  :
+                </span>
+                <div className="flex flex-col items-start gap-0.5">
+                  {match.team2Score!.map((s2, i) => {
+                    const s1 = match.team1Score![i];
+                    const won = s2 > s1;
+                    return (
+                      <span
+                        key={i}
+                        className={`text-base font-semibold tabular-nums ${won ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}
+                      >
+                        {s2}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-5">
+                <div className="flex flex-col items-end gap-0.5">
+                  {Array.from({ length: match.seasonBestOf }, (_, i) => (
+                    <span
+                      key={i}
+                      className="text-base font-semibold tabular-nums text-slate-400 dark:text-slate-500"
+                    >
+                      0
+                    </span>
+                  ))}
+                </div>
+                <span className="text-lg font-bold text-slate-300 dark:text-slate-600">
+                  :
+                </span>
+                <div className="flex flex-col items-start gap-0.5">
+                  {Array.from({ length: match.seasonBestOf }, (_, i) => (
+                    <span
+                      key={i}
+                      className="text-base font-semibold tabular-nums text-slate-400 dark:text-slate-500"
+                    >
+                      0
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <div className="text-right">
@@ -385,45 +482,28 @@ export function MatchDetailView({
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {dateLine}
             </p>
-            <Badge variant={statusVariant}>{tMatch(statusKey)}</Badge>
+            {!isPendingConfirmation && (
+              <Badge variant={statusVariant}>{tMatch(statusKey)}</Badge>
+            )}
           </div>
+          {(match.winnerTeamId || isPendingConfirmation) && (
+            <div className="mt-2 text-center">
+              {match.winnerTeamId ? (
+                <Badge variant="win">
+                  {t("winnerLine", {
+                    name:
+                      match.winnerTeamId === match.team1Id
+                        ? match.team1Name
+                        : match.team2Name,
+                  })}
+                </Badge>
+              ) : (
+                <Badge variant={statusVariant}>{tMatch(statusKey)}</Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Score Section (pending_confirmation or completed) */}
-      {(isPendingConfirmation || isCompleted) &&
-        match.team1Score &&
-        match.team2Score && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("result")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MatchScoreInput
-                sets={match.team1Score.map((s, i) => ({
-                  player1: String(s),
-                  player2: String(match.team2Score![i]),
-                }))}
-                onChange={() => {}}
-                readOnly
-                player1Name={match.team1Name}
-                player2Name={match.team2Name}
-              />
-              {match.winnerTeamId && (
-                <div className="mt-3 text-center">
-                  <Badge variant="win">
-                    {t("winnerLine", {
-                      name:
-                        match.winnerTeamId === match.team1Id
-                          ? match.team1Name
-                          : match.team2Name,
-                    })}
-                  </Badge>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
       {/* Result Confirmation */}
       {canConfirm && (
@@ -453,13 +533,17 @@ export function MatchDetailView({
         </p>
       )}
 
-      {/* Date Proposals Section (open matches) */}
-      {isOpen && (
+      {/* Date Proposals Section (open matches, participants + admins only) */}
+      {isOpen && (isParticipant || isAdmin) && (
         <Card>
           <CardHeader>
             <CardTitle>{t("dateProposals")}</CardTitle>
-            {isParticipant && (
-              <Button size="sm" onClick={() => setShowProposeDateDialog(true)}>
+            {isParticipant && proposals.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowProposeDateDialog(true)}
+              >
                 {t("proposeDate")}
               </Button>
             )}
@@ -470,12 +554,22 @@ export function MatchDetailView({
               empty={{
                 title: t("noProposals"),
                 description: t("noProposalsDesc"),
+                ...(isParticipant && {
+                  action: {
+                    label: t("proposeDate"),
+                    onClick: () => setShowProposeDateDialog(true),
+                  },
+                }),
               }}
               renderItem={(proposal) => {
                 const { variant, key } = getProposalBadge(proposal.status);
                 const canRespond =
                   isParticipant &&
                   proposal.proposedBy !== currentPlayerId &&
+                  proposal.status === "pending";
+                const canRemove =
+                  isParticipant &&
+                  proposal.proposedBy === currentPlayerId &&
                   proposal.status === "pending";
 
                 return (
@@ -509,7 +603,9 @@ export function MatchDetailView({
                             />
                             <Button
                               type="submit"
+                              variant="ghost"
                               size="sm"
+                              className="!text-court-600 hover:!text-court-700 dark:!text-court-400 dark:hover:!text-court-300"
                               disabled={isPending}
                             >
                               {t("accept")}
@@ -541,6 +637,32 @@ export function MatchDetailView({
                             </Button>
                           </form>
                         </>
+                      ) : canRemove ? (
+                        <form action={handleAction}>
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="removeProposal"
+                          />
+                          <input
+                            type="hidden"
+                            name="proposalId"
+                            value={proposal.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="matchId"
+                            value={match.id}
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isPending}
+                          >
+                            {t("removeProposal")}
+                          </Button>
+                        </form>
                       ) : (
                         <Badge variant={variant} size="sm">
                           {t(key)}
@@ -556,38 +678,40 @@ export function MatchDetailView({
         </Card>
       )}
 
-      {/* Match Photo */}
-      {(match.imageId || isParticipant) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("matchPhoto")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {match.imageId && (
-              // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
-              <img
-                src={imageUrl(match.imageId)!}
-                alt={t("matchPhoto")}
-                className="w-full rounded-xl object-cover"
-              />
-            )}
-            {isParticipant && (
-              <label
-                className={`${match.imageId ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
-              >
-                {t("uploadPhoto")}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  onChange={handleMatchImageUpload}
-                  disabled={isPending}
+      {/* Match Photo (only after match concluded) */}
+      {(match.status === "completed" || match.status === "forfeited") &&
+        (match.imageId || isParticipant) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("matchPhoto")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {match.imageId && (
+                // eslint-disable-next-line @next/next/no-img-element -- served from our own API route; next/image would need dynamic loader config
+                <img
+                  src={imageUrl(match.imageId)!}
+                  alt={t("matchPhoto")}
+                  className="w-full rounded-xl object-cover"
                 />
-              </label>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              )}
+              {isParticipant && (
+                <label
+                  className={`${match.imageId ? "mt-2 " : ""}flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700`}
+                >
+                  {t("uploadPhoto")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleMatchImageUpload}
+                    disabled={isPending}
+                  />
+                </label>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Comments Section */}
       <Card>
@@ -597,31 +721,52 @@ export function MatchDetailView({
         <CardContent>
           <DataList
             items={comments}
+            separator={false}
             empty={{
               title: t("noComments"),
               description: t("noCommentsDesc"),
             }}
-            renderItem={(c) => (
-              <div className="flex gap-2 py-2">
-                <Avatar name={c.playerName} size="sm" />
-                <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">
-                    {c.comment}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {formatDateTime(c.created)}
-                  </p>
+            renderItem={(c) => {
+              const isOwn = c.playerId === currentPlayerId;
+              return (
+                <div
+                  className={cn("flex gap-2 py-2", isOwn && "flex-row-reverse")}
+                >
+                  <Avatar name={c.playerName} size="sm" />
+                  <div
+                    className={cn(
+                      "max-w-[75%] rounded-xl px-3 py-2",
+                      isOwn
+                        ? "bg-court-50 dark:bg-court-950/50"
+                        : "bg-slate-50 dark:bg-slate-800",
+                    )}
+                  >
+                    {!isOwn && (
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {c.playerName}
+                      </p>
+                    )}
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      {c.comment}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 text-xs text-slate-400",
+                        isOwn && "text-right",
+                      )}
+                    >
+                      {formatDateTime(c.created)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            }}
             keyExtractor={(c) => c.id}
           />
 
           {isParticipant && (
             <>
-              <Separator className="my-3" />
-
-              <form action={handleAction} className="flex gap-2">
+              <form action={handleAction} className="mt-4 flex gap-2">
                 <input type="hidden" name="intent" value="postComment" />
                 <input type="hidden" name="matchId" value={match.id} />
                 <FormField
@@ -634,6 +779,7 @@ export function MatchDetailView({
                 />
                 <Button
                   type="submit"
+                  variant="outline"
                   size="md"
                   disabled={isPending || !commentText.trim()}
                 >
@@ -678,7 +824,10 @@ export function MatchDetailView({
       {/* Enter Result Dialog */}
       <ResponsiveDialog
         open={showEnterResultDialog}
-        onClose={() => setShowEnterResultDialog(false)}
+        onClose={() => {
+          setShowEnterResultDialog(false);
+          setResultPhoto(null);
+        }}
         title={t("enterResultTitle")}
       >
         <form action={handleAction} className="space-y-4">
@@ -701,6 +850,44 @@ export function MatchDetailView({
             player1Name={match.team1Name}
             player2Name={match.team2Name}
           />
+          <div>
+            <p className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("resultPhotoLabel")}
+            </p>
+            {resultPhoto ? (
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800">
+                <span className="truncate text-sm text-slate-700 dark:text-slate-300">
+                  {resultPhoto.name}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setResultPhoto(null)}
+                >
+                  {t("removePhoto")}
+                </Button>
+              </div>
+            ) : (
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-court-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-court-400 dark:hover:bg-slate-700">
+                {t("addPhoto")}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setResultPhoto(file);
+                  }}
+                  disabled={isPending}
+                />
+              </label>
+            )}
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {t("resultPhotoHint")}
+            </p>
+          </div>
           <Button type="submit" className="w-full" disabled={isPending}>
             {t("submitResult")}
           </Button>

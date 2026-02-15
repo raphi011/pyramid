@@ -15,11 +15,12 @@ export type ProfileResult = { success: true } | { error: string };
 export async function updateProfileAction(
   formData: FormData,
 ): Promise<ProfileResult> {
-  const name = ((formData.get("name") as string) ?? "").trim();
+  const firstName = ((formData.get("firstName") as string) ?? "").trim();
+  const lastName = ((formData.get("lastName") as string) ?? "").trim();
   const phoneNumber = ((formData.get("phoneNumber") as string) ?? "").trim();
   const bio = ((formData.get("bio") as string) ?? "").trim();
 
-  if (!name) {
+  if (!firstName || !lastName) {
     return { error: "profile.error.nameRequired" };
   }
 
@@ -30,7 +31,8 @@ export async function updateProfileAction(
 
   try {
     const count = await updatePlayerProfile(sql, player.id, {
-      name,
+      firstName,
+      lastName,
       phoneNumber,
       bio,
     });

@@ -1,28 +1,26 @@
 import { describe, it, expect } from "vitest";
-import { abbreviateName } from "./utils";
+import { abbreviateName, fullName } from "./utils";
 
 describe("abbreviateName", () => {
   it.each([
-    ["Raphael Gruber", "Raphael G."],
-    ["Anna Schmidt", "Anna S."],
-    ["John Michael Smith", "John S."],
-  ])('abbreviates "%s" to "%s"', (input, expected) => {
-    expect(abbreviateName(input)).toBe(expected);
+    ["Anna", "Müller", "Anna M."],
+    ["Raphael", "Gruber", "Raphael G."],
+    ["John", "Smith", "John S."],
+    ["Anna", "", "Anna"],
+    ["", "Müller", "M."],
+    ["", "", ""],
+  ])('abbreviates "%s %s" to "%s"', (first, last, expected) => {
+    expect(abbreviateName(first, last)).toBe(expected);
   });
+});
 
-  it("returns single name as-is", () => {
-    expect(abbreviateName("Raphael")).toBe("Raphael");
-  });
-
-  it("returns empty string for empty input", () => {
-    expect(abbreviateName("")).toBe("");
-  });
-
-  it("returns empty string for whitespace-only input", () => {
-    expect(abbreviateName("   ")).toBe("");
-  });
-
-  it("handles extra whitespace between parts", () => {
-    expect(abbreviateName("Raphael   Gruber")).toBe("Raphael G.");
+describe("fullName", () => {
+  it.each([
+    ["Anna", "Müller", "Anna Müller"],
+    ["Anna", "", "Anna"],
+    ["", "Müller", "Müller"],
+    ["", "", ""],
+  ])('fullName("%s", "%s") → "%s"', (first, last, expected) => {
+    expect(fullName(first, last)).toBe(expected);
   });
 });

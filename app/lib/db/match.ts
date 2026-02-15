@@ -92,8 +92,8 @@ const MATCH_SELECT = `
   sm.season_id AS "seasonId",
   sm.team1_id AS "team1Id",
   sm.team2_id AS "team2Id",
-  p1.name AS "team1Name",
-  p2.name AS "team2Name",
+  (p1.first_name || ' ' || p1.last_name) AS "team1Name",
+  (p2.first_name || ' ' || p2.last_name) AS "team2Name",
   sm.winner_team_id AS "winnerTeamId",
   sm.team1_score AS "team1Score",
   sm.team2_score AS "team2Score",
@@ -331,7 +331,7 @@ export async function getDateProposals(
       dp.id,
       dp.match_id AS "matchId",
       dp.proposed_by AS "proposedBy",
-      p.name AS "proposedByName",
+      (p.first_name || ' ' || p.last_name) AS "proposedByName",
       dp.proposed_datetime AS "proposedDatetime",
       dp.status,
       dp.created
@@ -361,7 +361,7 @@ export async function getMatchComments(
       mc.id,
       mc.match_id AS "matchId",
       mc.player_id AS "playerId",
-      p.name AS "playerName",
+      (p.first_name || ' ' || p.last_name) AS "playerName",
       mc.comment,
       mc.created,
       mc.edited_at AS "editedAt"
@@ -400,7 +400,7 @@ export async function createMatchComment(
       id,
       match_id AS "matchId",
       player_id AS "playerId",
-      (SELECT name FROM player WHERE id = match_comments.player_id) AS "playerName",
+      (SELECT (first_name || ' ' || last_name) FROM player WHERE id = match_comments.player_id) AS "playerName",
       comment,
       created,
       edited_at AS "editedAt"
@@ -524,6 +524,24 @@ export async function declineDateProposal(
   if (result.count === 0) {
     throw new Error(
       `Proposal ${proposalId} not found, not pending, or does not belong to match ${matchId}`,
+    );
+  }
+}
+
+export async function removeDateProposal(
+  tx: postgres.TransactionSql,
+  proposalId: number,
+  matchId: number,
+  playerId: number,
+): Promise<void> {
+  const result = await tx`
+    DELETE FROM date_proposals
+    WHERE id = ${proposalId} AND match_id = ${matchId} AND proposed_by = ${playerId} AND status = 'pending'
+  `;
+
+  if (result.count === 0) {
+    throw new Error(
+      `Proposal ${proposalId} not found, not pending, not owned by player ${playerId}, or does not belong to match ${matchId}`,
     );
   }
 }
@@ -748,7 +766,7 @@ export async function getHeadToHeadRecords(
   const rows = await sql`
     SELECT
       opponent_id AS "opponentTeamId",
-      (SELECT p.name FROM team_players tp JOIN player p ON p.id = tp.player_id WHERE tp.team_id = opponent_id LIMIT 1) AS "opponentName",
+      (SELECT (p.first_name || ' ' || p.last_name) FROM team_players tp JOIN player p ON p.id = tp.player_id WHERE tp.team_id = opponent_id LIMIT 1) AS "opponentName",
       SUM(CASE WHEN is_winner THEN 1 ELSE 0 END)::int AS wins,
       SUM(CASE WHEN NOT is_winner THEN 1 ELSE 0 END)::int AS losses
     FROM (

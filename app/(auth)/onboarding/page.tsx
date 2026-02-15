@@ -9,8 +9,8 @@ export default async function OnboardingPage() {
     redirect("/login");
   }
 
-  // Already has a name — skip onboarding
-  if (player.name.trim()) {
+  // Already has both names — skip onboarding
+  if (player.firstName.trim() && player.lastName.trim()) {
     redirect("/");
   }
 

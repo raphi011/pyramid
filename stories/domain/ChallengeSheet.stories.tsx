@@ -11,9 +11,9 @@ import { Button } from "@/components/ui/button";
 import { mobileViewport } from "../viewports";
 
 const opponents: Opponent[] = [
-  { teamId: 1, name: "Julia Fischer", rank: 1 },
-  { teamId: 2, name: "Anna Schmidt", rank: 2 },
-  { teamId: 4, name: "Lisa Müller", rank: 4 },
+  { teamId: 1, firstName: "Julia", lastName: "Fischer", rank: 1 },
+  { teamId: 2, firstName: "Anna", lastName: "Schmidt", rank: 2 },
+  { teamId: 4, firstName: "Lisa", lastName: "Müller", rank: 4 },
 ];
 
 const meta = preview.meta({

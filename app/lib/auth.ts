@@ -1,11 +1,14 @@
 import { cookies } from "next/headers";
 import { sql } from "./db";
 import * as authRepo from "./db/auth";
+import type { Theme } from "./db/auth";
 import crypto from "crypto";
 
 const SESSION_COOKIE_NAME = "session_token";
+const THEME_COOKIE_NAME = "theme";
 const MAGIC_LINK_EXPIRY_MINUTES = 15;
 const SESSION_EXPIRY_DAYS = 7;
+const THEME_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 
 export function generateToken(): string {
   return crypto.randomBytes(32).toString("hex");
@@ -63,7 +66,8 @@ export async function getSession(): Promise<{ playerId: number } | null> {
 
 export async function getCurrentPlayer(): Promise<{
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 } | null> {
   const session = await getSession();
@@ -86,8 +90,29 @@ export async function deleteSession(): Promise<void> {
   cookieStore.delete(SESSION_COOKIE_NAME);
 }
 
-export async function getPlayerByEmail(
-  email: string,
-): Promise<{ id: number; name: string; email: string } | null> {
+export async function getPlayerByEmail(email: string): Promise<{
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+} | null> {
   return authRepo.getPlayerByEmail(sql, email);
+}
+
+export async function setThemeCookie(theme: Theme): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(THEME_COOKIE_NAME, theme, {
+    httpOnly: false, // readable by inline <script> for FOUC prevention
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: THEME_COOKIE_MAX_AGE,
+    path: "/",
+  });
+}
+
+export async function getThemeCookie(): Promise<Theme> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get(THEME_COOKIE_NAME)?.value;
+  if (value === "light" || value === "dark") return value;
+  return "auto";
 }

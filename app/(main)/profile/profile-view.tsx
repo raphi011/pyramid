@@ -24,6 +24,7 @@ import { FormField } from "@/components/form-field";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { StatsCard } from "@/components/domain/stats-card";
 import { Avatar } from "@/components/ui/avatar";
+import { fullName } from "@/lib/utils";
 import {
   updateProfileAction,
   updateProfileImageAction,
@@ -143,7 +144,7 @@ function ProfileView({
   return (
     <PageLayout title={t("title")}>
       <PlayerProfile
-        name={profile.name}
+        name={fullName(profile.firstName, profile.lastName)}
         avatarSrc={avatarSrc}
         rank={seasonStats.rank}
         wins={seasonStats.wins}
@@ -309,7 +310,11 @@ function ProfileView({
       >
         <form ref={formRef} action={handleEditSubmit} className="space-y-4">
           <div className="flex flex-col items-center gap-2">
-            <Avatar name={profile.name} src={avatarSrc} size="xl" />
+            <Avatar
+              name={fullName(profile.firstName, profile.lastName)}
+              src={avatarSrc}
+              size="xl"
+            />
             <label className="cursor-pointer text-sm font-medium text-court-600 hover:text-court-700 dark:text-court-400">
               {isUploading ? t("uploading") : t("changePhoto")}
               <input
@@ -322,11 +327,19 @@ function ProfileView({
             </label>
           </div>
           <FormField
-            label={t("nameLabel")}
+            label={t("firstNameLabel")}
             required
             inputProps={{
-              name: "name",
-              defaultValue: profile.name,
+              name: "firstName",
+              defaultValue: profile.firstName,
+            }}
+          />
+          <FormField
+            label={t("lastNameLabel")}
+            required
+            inputProps={{
+              name: "lastName",
+              defaultValue: profile.lastName,
             }}
           />
           <FormField

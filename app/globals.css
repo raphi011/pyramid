@@ -4,6 +4,10 @@
 
 /* Tailwind v4 preflight sets cursor:default on interactive elements — restore pointer */
 @layer base {
+  body {
+    @apply bg-white dark:bg-slate-950;
+  }
+
   a,
   button,
   [role="button"],

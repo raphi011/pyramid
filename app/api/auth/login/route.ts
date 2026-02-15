@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPlayerByEmail, createMagicLink } from "@/app/lib/auth";
 import { sendMagicLinkEmail } from "@/app/lib/email";
+import { fullName } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
       const token = await createMagicLink(player.id);
       const emailResult = await sendMagicLinkEmail(
         player.email,
-        player.name,
+        fullName(player.firstName, player.lastName),
         token,
       );
 

@@ -12,11 +12,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/app-shell";
 import { ClubSwitcher } from "@/components/club-switcher";
+import { fullName } from "@/lib/utils";
 
 type Club = { id: number; name: string };
 
 type AppShellWrapperProps = {
-  player: { id: number; name: string };
+  player: { id: number; firstName: string; lastName: string };
   clubs: [Club, ...Club[]];
   activeMatchId: number | null;
   unreadCount: number;
@@ -50,7 +51,10 @@ export function AppShellWrapper({
     <AppShell
       navItems={navItems}
       sidebarItems={sidebarItems}
-      profile={{ name: player.name, href: "/profile" }}
+      profile={{
+        name: fullName(player.firstName, player.lastName),
+        href: "/profile",
+      }}
       activeHref={pathname}
       onNavigate={(href) => router.push(href)}
       fab={

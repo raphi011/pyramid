@@ -22,10 +22,14 @@ afterAll(() => db.cleanup());
 describe("getPlayerByEmail", () => {
   it("returns player when email matches (case-insensitive)", async () => {
     await db.withinTransaction(async (tx) => {
-      await seedPlayer(tx, "Alice@Example.com", "Alice");
+      await seedPlayer(tx, "Alice@Example.com", "Alice", "Wonder");
       const player = await getPlayerByEmail(tx, "alice@example.com");
       expect(player).toEqual(
-        expect.objectContaining({ name: "Alice", email: "Alice@Example.com" }),
+        expect.objectContaining({
+          firstName: "Alice",
+          lastName: "Wonder",
+          email: "Alice@Example.com",
+        }),
       );
     });
   });
@@ -43,12 +47,13 @@ describe("getPlayerByEmail", () => {
 describe("getPlayerById", () => {
   it("returns player when found", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await seedPlayer(tx, "byid@example.com", "ById");
+      const id = await seedPlayer(tx, "byid@example.com", "By", "Id");
       const player = await getPlayerById(tx, id);
       expect(player).toEqual(
         expect.objectContaining({
           id,
-          name: "ById",
+          firstName: "By",
+          lastName: "Id",
           email: "byid@example.com",
         }),
       );
@@ -68,14 +73,15 @@ describe("getPlayerById", () => {
 describe("getPlayerProfile", () => {
   it("returns all profile fields", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await seedPlayer(tx, "profile@example.com", "Profile User");
+      const id = await seedPlayer(tx, "profile@example.com", "Profile", "User");
       await tx`UPDATE player SET phone_number = '+49 999', bio = 'Hello world' WHERE id = ${id}`;
 
       const profile = await getPlayerProfile(tx, id);
       expect(profile).toEqual(
         expect.objectContaining({
           id,
-          name: "Profile User",
+          firstName: "Profile",
+          lastName: "User",
           email: "profile@example.com",
           phoneNumber: "+49 999",
           bio: "Hello world",
@@ -114,24 +120,27 @@ describe("getPlayerProfile", () => {
 describe("updatePlayerProfile", () => {
   it("updates name and phone_number", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await seedPlayer(tx, "update@example.com", "Old Name");
+      const id = await seedPlayer(tx, "update@example.com", "Old", "Name");
       await updatePlayerProfile(tx, id, {
-        name: "New Name",
+        firstName: "New",
+        lastName: "Name",
         phoneNumber: "+49 123",
         bio: "",
       });
       const [row] =
-        await tx`SELECT name, phone_number FROM player WHERE id = ${id}`;
-      expect(row.name).toBe("New Name");
+        await tx`SELECT first_name, last_name, phone_number FROM player WHERE id = ${id}`;
+      expect(row.first_name).toBe("New");
+      expect(row.last_name).toBe("Name");
       expect(row.phone_number).toBe("+49 123");
     });
   });
 
   it("updates bio", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await seedPlayer(tx, "bio@example.com", "Bio Test");
+      const id = await seedPlayer(tx, "bio@example.com", "Bio", "Test");
       await updatePlayerProfile(tx, id, {
-        name: "Bio Test",
+        firstName: "Bio",
+        lastName: "Test",
         phoneNumber: "",
         bio: "My cool bio",
       });
@@ -142,9 +151,10 @@ describe("updatePlayerProfile", () => {
 
   it("returns update count", async () => {
     await db.withinTransaction(async (tx) => {
-      const id = await seedPlayer(tx, "count@example.com", "Count");
+      const id = await seedPlayer(tx, "count@example.com", "Count", "Player");
       const count = await updatePlayerProfile(tx, id, {
-        name: "Updated",
+        firstName: "Updated",
+        lastName: "Player",
         phoneNumber: "",
         bio: "",
       });
@@ -155,7 +165,8 @@ describe("updatePlayerProfile", () => {
   it("returns 0 for non-existent player", async () => {
     await db.withinTransaction(async (tx) => {
       const count = await updatePlayerProfile(tx, 999999, {
-        name: "Ghost",
+        firstName: "Ghost",
+        lastName: "Player",
         phoneNumber: "",
         bio: "",
       });

@@ -3,8 +3,9 @@ import {
   verifyMagicLink,
   createSession,
   setSessionCookie,
+  setThemeCookie,
 } from "@/app/lib/auth";
-import { getPlayerById } from "@/app/lib/db/auth";
+import { getPlayerById, getPlayerTheme } from "@/app/lib/db/auth";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";
 import { getAppUrl } from "@/app/lib/email";
@@ -37,15 +38,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Create session and set cookie
+    // Create session and set cookies
     const sessionToken = await createSession(result.playerId);
     await setSessionCookie(sessionToken);
 
+    // Sync theme preference to cookie
+    const theme = await getPlayerTheme(sql, result.playerId);
+    await setThemeCookie(theme);
+
     // Post-login routing — failures here should not invalidate the login
     try {
-      // 1. No name → onboarding
+      // 1. No name → onboarding (both first and last name required)
       const player = await getPlayerById(sql, result.playerId);
-      if (!player || !player.name.trim()) {
+      if (!player || !player.firstName.trim() || !player.lastName.trim()) {
         return NextResponse.redirect(new URL("/onboarding", baseUrl));
       }
 

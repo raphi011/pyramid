@@ -5,13 +5,20 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Abbreviates a full name to first name + last initial.
- * "Raphael Gruber" → "Raphael G."
- * "Raphael" → "Raphael"
+ * Abbreviates to first name + last initial.
+ * abbreviateName("Anna", "Müller") → "Anna M."
  */
-export function abbreviateName(name: string): string {
-  const trimmed = name.trim();
-  const parts = trimmed.split(/\s+/);
-  if (parts.length <= 1) return trimmed;
-  return `${parts[0]} ${parts[parts.length - 1][0]}.`;
+export function abbreviateName(firstName: string, lastName: string): string {
+  if (!lastName) return firstName;
+  if (!firstName) return `${lastName[0]}.`;
+  return `${firstName} ${lastName[0]}.`;
+}
+
+/**
+ * Returns the full display name.
+ */
+export function fullName(firstName: string, lastName: string): string {
+  if (!lastName) return firstName;
+  if (!firstName) return lastName;
+  return `${firstName} ${lastName}`;
 }
