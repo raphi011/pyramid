@@ -111,6 +111,7 @@ export async function seedMatch(
     team1Score,
     team2Score,
     gameAt,
+    created,
   }: {
     status?: string;
     winnerTeamId?: number;
@@ -118,13 +119,20 @@ export async function seedMatch(
     team1Score?: number[];
     team2Score?: number[];
     gameAt?: Date;
+    created?: Date;
   } = {},
 ): Promise<number> {
-  const [row] = await tx`
-    INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, result_entered_by, team1_score, team2_score, game_at, status, created)
-    VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${resultEnteredBy ?? null}, ${team1Score ?? null}, ${team2Score ?? null}, ${gameAt ?? null}, ${status}, NOW())
-    RETURNING id
-  `;
+  const [row] = created
+    ? await tx`
+        INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, result_entered_by, team1_score, team2_score, game_at, status, created)
+        VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${resultEnteredBy ?? null}, ${team1Score ?? null}, ${team2Score ?? null}, ${gameAt ?? null}, ${status}, ${created})
+        RETURNING id
+      `
+    : await tx`
+        INSERT INTO season_matches (season_id, team1_id, team2_id, winner_team_id, result_entered_by, team1_score, team2_score, game_at, status, created)
+        VALUES (${seasonId}, ${team1Id}, ${team2Id}, ${winnerTeamId ?? null}, ${resultEnteredBy ?? null}, ${team1Score ?? null}, ${team2Score ?? null}, ${gameAt ?? null}, ${status}, NOW())
+        RETURNING id
+      `;
   return row.id as number;
 }
 
