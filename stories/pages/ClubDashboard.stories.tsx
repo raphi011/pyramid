@@ -1,6 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
+import { within, expect } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { AdminDashboardView } from "@/app/(main)/admin/club/[id]/admin-dashboard-view";
 import type {
@@ -27,7 +28,7 @@ const meta = preview.meta({
 export default meta;
 
 const stats: ClubStats = {
-  playerCount: 24,
+  memberCount: 24,
   activeSeasonCount: 3,
   openChallengeCount: 12,
 };
@@ -36,14 +37,14 @@ const seasons: AdminSeasonSummary[] = [
   {
     id: 1,
     name: "Sommer 2026",
-    playerCount: 24,
+    teamCount: 24,
     openChallengeCount: 8,
     overdueMatchCount: 2,
   },
   {
     id: 2,
     name: "Doppel Sommer 2026",
-    playerCount: 16,
+    teamCount: 16,
     openChallengeCount: 4,
     overdueMatchCount: 0,
   },
@@ -53,16 +54,16 @@ const overdueMatches: OverdueMatch[] = [
   {
     id: 1,
     seasonId: 1,
-    player1Name: "Felix Wagner",
-    player2Name: "Paul Becker",
-    daysSinceCreated: 14,
+    team1Name: "Felix Wagner",
+    team2Name: "Paul Becker",
+    daysOverdue: 14,
   },
   {
     id: 2,
     seasonId: 1,
-    player1Name: "Marie Koch",
-    player2Name: "Lukas Sch\u00e4fer",
-    daysSinceCreated: 10,
+    team1Name: "Marie Koch",
+    team2Name: "Lukas Sch\u00e4fer",
+    daysOverdue: 10,
   },
 ];
 
@@ -80,6 +81,21 @@ export const Default = meta.story({
       </PageWrapper>
     );
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Stat blocks render correct values
+    await expect(canvas.getByText("24")).toBeInTheDocument();
+    await expect(canvas.getByText("3")).toBeInTheDocument();
+    await expect(canvas.getByText("12")).toBeInTheDocument();
+
+    // Seasons are listed
+    await expect(canvas.getByText("Sommer 2026")).toBeInTheDocument();
+    await expect(canvas.getByText("Doppel Sommer 2026")).toBeInTheDocument();
+
+    // Overdue matches section should NOT be present
+    await expect(canvas.queryByText(/Felix Wagner/)).not.toBeInTheDocument();
+  },
 });
 
 export const WithOverdueMatches = meta.story({
@@ -96,6 +112,20 @@ export const WithOverdueMatches = meta.story({
       </PageWrapper>
     );
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Overdue matches section IS present
+    await expect(
+      canvas.getByText("Felix Wagner vs Paul Becker"),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText("Marie Koch vs Lukas Sch\u00e4fer"),
+    ).toBeInTheDocument();
+
+    // Badge shows count
+    await expect(canvas.getByText("2")).toBeInTheDocument();
+  },
 });
 
 export const EmptyClub = meta.story({
@@ -106,7 +136,7 @@ export const EmptyClub = meta.story({
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
           stats={{
-            playerCount: 0,
+            memberCount: 0,
             activeSeasonCount: 0,
             openChallengeCount: 0,
           }}
@@ -115,5 +145,17 @@ export const EmptyClub = meta.story({
         />
       </PageWrapper>
     );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Stats show zeroes
+    const zeroes = canvas.getAllByText("0");
+    await expect(zeroes.length).toBeGreaterThanOrEqual(3);
+
+    // Empty state for seasons shown
+    await expect(
+      canvas.getByText(/Erstelle eine neue Saison|Create a new season/),
+    ).toBeInTheDocument();
   },
 });

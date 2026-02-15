@@ -19,6 +19,7 @@ import {
 } from "@/components/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataList } from "@/components/data-list";
 import { ClubJoinCard } from "@/components/domain/club-join-card";
 import { QRCode } from "@/components/qr-code";
 import type {
@@ -52,7 +53,7 @@ export function AdminDashboardView({
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="mt-0">
-            <StatBlock label={t("players")} value={stats.playerCount} />
+            <StatBlock label={t("members")} value={stats.memberCount} />
           </CardContent>
         </Card>
         <Card>
@@ -76,48 +77,45 @@ export function AdminDashboardView({
           <CardTitle>{t("activeSeasons")}</CardTitle>
         </CardHeader>
         <CardContent>
-          {seasons.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t("noActiveSeasonsDesc")}
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {seasons.map((season) => (
-                <div
-                  key={season.id}
-                  className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {season.name}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                      <span>
-                        {t("playerCount", { count: season.playerCount })}
-                      </span>
-                      <span>&middot;</span>
-                      <span>
-                        {t("matchCount", { count: season.openChallengeCount })}
-                      </span>
-                      {season.overdueMatchCount > 0 && (
-                        <>
-                          <span>&middot;</span>
-                          <span className="text-red-600 dark:text-red-400">
-                            {t("overdueCount", {
-                              count: season.overdueMatchCount,
-                            })}
-                          </span>
-                        </>
-                      )}
-                    </div>
+          <DataList
+            items={seasons}
+            keyExtractor={(s) => s.id}
+            separator={false}
+            empty={{
+              title: t("noActiveSeasons"),
+              description: t("noActiveSeasonsDesc"),
+            }}
+            className="space-y-3"
+            renderItem={(season) => (
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800">
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {season.name}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span>{t("teamCount", { count: season.teamCount })}</span>
+                    <span>&middot;</span>
+                    <span>
+                      {t("matchCount", { count: season.openChallengeCount })}
+                    </span>
+                    {season.overdueMatchCount > 0 && (
+                      <>
+                        <span>&middot;</span>
+                        <span className="text-red-600 dark:text-red-400">
+                          {t("overdueCount", {
+                            count: season.overdueMatchCount,
+                          })}
+                        </span>
+                      </>
+                    )}
                   </div>
-                  <Button variant="outline" size="sm" disabled>
-                    {t("manage")}
-                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
+                <Button variant="outline" size="sm" disabled>
+                  {t("manage")}
+                </Button>
+              </div>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -131,20 +129,21 @@ export function AdminDashboardView({
             </CardAction>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {overdueMatches.map((m) => (
-                <div
-                  key={m.id}
-                  className="flex items-center justify-between rounded-xl bg-red-50 px-3 py-2 dark:bg-red-950/30"
-                >
+            <DataList
+              items={overdueMatches}
+              keyExtractor={(m) => m.id}
+              separator={false}
+              className="space-y-2"
+              renderItem={(m) => (
+                <div className="flex items-center justify-between rounded-xl bg-red-50 px-3 py-2 dark:bg-red-950/30">
                   <div className="flex items-center gap-2">
                     <ExclamationTriangleIcon className="size-4 shrink-0 text-red-500" />
                     <div>
                       <p className="text-sm font-medium text-slate-900 dark:text-white">
-                        {m.player1Name} vs {m.player2Name}
+                        {m.team1Name} vs {m.team2Name}
                       </p>
                       <p className="text-xs text-red-600 dark:text-red-400">
-                        {t("daysOverdue", { days: m.daysSinceCreated })}
+                        {t("daysOverdue", { days: m.daysOverdue })}
                       </p>
                     </div>
                   </div>
@@ -157,8 +156,8 @@ export function AdminDashboardView({
                     </Button>
                   </div>
                 </div>
-              ))}
-            </div>
+              )}
+            />
           </CardContent>
         </Card>
       )}
@@ -194,10 +193,17 @@ export function AdminDashboardView({
       <ClubJoinCard
         mode="admin"
         clubCode={inviteCode}
-        onCopy={() => navigator.clipboard.writeText(inviteCode)}
+        onCopy={() => {
+          navigator.clipboard.writeText(inviteCode).catch(() => {
+            // Clipboard API may fail (permissions, non-secure context)
+          });
+        }}
         qrSlot={
           appUrl ? (
-            <QRCode value={`${appUrl}/join?code=${inviteCode}`} size="md" />
+            <QRCode
+              value={`${appUrl}/join?code=${encodeURIComponent(inviteCode)}`}
+              size="md"
+            />
           ) : undefined
         }
       />

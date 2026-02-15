@@ -29,7 +29,13 @@ export default async function MainLayout({
     redirect("/join");
   }
 
-  const adminClub = clubs.find((c) => c.role === "admin");
+  const adminClubs = clubs.filter((c) => c.role === "admin");
+  if (adminClubs.length > 1) {
+    console.warn(
+      `[layout] Player ${player.id} admins ${adminClubs.length} clubs, showing first only`,
+    );
+  }
+  const adminClub = adminClubs[0];
 
   // Check if player has an active match (for FAB navigation)
   // Non-essential — fallback to default "Challenge" FAB on failure
