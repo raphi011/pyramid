@@ -25,7 +25,7 @@ import type {
   ClubStats,
   AdminSeasonSummary,
   OverdueMatch,
-} from "@/lib/db/admin";
+} from "@/app/lib/db/admin";
 
 type AdminDashboardViewProps = {
   clubName: string;
