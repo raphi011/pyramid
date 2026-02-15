@@ -1,49 +1,27 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/card";
 import { FormField } from "@/components/form-field";
+import { loginAction, type LoginState } from "./actions";
+
+const initialState: LoginState = {};
 
 function LoginFormInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("login");
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, formAction, isPending] = useActionState(
+    loginAction,
+    initialState,
+  );
 
   const errorParam = searchParams.get("error");
   const errorMessage = errorParam ? t(`error.${errorParam}`) : null;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || t("error.generic"));
-        return;
-      }
-
-      router.push("/check-email");
-    } catch {
-      setError(t("error.generic"));
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const actionError = state.error ? t(state.error) : null;
 
   return (
     <Card className="p-6 shadow-sm">
@@ -51,23 +29,21 @@ function LoginFormInner() {
         {t("title")}
       </h2>
 
-      {(errorMessage || error) && (
+      {(errorMessage || actionError) && (
         <div
           className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
           role="alert"
         >
-          {errorMessage || error}
+          {errorMessage || actionError}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form action={formAction}>
         <FormField
           label={t("emailLabel")}
           type="email"
           placeholder={t("emailPlaceholder")}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
+          disabled={isPending}
           className="mb-4"
           inputProps={{
             required: true,
@@ -76,8 +52,8 @@ function LoginFormInner() {
           }}
         />
 
-        <Button type="submit" className="w-full" loading={isLoading}>
-          {isLoading ? t("submitting") : t("submit")}
+        <Button type="submit" className="w-full" loading={isPending}>
+          {isPending ? t("submitting") : t("submit")}
         </Button>
       </form>
 

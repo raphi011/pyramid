@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
@@ -9,20 +10,31 @@ import {
   getPlayerImageId,
 } from "@/app/lib/db/auth";
 import { postgresImageStorage } from "@/app/lib/image-storage";
+import { parseFormData } from "@/app/lib/action-utils";
+
+const updateProfileSchema = z.object({
+  firstName: z.string().trim().min(1),
+  lastName: z.string().trim().min(1),
+  phoneNumber: z
+    .string()
+    .default("")
+    .transform((v) => v.trim()),
+  bio: z
+    .string()
+    .default("")
+    .transform((v) => v.trim()),
+});
 
 export type ProfileResult = { success: true } | { error: string };
 
 export async function updateProfileAction(
   formData: FormData,
 ): Promise<ProfileResult> {
-  const firstName = ((formData.get("firstName") as string) ?? "").trim();
-  const lastName = ((formData.get("lastName") as string) ?? "").trim();
-  const phoneNumber = ((formData.get("phoneNumber") as string) ?? "").trim();
-  const bio = ((formData.get("bio") as string) ?? "").trim();
-
-  if (!firstName || !lastName) {
+  const parsed = parseFormData(updateProfileSchema, formData);
+  if (!parsed.success) {
     return { error: "profile.error.nameRequired" };
   }
+  const { firstName, lastName, phoneNumber, bio } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) {

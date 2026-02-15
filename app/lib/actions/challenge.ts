@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
@@ -15,6 +16,16 @@ import {
   ChallengeConflictError,
 } from "@/app/lib/db/match";
 import { canChallenge } from "@/app/lib/pyramid";
+import { parseFormData } from "@/app/lib/action-utils";
+
+const createChallengeSchema = z.object({
+  seasonId: z.coerce.number().int().positive(),
+  challengeeTeamId: z.coerce.number().int().positive(),
+  challengeText: z
+    .string()
+    .default("")
+    .transform((v) => v.trim()),
+});
 
 export type ChallengeResult =
   | { success: true; matchId: number }
@@ -23,15 +34,11 @@ export type ChallengeResult =
 export async function createChallengeAction(
   formData: FormData,
 ): Promise<ChallengeResult> {
-  const seasonId = Number(formData.get("seasonId"));
-  const challengeeTeamId = Number(formData.get("challengeeTeamId"));
-  const challengeText = (
-    (formData.get("challengeText") as string) ?? ""
-  ).trim();
-
-  if (!seasonId || !challengeeTeamId) {
+  const parsed = parseFormData(createChallengeSchema, formData);
+  if (!parsed.success) {
     return { error: "challenge.error.invalidTarget" };
   }
+  const { seasonId, challengeeTeamId, challengeText } = parsed.data;
 
   const player = await getCurrentPlayer();
   if (!player) {

@@ -1,11 +1,35 @@
 "use server";
 
+import { z } from "zod";
 import { redirect } from "next/navigation";
 import { getSession, createMagicLink, getPlayerByEmail } from "@/app/lib/auth";
 import { getClubByInviteCode, isClubMember, joinClub } from "@/app/lib/db/club";
 import { sendMagicLinkEmail } from "@/app/lib/email";
 import { sql } from "@/app/lib/db";
 import { fullName } from "@/lib/utils";
+import { parseFormData } from "@/app/lib/action-utils";
+
+const codeSchema = z.object({
+  code: z.string().trim().toUpperCase().length(6),
+});
+
+const inviteCodeSchema = z.object({
+  inviteCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6}$/),
+});
+
+const requestJoinSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  inviteCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6}$/),
+  clubName: z.string().optional().default(""),
+});
 
 export type JoinStep =
   | "code-input"
@@ -25,11 +49,11 @@ export async function validateCode(
   _prev: JoinState,
   formData: FormData,
 ): Promise<JoinState> {
-  const code = (formData.get("code") as string)?.trim().toUpperCase();
-
-  if (!code || code.length !== 6) {
+  const parsed = parseFormData(codeSchema, formData);
+  if (!parsed.success) {
     return { step: "code-input", error: "Ungültiger Einladungscode" };
   }
+  const { code } = parsed.data;
 
   try {
     const club = await getClubByInviteCode(sql, code);
@@ -88,12 +112,11 @@ export async function joinClubAction(
     redirect("/login");
   }
 
-  const inviteCode = (formData.get("inviteCode") as string)
-    ?.trim()
-    .toUpperCase();
-  if (!inviteCode || !/^[A-Z0-9]{6}$/.test(inviteCode)) {
+  const parsed = parseFormData(inviteCodeSchema, formData);
+  if (!parsed.success) {
     return { step: "code-input", error: "Ungültiger Einladungscode" };
   }
+  const { inviteCode } = parsed.data;
 
   let club;
   try {
@@ -130,24 +153,25 @@ export async function requestJoinAction(
   _prev: JoinState,
   formData: FormData,
 ): Promise<JoinState> {
-  const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const inviteCode = (formData.get("inviteCode") as string)
-    ?.trim()
-    .toUpperCase();
-  const clubName = formData.get("clubName") as string;
+  const parsed = parseFormData(requestJoinSchema, formData);
+  if (!parsed.success) {
+    // Preserve form state for the user
+    const rawInviteCode = (formData.get("inviteCode") as string)
+      ?.trim()
+      .toUpperCase();
+    const rawClubName = formData.get("clubName") as string;
 
-  if (!inviteCode || !/^[A-Z0-9]{6}$/.test(inviteCode)) {
-    return { step: "code-input", error: "Ungültiger Einladungscode" };
-  }
-
-  if (!email || !email.includes("@")) {
+    if (!rawInviteCode || !/^[A-Z0-9]{6}$/.test(rawInviteCode)) {
+      return { step: "code-input", error: "Ungültiger Einladungscode" };
+    }
     return {
       step: "guest-email",
-      clubName,
-      inviteCode,
+      clubName: rawClubName,
+      inviteCode: rawInviteCode,
       error: "Bitte gib eine gültige E-Mail-Adresse ein",
     };
   }
+  const { email, inviteCode, clubName } = parsed.data;
 
   // Enumeration protection: always return check-email regardless of whether player exists
   try {

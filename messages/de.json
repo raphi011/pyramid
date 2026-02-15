@@ -220,7 +220,8 @@
       "missing_token": "Ung\u00fcltiger Link. Bitte fordere einen neuen an.",
       "invalid_token": "Der Link ist abgelaufen oder wurde bereits verwendet.",
       "server_error": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
-      "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "emailRequired": "Bitte gib deine E-Mail-Adresse ein."
     }
   },
   "checkEmail": {

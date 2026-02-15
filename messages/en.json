@@ -220,7 +220,8 @@
       "missing_token": "Invalid link. Please request a new one.",
       "invalid_token": "This link has expired or has already been used.",
       "server_error": "An error occurred. Please try again.",
-      "generic": "An error occurred. Please try again."
+      "generic": "An error occurred. Please try again.",
+      "emailRequired": "Please enter your email address."
     }
   },
   "checkEmail": {
