@@ -12,6 +12,7 @@ import { DataList } from "@/components/data-list";
 import { MatchRow } from "@/components/domain/match-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { fullName } from "@/lib/utils";
 import { currentPlayer, matches, rankChartData } from "./_mock-data";
 
 const meta = preview.meta({
@@ -40,7 +41,7 @@ function ProfilePage({ unavailable = false }: { unavailable?: boolean }) {
     <PageWrapper activeHref="/profile">
       <PageLayout title="Profil">
         <PlayerProfile
-          name={`${currentPlayer.firstName} ${currentPlayer.lastName}`}
+          name={fullName(currentPlayer.firstName, currentPlayer.lastName)}
           rank={currentPlayer.rank}
           wins={currentPlayer.wins}
           losses={currentPlayer.losses}

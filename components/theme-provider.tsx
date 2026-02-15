@@ -45,8 +45,11 @@ export function ThemeProvider({
       setThemeState(next);
       applyTheme(next);
       setThemeCookieClient(next);
-      startTransition(() => {
-        updateThemeAction(next);
+      startTransition(async () => {
+        const result = await updateThemeAction(next);
+        if ("error" in result) {
+          console.error("Theme sync failed:", result.error);
+        }
       });
     },
     [startTransition],

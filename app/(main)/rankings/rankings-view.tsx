@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Tabs } from "@/components/ui/tabs";
-import { cn, fullName } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { DataList } from "@/components/data-list";
 import {
   PyramidGrid,
@@ -166,7 +166,7 @@ export function RankingsView({
           aria-label={t(v)}
           aria-pressed={view === v}
           className={cn(
-            "rounded-md p-1.5 transition-all duration-150",
+            "rounded-md p-3 transition-all duration-150",
             view === v
               ? "bg-white text-court-600 shadow-sm dark:bg-slate-900 dark:text-court-400"
               : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",

@@ -33,7 +33,7 @@ function ResponsiveActions({
 
   return (
     <div className={className}>
-      {/* Desktop: inline buttons, primary first */}
+      {/* Desktop: inline buttons in caller-defined order */}
       <div className="hidden items-center gap-3 lg:flex">
         {actions.map((a) => (
           <Button

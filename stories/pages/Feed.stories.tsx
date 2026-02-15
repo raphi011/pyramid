@@ -5,6 +5,7 @@ import { PageWrapper } from "./_page-wrapper";
 import { PageLayout } from "@/components/page-layout";
 import { EventTimeline } from "@/components/domain/event-timeline";
 import { Button } from "@/components/ui/button";
+import { fullName } from "@/lib/utils";
 import { allEvents, currentPlayer } from "./_mock-data";
 
 const meta = preview.meta({
@@ -37,7 +38,10 @@ function FeedPage({
         <div className="space-y-4">
           <EventTimeline
             events={events}
-            highlightName={`${currentPlayer.firstName} ${currentPlayer.lastName}`}
+            highlightName={fullName(
+              currentPlayer.firstName,
+              currentPlayer.lastName,
+            )}
             loading={loading}
           />
           {events.length > 0 && !loading && (
@@ -76,7 +80,10 @@ export const SingleClub = meta.story({
         <div className="space-y-4">
           <EventTimeline
             events={allEvents}
-            highlightName={`${currentPlayer.firstName} ${currentPlayer.lastName}`}
+            highlightName={fullName(
+              currentPlayer.firstName,
+              currentPlayer.lastName,
+            )}
           />
         </div>
       </PageLayout>

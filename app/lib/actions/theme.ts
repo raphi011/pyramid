@@ -19,7 +19,10 @@ export async function updateThemeAction(theme: string): Promise<ThemeResult> {
   }
 
   try {
-    await updatePlayerTheme(sql, player.id, theme as Theme);
+    const count = await updatePlayerTheme(sql, player.id, theme as Theme);
+    if (count === 0) {
+      return { error: "settings.error.notAuthenticated" };
+    }
     await setThemeCookie(theme as Theme);
   } catch (e) {
     console.error("updateThemeAction failed:", e);

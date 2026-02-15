@@ -220,72 +220,81 @@ export function MatchDetailView({
   function handleAction(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      // Determine which action based on form intent
-      const intent = formData.get("intent") as string;
-      let result;
-      switch (intent) {
-        case "proposeDate":
-          result = await proposeDateAction(formData);
-          if ("success" in result) setShowProposeDateDialog(false);
-          break;
-        case "acceptDate":
-          result = await acceptDateAction(formData);
-          break;
-        case "declineDate":
-          result = await declineDateAction(formData);
-          break;
-        case "removeProposal":
-          result = await removeDateProposalAction(formData);
-          break;
-        case "enterResult":
-          if (resultPhoto) {
-            const uploadData = new FormData();
-            uploadData.append("file", resultPhoto);
-            const res = await fetch("/api/images", {
-              method: "POST",
-              body: uploadData,
-            });
-            if (!res.ok) {
-              result = { error: "matchDetail.error.serverError" };
-              break;
+      try {
+        // Determine which action based on form intent
+        const intent = formData.get("intent") as string;
+        let result;
+        switch (intent) {
+          case "proposeDate":
+            result = await proposeDateAction(formData);
+            if ("success" in result) setShowProposeDateDialog(false);
+            break;
+          case "acceptDate":
+            result = await acceptDateAction(formData);
+            break;
+          case "declineDate":
+            result = await declineDateAction(formData);
+            break;
+          case "removeProposal":
+            result = await removeDateProposalAction(formData);
+            break;
+          case "enterResult":
+            if (resultPhoto) {
+              const uploadData = new FormData();
+              uploadData.append("file", resultPhoto);
+              const res = await fetch("/api/images", {
+                method: "POST",
+                body: uploadData,
+              });
+              if (!res.ok) {
+                result = { error: "matchDetail.error.serverError" };
+                break;
+              }
+              const data = await res.json();
+              if (!data.id) {
+                result = { error: "matchDetail.error.serverError" };
+                break;
+              }
+              formData.set("imageId", data.id);
             }
-            const { id: uploadedId } = await res.json();
-            formData.set("imageId", uploadedId);
-          }
-          result = await enterResultAction(formData);
-          if ("success" in result) {
-            setShowEnterResultDialog(false);
-            setResultPhoto(null);
-          }
-          break;
-        case "confirmResult":
-          result = await confirmResultAction(formData);
-          break;
-        case "withdraw":
-          result = await withdrawAction(formData);
-          if ("success" in result) setShowWithdrawConfirm(false);
-          break;
-        case "forfeit":
-          result = await forfeitAction(formData);
-          if ("success" in result) setShowForfeitConfirm(false);
-          break;
-        case "dispute":
-          result = await disputeAction(formData);
-          if ("success" in result) {
-            setShowDisputeDialog(false);
-            setDisputeReason("");
-          }
-          break;
-        case "postComment":
-          result = await postCommentAction(formData);
-          if (result && "success" in result) setCommentText("");
-          break;
-        default:
-          result = { error: "matchDetail.error.serverError" };
-          break;
-      }
-      if (result && "error" in result) {
-        setError(t(`error.${result.error.split(".").pop()}`));
+            result = await enterResultAction(formData);
+            if ("success" in result) {
+              setShowEnterResultDialog(false);
+              setResultPhoto(null);
+            }
+            break;
+          case "confirmResult":
+            result = await confirmResultAction(formData);
+            break;
+          case "withdraw":
+            result = await withdrawAction(formData);
+            if ("success" in result) setShowWithdrawConfirm(false);
+            break;
+          case "forfeit":
+            result = await forfeitAction(formData);
+            if ("success" in result) setShowForfeitConfirm(false);
+            break;
+          case "dispute":
+            result = await disputeAction(formData);
+            if ("success" in result) {
+              setShowDisputeDialog(false);
+              setDisputeReason("");
+            }
+            break;
+          case "postComment":
+            result = await postCommentAction(formData);
+            if (result && "success" in result) setCommentText("");
+            break;
+          default:
+            result = { error: "matchDetail.error.serverError" };
+            break;
+        }
+        if (result && "error" in result) {
+          setError(t(`error.${result.error.split(".").pop()}`));
+        }
+      } catch (e) {
+        console.error("handleAction failed:", e);
+        setError(t("error.serverError"));
       }
     });
   }

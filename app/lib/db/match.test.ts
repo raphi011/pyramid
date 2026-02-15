@@ -305,8 +305,8 @@ describe("createChallenge", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "ch1@example.com", "Challenger");
-      const p2 = await seedPlayer(tx, "ch2@example.com", "Challengee");
+      const p1 = await seedPlayer(tx, "ch1@example.com", "Challenger", "One");
+      const p2 = await seedPlayer(tx, "ch2@example.com", "Challengee", "Two");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -415,8 +415,8 @@ describe("getMatchesBySeason", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "ms1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "ms2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "ms1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "ms2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -432,8 +432,8 @@ describe("getMatchesBySeason", () => {
           seasonId,
           team1Id: t1,
           team2Id: t2,
-          team1Name: "Alice",
-          team2Name: "Bob",
+          team1Name: "Alice Archer",
+          team2Name: "Bob Baker",
           winnerTeamId: t1,
           status: "completed",
         }),
@@ -459,9 +459,9 @@ describe("getMatchesByTeam", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "mt1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "mt2@example.com", "Bob");
-      const p3 = await seedPlayer(tx, "mt3@example.com", "Charlie");
+      const p1 = await seedPlayer(tx, "mt1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "mt2@example.com", "Bob", "Baker");
+      const p3 = await seedPlayer(tx, "mt3@example.com", "Charlie", "Clark");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
       const t3 = await seedTeam(tx, seasonId, [p3]);
@@ -502,10 +502,10 @@ describe("getOpenMatches", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "om1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "om2@example.com", "Bob");
-      const p3 = await seedPlayer(tx, "om3@example.com", "Charlie");
-      const p4 = await seedPlayer(tx, "om4@example.com", "Diana");
+      const p1 = await seedPlayer(tx, "om1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "om2@example.com", "Bob", "Baker");
+      const p3 = await seedPlayer(tx, "om3@example.com", "Charlie", "Clark");
+      const p4 = await seedPlayer(tx, "om4@example.com", "Diana", "Davis");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
       const t3 = await seedTeam(tx, seasonId, [p3]);
@@ -535,8 +535,8 @@ describe("getMatchById", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "md1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "md2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "md1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "md2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -554,8 +554,8 @@ describe("getMatchById", () => {
       expect(match!.seasonBestOf).toBe(3); // default from seedSeason
       expect(match!.clubId).toBe(clubId);
       expect(match!.gameAt).toEqual(gameAt);
-      expect(match!.team1Name).toBe("Alice");
-      expect(match!.team2Name).toBe("Bob");
+      expect(match!.team1Name).toBe("Alice Archer");
+      expect(match!.team2Name).toBe("Bob Baker");
     });
   });
 
@@ -574,8 +574,8 @@ describe("getDateProposals", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "dp1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "dp2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "dp1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "dp2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -594,9 +594,9 @@ describe("getDateProposals", () => {
 
       const proposals = await getDateProposals(tx, matchId);
       expect(proposals).toHaveLength(2);
-      expect(proposals[0].proposedByName).toBe("Alice");
+      expect(proposals[0].proposedByName).toBe("Alice Archer");
       expect(proposals[0].status).toBe("pending");
-      expect(proposals[1].proposedByName).toBe("Bob");
+      expect(proposals[1].proposedByName).toBe("Bob Baker");
       expect(proposals[1].status).toBe("declined");
     });
   });
@@ -609,8 +609,8 @@ describe("getMatchComments", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "mc1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "mc2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "mc1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "mc2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -630,9 +630,9 @@ describe("getMatchComments", () => {
 
       const comments = await getMatchComments(tx, matchId);
       expect(comments).toHaveLength(2);
-      expect(comments[0].playerName).toBe("Alice");
+      expect(comments[0].playerName).toBe("Alice Archer");
       expect(comments[0].comment).toBe("First comment");
-      expect(comments[1].playerName).toBe("Bob");
+      expect(comments[1].playerName).toBe("Bob Baker");
       expect(comments[1].comment).toBe("Second comment");
     });
   });
@@ -663,8 +663,8 @@ describe("createMatchComment", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "cc1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "cc2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "cc1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "cc2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -677,7 +677,7 @@ describe("createMatchComment", () => {
       expect(result.id).toBeGreaterThan(0);
       expect(result.matchId).toBe(matchId);
       expect(result.playerId).toBe(p1);
-      expect(result.playerName).toBe("Alice");
+      expect(result.playerName).toBe("Alice Archer");
       expect(result.comment).toBe("Hello!");
       expect(result.created).toBeInstanceOf(Date);
       expect(result.editedAt).toBeNull();
@@ -688,8 +688,8 @@ describe("createMatchComment", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "cc3@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "cc4@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "cc3@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "cc4@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -706,8 +706,8 @@ describe("createMatchComment", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "cc5@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "cc6@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "cc5@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "cc6@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -732,8 +732,8 @@ describe("createDateProposal", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "cdp1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "cdp2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "cdp1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "cdp2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -777,8 +777,8 @@ describe("acceptDateProposal", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "adp1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "adp2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "adp1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "adp2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -838,8 +838,8 @@ describe("declineDateProposal", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "ddp1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "ddp2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "ddp1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "ddp2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -864,8 +864,8 @@ describe("enterMatchResult", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "emr1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "emr2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "emr1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "emr2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -909,8 +909,8 @@ describe("enterMatchResult", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "emr3@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "emr4@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "emr3@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "emr4@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -946,8 +946,8 @@ describe("confirmMatchResult", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "cmr1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "cmr2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "cmr1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "cmr2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -989,8 +989,8 @@ describe("confirmMatchResult", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "cmr3@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "cmr4@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "cmr3@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "cmr4@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
@@ -1082,9 +1082,9 @@ describe("getHeadToHeadRecords", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "h2h1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "h2h2@example.com", "Bob");
-      const p3 = await seedPlayer(tx, "h2h3@example.com", "Charlie");
+      const p1 = await seedPlayer(tx, "h2h1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "h2h2@example.com", "Bob", "Baker");
+      const p3 = await seedPlayer(tx, "h2h3@example.com", "Charlie", "Clark");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
       const t3 = await seedTeam(tx, seasonId, [p3]);
@@ -1100,10 +1100,10 @@ describe("getHeadToHeadRecords", () => {
       const records = await getHeadToHeadRecords(tx, seasonId, t1);
       expect(records).toHaveLength(2);
 
-      const vsBob = records.find((r) => r.opponentName === "Bob");
+      const vsBob = records.find((r) => r.opponentName === "Bob Baker");
       expect(vsBob).toEqual(expect.objectContaining({ wins: 2, losses: 0 }));
 
-      const vsCharlie = records.find((r) => r.opponentName === "Charlie");
+      const vsCharlie = records.find((r) => r.opponentName === "Charlie Clark");
       expect(vsCharlie).toEqual(
         expect.objectContaining({ wins: 0, losses: 1 }),
       );
@@ -1130,8 +1130,8 @@ describe("getRecentMatchesByTeam", () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
-      const p1 = await seedPlayer(tx, "rm1@example.com", "Alice");
-      const p2 = await seedPlayer(tx, "rm2@example.com", "Bob");
+      const p1 = await seedPlayer(tx, "rm1@example.com", "Alice", "Archer");
+      const p2 = await seedPlayer(tx, "rm2@example.com", "Bob", "Baker");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
 

@@ -9,6 +9,7 @@ import {
   markAsRead,
 } from "@/app/lib/db/event";
 import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
+import { fullName } from "@/lib/utils";
 import { NotificationsView } from "./notifications-view";
 
 const PAGE_SIZE = 20;
@@ -54,7 +55,7 @@ export default async function NotificationsPage() {
       initialEvents={events}
       initialHasMore={hasMore}
       initialCursor={cursor}
-      playerName={`${player.firstName} ${player.lastName}`}
+      playerName={fullName(player.firstName, player.lastName)}
       hasUnread={hasUnread}
     />
   );

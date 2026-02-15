@@ -40,12 +40,16 @@ export function OnboardingForm() {
         </div>
 
         <form action={formAction} className="space-y-4">
+          {state.error && (
+            <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+              {state.error}
+            </p>
+          )}
           <FormField
             label={t("firstNameLabel")}
             placeholder={t("firstNamePlaceholder")}
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            error={state.error}
             required
             inputProps={{ name: "firstName" }}
           />

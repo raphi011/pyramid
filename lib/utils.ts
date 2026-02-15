@@ -9,6 +9,8 @@ export function cn(...inputs: ClassValue[]) {
  * abbreviateName("Anna", "Müller") → "Anna M."
  */
 export function abbreviateName(firstName: string, lastName: string): string {
+  if (!lastName) return firstName;
+  if (!firstName) return `${lastName[0]}.`;
   return `${firstName} ${lastName[0]}.`;
 }
 
@@ -16,5 +18,7 @@ export function abbreviateName(firstName: string, lastName: string): string {
  * Returns the full display name.
  */
 export function fullName(firstName: string, lastName: string): string {
+  if (!lastName) return firstName;
+  if (!firstName) return lastName;
   return `${firstName} ${lastName}`;
 }

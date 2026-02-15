@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "",
 };
 
+// Inline script to apply dark mode class before first paint, preventing FOUC.
+// Reads the "theme" cookie and toggles .dark on <html>. Must run synchronously in <head>.
 const themeScript = `(function(){try{var m=document.cookie.match(/(?:^|; )theme=([^;]*)/);var t=m?m[1]:"auto";var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches);document.documentElement.classList.toggle("dark",d)}catch(e){}})()`;
 
 export default async function RootLayout({

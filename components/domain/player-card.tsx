@@ -28,7 +28,7 @@ const variantStyles: Record<PlayerCardVariant, string> = {
   default:
     "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
   current:
-    "bg-white ring-1 ring-slate-200 border-b-2 border-court-500 dark:bg-slate-900 dark:ring-slate-800 dark:border-court-400",
+    "bg-white ring-1 ring-slate-200 shadow-[inset_0_-2px_0_var(--color-court-500)] dark:bg-slate-900 dark:ring-slate-800 dark:shadow-[inset_0_-2px_0_var(--color-court-400)]",
   challengeable:
     "bg-court-50/50 ring-1 ring-court-300 dark:bg-court-950/50 dark:ring-court-700",
   challenged:

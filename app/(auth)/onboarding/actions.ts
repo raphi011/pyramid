@@ -29,12 +29,22 @@ export async function completeOnboarding(
     return { error: t("nameRequired") };
   }
 
-  await updatePlayerProfile(sql, session.playerId, {
-    firstName,
-    lastName,
-    phoneNumber,
-    bio: "",
-  });
+  try {
+    const count = await updatePlayerProfile(sql, session.playerId, {
+      firstName,
+      lastName,
+      phoneNumber,
+      bio: "",
+    });
+    if (count === 0) {
+      const t = await getTranslations("onboarding");
+      return { error: t("serverError") };
+    }
+  } catch (error) {
+    console.error("Onboarding profile update failed:", error);
+    const t = await getTranslations("onboarding");
+    return { error: t("serverError") };
+  }
 
   let hasClubs = false;
   try {

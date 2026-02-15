@@ -48,9 +48,9 @@ export async function GET(request: NextRequest) {
 
     // Post-login routing — failures here should not invalidate the login
     try {
-      // 1. No name → onboarding
+      // 1. No name → onboarding (both first and last name required)
       const player = await getPlayerById(sql, result.playerId);
-      if (!player || !player.firstName.trim()) {
+      if (!player || !player.firstName.trim() || !player.lastName.trim()) {
         return NextResponse.redirect(new URL("/onboarding", baseUrl));
       }
 

@@ -6,13 +6,21 @@ describe("abbreviateName", () => {
     ["Anna", "Müller", "Anna M."],
     ["Raphael", "Gruber", "Raphael G."],
     ["John", "Smith", "John S."],
+    ["Anna", "", "Anna"],
+    ["", "Müller", "M."],
+    ["", "", ""],
   ])('abbreviates "%s %s" to "%s"', (first, last, expected) => {
     expect(abbreviateName(first, last)).toBe(expected);
   });
 });
 
 describe("fullName", () => {
-  it("joins first and last name", () => {
-    expect(fullName("Anna", "Müller")).toBe("Anna Müller");
+  it.each([
+    ["Anna", "Müller", "Anna Müller"],
+    ["Anna", "", "Anna"],
+    ["", "Müller", "Müller"],
+    ["", "", ""],
+  ])('fullName("%s", "%s") → "%s"', (first, last, expected) => {
+    expect(fullName(first, last)).toBe(expected);
   });
 });

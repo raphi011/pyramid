@@ -9,6 +9,7 @@ import {
   markAsRead,
 } from "@/app/lib/db/event";
 import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
+import { fullName } from "@/lib/utils";
 import { FeedView } from "./feed-view";
 
 const PAGE_SIZE = 20;
@@ -54,7 +55,7 @@ export default async function FeedPage() {
       initialHasMore={hasMore}
       initialCursor={cursor}
       clubs={clubs.map((c) => ({ id: c.clubId, name: c.clubName }))}
-      playerName={`${player.firstName} ${player.lastName}`}
+      playerName={fullName(player.firstName, player.lastName)}
     />
   );
 }

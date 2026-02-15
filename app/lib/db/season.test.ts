@@ -466,7 +466,8 @@ describe("getStandingsWithPlayers", () => {
         expect.objectContaining({
           teamId: t1,
           playerId: p1,
-          name: "Alice",
+          firstName: "Alice",
+          lastName: "Player",
           rank: 1,
         }),
       );
@@ -474,7 +475,8 @@ describe("getStandingsWithPlayers", () => {
         expect.objectContaining({
           teamId: t2,
           playerId: p2,
-          name: "Bob",
+          firstName: "Bob",
+          lastName: "Player",
           rank: 2,
         }),
       );
