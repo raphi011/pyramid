@@ -8,6 +8,7 @@ import {
   type SidebarItem,
   type ProfileInfo,
 } from "@/components/sidebar-nav";
+import { PyramidLogo } from "@/components/pyramid-logo";
 import { AdminBanner, type AdminMessage } from "@/components/admin-banner";
 
 type AppShellProps = {
@@ -71,7 +72,15 @@ function AppShell({
           "lg:hidden",
         )}
       >
-        <div className="min-w-0 flex-1">{clubSwitcher}</div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <PyramidLogo size="sm" />
+            <span className="text-base font-bold text-slate-900 dark:text-white">
+              Pyramid
+            </span>
+          </div>
+          {clubSwitcher && <div className="mt-1">{clubSwitcher}</div>}
+        </div>
         {profile && (
           <button
             onClick={() => onNavigate?.(profile.href)}

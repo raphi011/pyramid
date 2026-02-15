@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
+import { PyramidLogo } from "@/components/pyramid-logo";
 import { cn } from "@/lib/utils";
 
 type SidebarItem = {
@@ -57,29 +58,14 @@ function SidebarNav({
         className,
       )}
     >
-      {clubSwitcher && <div className="px-3 pt-4 pb-2">{clubSwitcher}</div>}
-
-      {fab && (
-        <div className="px-3 pb-1 pt-2">
-          <button
-            onClick={fab.onClick}
-            disabled={fab.disabled}
-            className={cn(
-              "flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5",
-              "text-sm font-semibold",
-              "transition-colors",
-              "disabled:opacity-50",
-              "[&_svg]:size-5 [&_svg]:shrink-0",
-              fab.variant === "active"
-                ? "bg-trophy-400 text-white hover:bg-trophy-500"
-                : "bg-court-500 text-white hover:bg-court-600",
-            )}
-          >
-            {fab.icon}
-            <span>{fab.label}</span>
-          </button>
+      <div className="flex items-center gap-4 px-6 pt-4 pb-6">
+        <div className="flex size-5 items-center justify-center">
+          <PyramidLogo size="sm" />
         </div>
-      )}
+        <span className="text-base font-bold text-slate-900 dark:text-white">
+          Pyramid
+        </span>
+      </div>
 
       <div className="flex-1 space-y-1 px-3 py-2">
         {items.map((item) => (
@@ -107,26 +93,51 @@ function SidebarNav({
             ))}
           </>
         )}
+
+        {fab && (
+          <div className="pt-2">
+            <button
+              onClick={fab.onClick}
+              disabled={fab.disabled}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5",
+                "text-sm font-semibold",
+                "transition-colors",
+                "disabled:opacity-50",
+                "[&_svg]:size-5 [&_svg]:shrink-0",
+                fab.variant === "active"
+                  ? "bg-trophy-400 text-white hover:bg-trophy-500"
+                  : "bg-court-500 text-white hover:bg-court-600",
+              )}
+            >
+              {fab.icon}
+              <span>{fab.label}</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {profile && (
-        <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-800">
-          <button
-            onClick={() => onNavigate?.(profile.href)}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
-              "transition-colors duration-150",
-              activeHref === profile.href
-                ? "bg-court-50 text-court-700 dark:bg-court-950 dark:text-court-400"
-                : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
-            )}
-            aria-current={activeHref === profile.href ? "page" : undefined}
-          >
-            <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
-            <span>{profile.name}</span>
-          </button>
-        </div>
-      )}
+      <div className="border-t border-slate-200 px-3 dark:border-slate-800">
+        {clubSwitcher && <div className="pt-3">{clubSwitcher}</div>}
+        {profile && (
+          <div className="py-3">
+            <button
+              onClick={() => onNavigate?.(profile.href)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+                "transition-colors duration-150",
+                activeHref === profile.href
+                  ? "bg-court-50 text-court-700 dark:bg-court-950 dark:text-court-400"
+                  : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
+              )}
+              aria-current={activeHref === profile.href ? "page" : undefined}
+            >
+              <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
+              <span>{profile.name}</span>
+            </button>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }
