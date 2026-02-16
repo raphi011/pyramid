@@ -31,6 +31,7 @@ import type {
 type AdminDashboardViewProps = {
   clubName: string;
   inviteCode: string;
+  appUrl: string;
   stats: ClubStats;
   seasons: AdminSeasonSummary[];
   overdueMatches: OverdueMatch[];
@@ -39,13 +40,12 @@ type AdminDashboardViewProps = {
 export function AdminDashboardView({
   clubName,
   inviteCode,
+  appUrl,
   stats,
   seasons,
   overdueMatches,
 }: AdminDashboardViewProps) {
   const t = useTranslations("adminDashboard");
-
-  const appUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   return (
     <PageLayout title={t("title")} subtitle={clubName}>

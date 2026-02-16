@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
+import { env } from "@/app/lib/env";
 import { getPlayerRole, getClubById } from "@/app/lib/db/club";
 import {
   getClubStats,
@@ -46,6 +47,7 @@ export default async function AdminDashboardPage({ params }: PageProps) {
     <AdminDashboardView
       clubName={club.name}
       inviteCode={club.inviteCode}
+      appUrl={env.APP_URL}
       stats={stats}
       seasons={seasons}
       overdueMatches={overdueMatches}

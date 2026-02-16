@@ -48,6 +48,8 @@ function useIsDesktop() {
 }
 ```
 
+Even guarding with `typeof window !== 'undefined'` causes **hydration mismatches** (not crashes) because server renders one branch while the client renders the other. If you need browser-only values like `window.location.origin`, pass them from the server component as props (e.g., via `env.APP_URL`) instead of reading them in the client component.
+
 ### Middleware `PUBLIC_ROUTES` uses prefix matching
 
 Routes in `PUBLIC_ROUTES` are matched with `pathname.startsWith(route)`. Adding `"/join"` matches both `/join` and `/join?code=X`. Be aware this also matches `/join-something` — if that becomes an issue, switch to exact matching or regex.
