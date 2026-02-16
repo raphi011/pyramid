@@ -24,6 +24,88 @@ export type OverdueMatch = {
   daysOverdue: number;
 };
 
+// ── Create Season types ───────────────────────────────
+
+export type SeasonMember = {
+  id: number;
+  name: string;
+};
+
+export type PreviousSeason = {
+  id: number;
+  name: string;
+};
+
+// ── Season Management types ───────────────────────────
+
+export type SeasonStatus = "draft" | "active" | "ended";
+
+export type SeasonDetail = {
+  id: number;
+  name: string;
+  status: SeasonStatus;
+  bestOf: number;
+  matchDeadlineDays: number;
+  reminderDays: number;
+  requiresResultConfirmation: boolean;
+  openEnrollment: boolean;
+  isTeamSeason: boolean;
+};
+
+// ── Member Management types ───────────────────────────
+
+export type ClubMember = {
+  id: number;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  role: "admin" | "player";
+};
+
+// ── Team Management types ─────────────────────────────
+
+export type TeamMember = {
+  id: number;
+  name: string;
+};
+
+export type Team = {
+  id: number;
+  name: string;
+  members: TeamMember[];
+};
+
+// ── Announcements types ───────────────────────────────
+
+export type PastAnnouncement = {
+  id: number;
+  message: string;
+  sentBy: string;
+  sentAt: string;
+  emailed: boolean;
+};
+
+// ── App Admin types ───────────────────────────────────
+
+export type AppStats = {
+  totalClubs: number;
+  totalPlayers: number;
+  totalSeasons: number;
+};
+
+export type AdminClub = {
+  id: number;
+  name: string;
+  memberCount: number;
+  isDisabled: boolean;
+  adminEmail: string;
+};
+
+export type AppAdmin = {
+  id: number;
+  email: string;
+};
+
 // ── Queries ────────────────────────────────────────────
 
 export async function getClubStats(
