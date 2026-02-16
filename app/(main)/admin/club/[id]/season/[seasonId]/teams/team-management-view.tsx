@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   ArrowLeftIcon,
@@ -19,34 +20,86 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { Team, TeamMember } from "@/app/lib/db/admin";
+
+type ActionResult = { success: true } | { error: string };
 
 type TeamManagementViewProps = {
   seasonName: string;
   maxTeamSize: number;
   teams: Team[];
   unassignedPlayers: TeamMember[];
+  clubId?: number;
+  seasonId?: number;
+  createAction?: (formData: FormData) => Promise<ActionResult>;
+  deleteAction?: (formData: FormData) => Promise<ActionResult>;
 };
 
 export function TeamManagementView({
   seasonName,
   teams,
   unassignedPlayers,
+  clubId,
+  seasonId,
+  createAction,
+  deleteAction,
 }: TeamManagementViewProps) {
   const t = useTranslations("teamManagement");
+  const [pending, startTransition] = useTransition();
 
   const [teamName, setTeamName] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [deleteTeamId, setDeleteTeamId] = useState<number | null>(null);
+
+  function handleCreate() {
+    if (!createAction || !seasonId || !clubId) return;
+    const fd = new FormData();
+    fd.set("seasonId", seasonId.toString());
+    fd.set("clubId", clubId.toString());
+    fd.set("name", teamName);
+    fd.set("memberIds", "");
+    startTransition(async () => {
+      const result = await createAction(fd);
+      if ("success" in result) {
+        setTeamName("");
+        setShowCreateForm(false);
+      }
+    });
+  }
+
+  function handleDelete() {
+    if (!deleteAction || !seasonId || !clubId || deleteTeamId === null) return;
+    const fd = new FormData();
+    fd.set("teamId", deleteTeamId.toString());
+    fd.set("seasonId", seasonId.toString());
+    fd.set("clubId", clubId.toString());
+    startTransition(async () => {
+      await deleteAction(fd);
+      setDeleteTeamId(null);
+    });
+  }
+
+  const backButton =
+    clubId && seasonId ? (
+      <Link href={`/admin/club/${clubId}/season/${seasonId}`}>
+        <Button variant="ghost" size="sm">
+          <ArrowLeftIcon className="size-4" />
+          {t("back")}
+        </Button>
+      </Link>
+    ) : (
+      <Button variant="ghost" size="sm" disabled>
+        <ArrowLeftIcon className="size-4" />
+        {t("back")}
+      </Button>
+    );
+
   return (
     <PageLayout
       title={t("title")}
       subtitle={t("subtitle", { season: seasonName })}
-      action={
-        <Button variant="ghost" size="sm" disabled>
-          <ArrowLeftIcon className="size-4" />
-          {t("back")}
-        </Button>
-      }
+      action={backButton}
     >
       {/* Create team button */}
       <Button onClick={() => setShowCreateForm(!showCreateForm)}>
@@ -71,7 +124,15 @@ export function TeamManagementView({
                 {t("addMember")}
               </Button>
               <div>
-                <Button disabled>{t("create")}</Button>
+                <Button
+                  onClick={handleCreate}
+                  disabled={
+                    pending || !createAction || teamName.trim().length === 0
+                  }
+                  loading={pending}
+                >
+                  {t("create")}
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -120,7 +181,12 @@ export function TeamManagementView({
                 <Button variant="outline" size="sm" disabled>
                   {t("edit")}
                 </Button>
-                <Button variant="ghost" size="sm" disabled>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!deleteAction}
+                  onClick={() => setDeleteTeamId(team.id)}
+                >
                   {t("delete")}
                 </Button>
               </div>
@@ -154,6 +220,16 @@ export function TeamManagementView({
           </CardContent>
         </Card>
       )}
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={deleteTeamId !== null}
+        onClose={() => setDeleteTeamId(null)}
+        onConfirm={handleDelete}
+        title={t("deleteConfirmTitle")}
+        description={t("deleteConfirmDesc")}
+        loading={pending}
+      />
     </PageLayout>
   );
 }
