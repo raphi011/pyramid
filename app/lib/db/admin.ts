@@ -1,5 +1,9 @@
 import type { Sql } from "../db";
 
+// ── Shared value types ─────────────────────────────────
+
+export type BestOf = 1 | 3 | 5 | 7;
+
 // ── Types ──────────────────────────────────────────────
 
 export type ClubStats = {
@@ -44,13 +48,12 @@ export type SeasonDetail = {
   id: number;
   name: string;
   status: SeasonStatus;
-  bestOf: number;
+  bestOf: BestOf;
   matchDeadlineDays: number;
   reminderDays: number;
   requiresResultConfirmation: boolean;
   openEnrollment: boolean;
   isTeamSeason: boolean;
-  maxTeamSize: number;
 };
 
 // ── Member Management types ───────────────────────────
@@ -82,7 +85,7 @@ export type PastAnnouncement = {
   id: number;
   message: string;
   sentBy: string;
-  sentAt: string;
+  sentAt: string; // ISO 8601 timestamp
   emailed: boolean;
 };
 
@@ -99,7 +102,7 @@ export type AdminClub = {
   name: string;
   memberCount: number;
   isDisabled: boolean;
-  adminEmail: string;
+  adminEmail: string | null;
 };
 
 export type AppAdmin = {
@@ -269,8 +272,7 @@ export async function getSeasonDetail(
       reminder_after_days AS "reminderDays",
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
-      (max_team_size > 1) AS "isTeamSeason",
-      max_team_size AS "maxTeamSize"
+      (max_team_size > 1) AS "isTeamSeason"
     FROM seasons
     WHERE id = ${seasonId}
   `;
@@ -381,7 +383,7 @@ export async function getPastAnnouncements(
       e.id,
       e.metadata->>'message' AS message,
       CONCAT(p.first_name, ' ', p.last_name) AS "sentBy",
-      TO_CHAR(e.created, 'DD.MM.YYYY HH24:MI') AS "sentAt",
+      e.created::text AS "sentAt",
       COALESCE((e.metadata->>'emailed')::bool, false) AS emailed
     FROM events e
     LEFT JOIN player p ON p.id = e.player_id
@@ -414,15 +416,12 @@ export async function getAdminClubs(sql: Sql): Promise<AdminClub[]> {
       (SELECT COUNT(*)::int FROM club_members WHERE club_id = c.id)
         AS "memberCount",
       c.is_disabled AS "isDisabled",
-      COALESCE(
-        (SELECT p.email_address
-         FROM club_members cm
-         JOIN player p ON p.id = cm.player_id
-         WHERE cm.club_id = c.id AND cm.role = 'admin'
-         ORDER BY cm.created ASC
-         LIMIT 1),
-        ''
-      ) AS "adminEmail"
+      (SELECT p.email_address
+       FROM club_members cm
+       JOIN player p ON p.id = cm.player_id
+       WHERE cm.club_id = c.id AND cm.role = 'admin'
+       ORDER BY cm.created ASC
+       LIMIT 1) AS "adminEmail"
     FROM clubs c
     ORDER BY c.name ASC
   `;

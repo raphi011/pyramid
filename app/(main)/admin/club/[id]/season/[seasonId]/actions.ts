@@ -2,22 +2,25 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { getPlayerRole } from "@/app/lib/db/club";
+import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import type { ActionResult } from "@/app/lib/action-result";
 
-// ── Result type ─────────────────────────────────────────
-
-export type ActionResult = { success: true } | { error: string };
+export type { ActionResult };
 
 // ── Schemas ─────────────────────────────────────────────
+
+const VALID_BEST_OF = [1, 3, 5, 7] as const;
 
 const updateSeasonSchema = z.object({
   seasonId: z.coerce.number().int().positive(),
   clubId: z.coerce.number().int().positive(),
   name: z.string().trim().min(1),
-  bestOf: z.coerce.number().int(),
+  bestOf: z.coerce
+    .number()
+    .int()
+    .refine((v) => VALID_BEST_OF.includes(v as 1)),
   matchDeadlineDays: z.coerce.number().int().min(1).max(90),
   reminderDays: z.coerce.number().int().min(1).max(90),
   requiresConfirmation: z
@@ -34,18 +37,6 @@ const seasonLifecycleSchema = z.object({
   seasonId: z.coerce.number().int().positive(),
   clubId: z.coerce.number().int().positive(),
 });
-
-// ── Helpers ─────────────────────────────────────────────
-
-async function requireAdmin(clubId: number): Promise<{ error?: string }> {
-  const player = await getCurrentPlayer();
-  if (!player) return { error: "seasonManagement.error.unauthorized" };
-
-  const role = await getPlayerRole(sql, player.id, clubId);
-  if (role !== "admin") return { error: "seasonManagement.error.unauthorized" };
-
-  return {};
-}
 
 // ── Actions ─────────────────────────────────────────────
 
@@ -68,11 +59,14 @@ export async function updateSeasonAction(
     openEnrollment,
   } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "seasonManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
   try {
-    await sql`
+    const result = await sql`
       UPDATE seasons
       SET
         name = ${name},
@@ -81,9 +75,14 @@ export async function updateSeasonAction(
         reminder_after_days = ${reminderDays},
         requires_result_confirmation = ${requiresConfirmation},
         open_enrollment = ${openEnrollment}
-      WHERE id = ${seasonId}
+      WHERE id = ${seasonId} AND club_id = ${clubId}
     `;
-  } catch {
+
+    if (result.count === 0) {
+      return { error: "seasonManagement.error.seasonNotFound" };
+    }
+  } catch (error) {
+    console.error("[updateSeasonAction] Failed:", { seasonId, clubId, error });
     return { error: "seasonManagement.error.serverError" };
   }
 
@@ -101,16 +100,24 @@ export async function startSeasonAction(
 
   const { seasonId, clubId } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "seasonManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
   try {
-    await sql`
+    const result = await sql`
       UPDATE seasons
       SET status = 'active', started_at = NOW()
-      WHERE id = ${seasonId} AND status = 'draft'
+      WHERE id = ${seasonId} AND club_id = ${clubId} AND status = 'draft'
     `;
-  } catch {
+
+    if (result.count === 0) {
+      return { error: "seasonManagement.error.seasonNotDraft" };
+    }
+  } catch (error) {
+    console.error("[startSeasonAction] Failed:", { seasonId, clubId, error });
     return { error: "seasonManagement.error.serverError" };
   }
 
@@ -128,16 +135,24 @@ export async function endSeasonAction(
 
   const { seasonId, clubId } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "seasonManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
   try {
-    await sql`
+    const result = await sql`
       UPDATE seasons
       SET status = 'ended', ended_at = NOW()
-      WHERE id = ${seasonId} AND status = 'active'
+      WHERE id = ${seasonId} AND club_id = ${clubId} AND status = 'active'
     `;
-  } catch {
+
+    if (result.count === 0) {
+      return { error: "seasonManagement.error.seasonNotActive" };
+    }
+  } catch (error) {
+    console.error("[endSeasonAction] Failed:", { seasonId, clubId, error });
     return { error: "seasonManagement.error.serverError" };
   }
 

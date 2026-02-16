@@ -21,17 +21,17 @@ import { Button } from "@/components/ui/button";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { Toast } from "@/components/ui/toast";
+import { isActionError } from "@/app/lib/action-result";
+import type { ActionResult } from "@/app/lib/action-result";
 import type { Team, TeamMember } from "@/app/lib/db/admin";
-
-type ActionResult = { success: true } | { error: string };
 
 type TeamManagementViewProps = {
   seasonName: string;
-  maxTeamSize: number;
   teams: Team[];
   unassignedPlayers: TeamMember[];
-  clubId?: number;
-  seasonId?: number;
+  clubId: number;
+  seasonId: number;
   createAction?: (formData: FormData) => Promise<ActionResult>;
   deleteAction?: (formData: FormData) => Promise<ActionResult>;
 };
@@ -47,13 +47,15 @@ export function TeamManagementView({
 }: TeamManagementViewProps) {
   const t = useTranslations("teamManagement");
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const tError = useTranslations();
 
   const [teamName, setTeamName] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [deleteTeamId, setDeleteTeamId] = useState<number | null>(null);
 
   function handleCreate() {
-    if (!createAction || !seasonId || !clubId) return;
+    if (!createAction) return;
     const fd = new FormData();
     fd.set("seasonId", seasonId.toString());
     fd.set("clubId", clubId.toString());
@@ -61,7 +63,9 @@ export function TeamManagementView({
     fd.set("memberIds", "");
     startTransition(async () => {
       const result = await createAction(fd);
-      if ("success" in result) {
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      } else {
         setTeamName("");
         setShowCreateForm(false);
       }
@@ -69,31 +73,28 @@ export function TeamManagementView({
   }
 
   function handleDelete() {
-    if (!deleteAction || !seasonId || !clubId || deleteTeamId === null) return;
+    if (!deleteAction || deleteTeamId === null) return;
     const fd = new FormData();
     fd.set("teamId", deleteTeamId.toString());
     fd.set("seasonId", seasonId.toString());
     fd.set("clubId", clubId.toString());
     startTransition(async () => {
-      await deleteAction(fd);
+      const result = await deleteAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
       setDeleteTeamId(null);
     });
   }
 
-  const backButton =
-    clubId && seasonId ? (
-      <Link href={`/admin/club/${clubId}/season/${seasonId}`}>
-        <Button variant="ghost" size="sm">
-          <ArrowLeftIcon className="size-4" />
-          {t("back")}
-        </Button>
-      </Link>
-    ) : (
-      <Button variant="ghost" size="sm" disabled>
+  const backButton = (
+    <Link href={`/admin/club/${clubId}/season/${seasonId}`}>
+      <Button variant="ghost" size="sm">
         <ArrowLeftIcon className="size-4" />
         {t("back")}
       </Button>
-    );
+    </Link>
+  );
 
   return (
     <PageLayout
@@ -230,6 +231,11 @@ export function TeamManagementView({
         description={t("deleteConfirmDesc")}
         loading={pending}
       />
+      {error && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast variant="error" title={error} onClose={() => setError(null)} />
+        </div>
+      )}
     </PageLayout>
   );
 }

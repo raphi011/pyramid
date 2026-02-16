@@ -2,13 +2,12 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
+import { requireAppAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import type { ActionResult } from "@/app/lib/action-result";
 
-// ── Result type ─────────────────────────────────────────
-
-export type ActionResult = { success: true } | { error: string };
+export type { ActionResult };
 
 // ── Schemas ─────────────────────────────────────────────
 
@@ -24,17 +23,6 @@ const removeAppAdminSchema = z.object({
   adminId: z.coerce.number().int().positive(),
 });
 
-// ── Helpers ─────────────────────────────────────────────
-
-async function requireAppAdmin(): Promise<
-  { id: number; error?: undefined } | { id?: undefined; error: string }
-> {
-  const player = await getCurrentPlayer();
-  if (!player) return { error: "appAdmin.error.unauthorized" };
-  if (!player.isAppAdmin) return { error: "appAdmin.error.unauthorized" };
-  return { id: player.id };
-}
-
 // ── Actions ─────────────────────────────────────────────
 
 export async function toggleClubDisabledAction(
@@ -46,12 +34,21 @@ export async function toggleClubDisabledAction(
   }
   const { clubId } = parsed.data;
 
-  const auth = await requireAppAdmin();
+  const auth = await requireAppAdmin("appAdmin.error.unauthorized");
   if (auth.error) return { error: auth.error };
 
-  await sql`
-    UPDATE clubs SET is_disabled = NOT is_disabled WHERE id = ${clubId}
-  `;
+  try {
+    const result = await sql`
+      UPDATE clubs SET is_disabled = NOT is_disabled WHERE id = ${clubId}
+    `;
+
+    if (result.count === 0) {
+      return { error: "appAdmin.error.clubNotFound" };
+    }
+  } catch (error) {
+    console.error("[toggleClubDisabledAction] Failed:", { clubId, error });
+    return { error: "appAdmin.error.serverError" };
+  }
 
   revalidatePath("/admin/app");
   return { success: true };
@@ -66,17 +63,22 @@ export async function addAppAdminAction(
   }
   const { email } = parsed.data;
 
-  const auth = await requireAppAdmin();
+  const auth = await requireAppAdmin("appAdmin.error.unauthorized");
   if (auth.error) return { error: auth.error };
 
-  const rows = await sql`
-    UPDATE player SET is_app_admin = true
-    WHERE email_address = ${email}
-    RETURNING id
-  `;
+  try {
+    const rows = await sql`
+      UPDATE player SET is_app_admin = true
+      WHERE email_address = ${email}
+      RETURNING id
+    `;
 
-  if (rows.length === 0) {
-    return { error: "appAdmin.error.playerNotFound" };
+    if (rows.length === 0) {
+      return { error: "appAdmin.error.playerNotFound" };
+    }
+  } catch (error) {
+    console.error("[addAppAdminAction] Failed:", { email, error });
+    return { error: "appAdmin.error.serverError" };
   }
 
   revalidatePath("/admin/app");
@@ -92,7 +94,7 @@ export async function removeAppAdminAction(
   }
   const { adminId } = parsed.data;
 
-  const auth = await requireAppAdmin();
+  const auth = await requireAppAdmin("appAdmin.error.unauthorized");
   if (auth.error) return { error: auth.error };
 
   // Cannot remove self
@@ -100,9 +102,28 @@ export async function removeAppAdminAction(
     return { error: "appAdmin.error.cannotRemoveSelf" };
   }
 
-  await sql`
-    UPDATE player SET is_app_admin = false WHERE id = ${adminId}
-  `;
+  try {
+    // Ensure at least 1 app admin remains after removal
+    const result = await sql.begin(async (tx) => {
+      const admins = await tx`
+        SELECT id FROM player WHERE is_app_admin = true FOR UPDATE
+      `;
+      if (admins.length < 2) {
+        return { error: "appAdmin.error.lastAdmin" as const };
+      }
+
+      return tx`
+        UPDATE player SET is_app_admin = false WHERE id = ${adminId}
+      `;
+    });
+
+    if (result && "error" in result) {
+      return { error: result.error };
+    }
+  } catch (error) {
+    console.error("[removeAppAdminAction] Failed:", { adminId, error });
+    return { error: "appAdmin.error.serverError" };
+  }
 
   revalidatePath("/admin/app");
   return { success: true };

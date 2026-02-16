@@ -2,14 +2,12 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { getPlayerRole } from "@/app/lib/db/club";
+import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import type { ActionResult } from "@/app/lib/action-result";
 
-// ── Result type ─────────────────────────────────────────
-
-export type ActionResult = { success: true } | { error: string };
+export type { ActionResult };
 
 // ── Schemas ─────────────────────────────────────────────
 
@@ -30,27 +28,6 @@ const removeMemberSchema = z.object({
   memberId: z.coerce.number().int().positive(),
 });
 
-// ── Helpers ─────────────────────────────────────────────
-
-async function requireAdmin(clubId: number): Promise<{ error?: string }> {
-  const player = await getCurrentPlayer();
-  if (!player) return { error: "memberManagement.error.unauthorized" };
-
-  const role = await getPlayerRole(sql, player.id, clubId);
-  if (role !== "admin") return { error: "memberManagement.error.unauthorized" };
-
-  return {};
-}
-
-async function getAdminCount(clubId: number): Promise<number> {
-  const rows = await sql`
-    SELECT COUNT(*)::int AS count
-    FROM club_members
-    WHERE club_id = ${clubId} AND role = 'admin'
-  `;
-  return (rows[0] as { count: number }).count;
-}
-
 // ── Actions ─────────────────────────────────────────────
 
 export async function inviteMemberAction(
@@ -62,46 +39,46 @@ export async function inviteMemberAction(
   }
   const { clubId, email, name } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "memberManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
-  // Check if player with this email already exists
-  const existingPlayers = await sql`
-    SELECT id FROM player WHERE email_address = ${email}
-  `;
+  try {
+    await sql.begin(async (tx) => {
+      // Upsert player — ON CONFLICT handles concurrent invites
+      const parts = name.split(/\s+/);
+      const firstName = parts[0];
+      const lastName = parts.slice(1).join(" ") || "";
 
-  let playerId: number;
+      const playerRows = await tx`
+        INSERT INTO player (first_name, last_name, email_address, created)
+        VALUES (${firstName}, ${lastName}, ${email}, NOW())
+        ON CONFLICT (email_address) DO UPDATE SET email_address = EXCLUDED.email_address
+        RETURNING id
+      `;
+      const playerId = (playerRows[0] as { id: number }).id;
 
-  if (existingPlayers.length > 0) {
-    playerId = (existingPlayers[0] as { id: number }).id;
-  } else {
-    // Create new player: first word = firstName, rest = lastName
-    const parts = name.split(/\s+/);
-    const firstName = parts[0];
-    const lastName = parts.slice(1).join(" ") || "";
+      // Add to club — ON CONFLICT prevents duplicate membership
+      const memberRows = await tx`
+        INSERT INTO club_members (player_id, club_id, role, created)
+        VALUES (${playerId}, ${clubId}, 'player', NOW())
+        ON CONFLICT (player_id, club_id) DO NOTHING
+        RETURNING player_id
+      `;
 
-    const inserted = await sql`
-      INSERT INTO player (first_name, last_name, email_address, created)
-      VALUES (${firstName}, ${lastName}, ${email}, NOW())
-      RETURNING id
-    `;
-    playerId = (inserted[0] as { id: number }).id;
+      if (memberRows.length === 0) {
+        throw new Error("ALREADY_MEMBER");
+      }
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "ALREADY_MEMBER") {
+      return { error: "memberManagement.error.alreadyMember" };
+    }
+    console.error("[inviteMemberAction] Failed:", { clubId, email, error });
+    return { error: "memberManagement.error.serverError" };
   }
-
-  // Check if already a member
-  const existing = await sql`
-    SELECT 1 FROM club_members
-    WHERE player_id = ${playerId} AND club_id = ${clubId}
-  `;
-
-  if (existing.length > 0) {
-    return { error: "memberManagement.error.alreadyMember" };
-  }
-
-  await sql`
-    INSERT INTO club_members (player_id, club_id, role, created)
-    VALUES (${playerId}, ${clubId}, 'player', NOW())
-  `;
 
   revalidatePath(`/admin/club/${clubId}/members`);
   return { success: true };
@@ -116,22 +93,45 @@ export async function updateMemberRoleAction(
   }
   const { clubId, memberId, role } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "memberManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
-  // If demoting to player, ensure at least 1 admin remains
-  if (role === "player") {
-    const adminCount = await getAdminCount(clubId);
-    if (adminCount < 2) {
-      return { error: "memberManagement.error.lastAdmin" };
-    }
-  }
+  try {
+    const result = await sql.begin(async (tx) => {
+      // If demoting to player, lock admin rows and check count
+      if (role === "player") {
+        const admins = await tx`
+          SELECT player_id FROM club_members
+          WHERE club_id = ${clubId} AND role = 'admin'
+          FOR UPDATE
+        `;
+        if (admins.length < 2) {
+          return { error: "memberManagement.error.lastAdmin" as const };
+        }
+      }
 
-  await sql`
-    UPDATE club_members
-    SET role = ${role}
-    WHERE player_id = ${memberId} AND club_id = ${clubId}
-  `;
+      return tx`
+        UPDATE club_members
+        SET role = ${role}
+        WHERE player_id = ${memberId} AND club_id = ${clubId}
+      `;
+    });
+
+    if (result && "error" in result) {
+      return { error: result.error };
+    }
+  } catch (error) {
+    console.error("[updateMemberRoleAction] Failed:", {
+      clubId,
+      memberId,
+      role,
+      error,
+    });
+    return { error: "memberManagement.error.serverError" };
+  }
 
   revalidatePath(`/admin/club/${clubId}/members`);
   return { success: true };
@@ -146,29 +146,48 @@ export async function removeMemberAction(
   }
   const { clubId, memberId } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "memberManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
-  // Check if removing an admin — ensure at least 1 admin remains
-  const memberRole = await sql`
-    SELECT role FROM club_members
-    WHERE player_id = ${memberId} AND club_id = ${clubId}
-  `;
+  try {
+    const result = await sql.begin(async (tx) => {
+      // Check if removing an admin — lock and ensure at least 1 remains
+      const memberRole = await tx`
+        SELECT role FROM club_members
+        WHERE player_id = ${memberId} AND club_id = ${clubId}
+        FOR UPDATE
+      `;
 
-  if (
-    memberRole.length > 0 &&
-    (memberRole[0] as { role: string }).role === "admin"
-  ) {
-    const adminCount = await getAdminCount(clubId);
-    if (adminCount < 2) {
-      return { error: "memberManagement.error.lastAdmin" };
+      if (
+        memberRole.length > 0 &&
+        (memberRole[0] as { role: string }).role === "admin"
+      ) {
+        const admins = await tx`
+          SELECT player_id FROM club_members
+          WHERE club_id = ${clubId} AND role = 'admin'
+          FOR UPDATE
+        `;
+        if (admins.length < 2) {
+          return { error: "memberManagement.error.lastAdmin" as const };
+        }
+      }
+
+      return tx`
+        DELETE FROM club_members
+        WHERE player_id = ${memberId} AND club_id = ${clubId}
+      `;
+    });
+
+    if (result && "error" in result) {
+      return { error: result.error };
     }
+  } catch (error) {
+    console.error("[removeMemberAction] Failed:", { clubId, memberId, error });
+    return { error: "memberManagement.error.serverError" };
   }
-
-  await sql`
-    DELETE FROM club_members
-    WHERE player_id = ${memberId} AND club_id = ${clubId}
-  `;
 
   revalidatePath(`/admin/club/${clubId}/members`);
   return { success: true };

@@ -395,7 +395,18 @@
     "players": "Players",
     "playersDesc": "All members are auto-enrolled. Remove players as needed.",
     "noMembers": "No members",
-    "submit": "Create Season"
+    "submit": "Create Season",
+    "bestOf1": "Best of 1",
+    "bestOf3": "Best of 3",
+    "bestOf5": "Best of 5",
+    "bestOf7": "Best of 7",
+    "error": {
+      "invalidInput": "Invalid input.",
+      "unauthorized": "Unauthorized.",
+      "missingSourceSeason": "Please select a source season.",
+      "invalidSourceSeason": "The selected source season is invalid.",
+      "serverError": "An error occurred. Please try again."
+    }
   },
   "seasonManagement": {
     "subtitle": "Manage season",
@@ -425,7 +436,19 @@
     "endSeasonConfirmTitle": "End season?",
     "endSeasonConfirmDesc": "The season will be archived. No new challenges can be issued.",
     "newSeason": "New Season",
-    "createFromThis": "Create season from this one"
+    "createFromThis": "Create season from this one",
+    "bestOf1": "Best of 1",
+    "bestOf3": "Best of 3",
+    "bestOf5": "Best of 5",
+    "bestOf7": "Best of 7",
+    "error": {
+      "invalidInput": "Invalid input.",
+      "unauthorized": "Unauthorized.",
+      "seasonNotFound": "Season not found.",
+      "seasonNotDraft": "Season cannot be started (not in draft status).",
+      "seasonNotActive": "Season cannot be ended (not active).",
+      "serverError": "An error occurred. Please try again."
+    }
   },
   "memberManagement": {
     "title": "Members ({count})",
@@ -443,7 +466,14 @@
     "demote": "Demote",
     "remove": "Remove",
     "noMembers": "No members",
-    "noMembersDesc": "Invite players to get started."
+    "noMembersDesc": "Invite players to get started.",
+    "error": {
+      "invalidInput": "Invalid input.",
+      "unauthorized": "Unauthorized.",
+      "alreadyMember": "This member is already in the club.",
+      "lastAdmin": "The last admin cannot be demoted or removed.",
+      "serverError": "An error occurred. Please try again."
+    }
   },
   "teamManagement": {
     "title": "Teams",
@@ -463,7 +493,13 @@
     "noMembers": "No members",
     "noUnassigned": "All players assigned",
     "deleteConfirmTitle": "Delete team?",
-    "deleteConfirmDesc": "The team and all assignments will be removed."
+    "deleteConfirmDesc": "The team and all assignments will be removed.",
+    "error": {
+      "invalidInput": "Invalid input.",
+      "unauthorized": "Unauthorized.",
+      "seasonNotFound": "Season not found.",
+      "serverError": "An error occurred. Please try again."
+    }
   },
   "announcements": {
     "title": "Announcements",
@@ -478,7 +514,12 @@
     "sentBy": "By {name}",
     "emailed": "Emailed",
     "emailedYes": "Yes",
-    "emailedNo": "No"
+    "emailedNo": "No",
+    "error": {
+      "invalidInput": "Invalid input.",
+      "unauthorized": "Unauthorized.",
+      "serverError": "An error occurred. Please try again."
+    }
   },
   "appAdmin": {
     "title": "App Administration",
@@ -510,7 +551,9 @@
       "unauthorized": "Unauthorized.",
       "invalidInput": "Invalid input.",
       "playerNotFound": "No player found with this email address.",
-      "cannotRemoveSelf": "You cannot remove yourself."
+      "cannotRemoveSelf": "You cannot remove yourself.",
+      "lastAdmin": "The last app administrator cannot be removed.",
+      "serverError": "An error occurred. Please try again."
     }
   },
   "feed": {

@@ -9,12 +9,15 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataList } from "@/components/data-list";
+import { Toast } from "@/components/ui/toast";
+import { isActionError } from "@/app/lib/action-result";
+import type { ActionResult } from "@/app/lib/action-result";
 import type { PastAnnouncement } from "@/app/lib/db/admin";
 
 type AnnouncementsViewProps = {
-  clubId?: number;
+  clubId: number;
   pastAnnouncements: PastAnnouncement[];
-  sendAction?: (fd: FormData) => Promise<{ success: true } | { error: string }>;
+  sendAction?: (fd: FormData) => Promise<ActionResult>;
 };
 
 export function AnnouncementsView({
@@ -27,6 +30,8 @@ export function AnnouncementsView({
   const [message, setMessage] = useState("");
   const [sendAsEmail, setSendAsEmail] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const tError = useTranslations();
 
   return (
     <PageLayout title={t("title")}>
@@ -52,14 +57,16 @@ export function AnnouncementsView({
             <Button
               disabled={isPending || !sendAction || !message.trim()}
               onClick={() => {
-                if (!sendAction || !clubId) return;
+                if (!sendAction) return;
                 const fd = new FormData();
                 fd.append("clubId", String(clubId));
                 fd.append("message", message);
                 fd.append("sendAsEmail", sendAsEmail ? "true" : "false");
                 startTransition(async () => {
                   const result = await sendAction(fd);
-                  if ("success" in result) {
+                  if (isActionError(result)) {
+                    setError(tError(result.error));
+                  } else {
                     setMessage("");
                   }
                 });
@@ -109,6 +116,11 @@ export function AnnouncementsView({
           />
         </CardContent>
       </Card>
+      {error && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast variant="error" title={error} onClose={() => setError(null)} />
+        </div>
+      )}
     </PageLayout>
   );
 }

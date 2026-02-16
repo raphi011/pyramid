@@ -61,9 +61,10 @@ export const Default = meta.story({
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <TeamManagementView
           seasonName="Doppel Sommer 2026"
-          maxTeamSize={2}
           teams={teams}
           unassignedPlayers={[]}
+          clubId={1}
+          seasonId={1}
         />
       </PageWrapper>
     );
@@ -111,9 +112,10 @@ export const WithUnassignedPlayers = meta.story({
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <TeamManagementView
           seasonName="Doppel Sommer 2026"
-          maxTeamSize={2}
           teams={teams}
           unassignedPlayers={unassignedPlayers}
+          clubId={1}
+          seasonId={1}
         />
       </PageWrapper>
     );
@@ -136,9 +138,10 @@ export const EmptyTeams = meta.story({
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <TeamManagementView
           seasonName="Doppel Sommer 2026"
-          maxTeamSize={2}
           teams={[]}
           unassignedPlayers={unassignedPlayers}
+          clubId={1}
+          seasonId={1}
         />
       </PageWrapper>
     );

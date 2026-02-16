@@ -2,14 +2,12 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { getPlayerRole } from "@/app/lib/db/club";
+import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import type { ActionResult } from "@/app/lib/action-result";
 
-// ── Result type ─────────────────────────────────────────
-
-export type ActionResult = { success: true } | { error: string };
+export type { ActionResult };
 
 // ── Schemas ─────────────────────────────────────────────
 
@@ -25,7 +23,8 @@ const createTeamSchema = z.object({
         .split(",")
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
-        .map(Number),
+        .map(Number)
+        .filter((n) => !Number.isNaN(n)),
     ),
 });
 
@@ -34,18 +33,6 @@ const deleteTeamSchema = z.object({
   seasonId: z.coerce.number().int().positive(),
   clubId: z.coerce.number().int().positive(),
 });
-
-// ── Helpers ─────────────────────────────────────────────
-
-async function requireAdmin(clubId: number): Promise<{ error?: string }> {
-  const player = await getCurrentPlayer();
-  if (!player) return { error: "teamManagement.error.unauthorized" };
-
-  const role = await getPlayerRole(sql, player.id, clubId);
-  if (role !== "admin") return { error: "teamManagement.error.unauthorized" };
-
-  return {};
-}
 
 // ── Actions ─────────────────────────────────────────────
 
@@ -59,11 +46,22 @@ export async function createTeamAction(
 
   const { seasonId, clubId, name, memberIds } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "teamManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
   try {
     await sql.begin(async (tx) => {
+      // Verify season belongs to this club
+      const seasonCheck = await tx`
+        SELECT 1 FROM seasons WHERE id = ${seasonId} AND club_id = ${clubId}
+      `;
+      if (seasonCheck.length === 0) {
+        throw new Error("SEASON_NOT_FOUND");
+      }
+
       const inserted = await tx`
         INSERT INTO teams (season_id, name, opted_out, created)
         VALUES (${seasonId}, ${name}, false, NOW())
@@ -79,7 +77,11 @@ export async function createTeamAction(
         `;
       }
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "SEASON_NOT_FOUND") {
+      return { error: "teamManagement.error.seasonNotFound" };
+    }
+    console.error("[createTeamAction] Failed:", { seasonId, clubId, error });
     return { error: "teamManagement.error.serverError" };
   }
 
@@ -97,19 +99,42 @@ export async function deleteTeamAction(
 
   const { teamId, seasonId, clubId } = parsed.data;
 
-  const authCheck = await requireAdmin(clubId);
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "teamManagement.error.unauthorized",
+  );
   if (authCheck.error) return { error: authCheck.error };
 
   try {
     await sql.begin(async (tx) => {
+      // Verify season belongs to this club
+      const seasonCheck = await tx`
+        SELECT 1 FROM seasons WHERE id = ${seasonId} AND club_id = ${clubId}
+      `;
+      if (seasonCheck.length === 0) {
+        throw new Error("SEASON_NOT_FOUND");
+      }
+
+      // Only delete team_players for a team that belongs to this season
       await tx`
-        DELETE FROM team_players WHERE team_id = ${teamId}
+        DELETE FROM team_players
+        WHERE team_id = ${teamId}
+          AND team_id IN (SELECT id FROM teams WHERE season_id = ${seasonId})
       `;
       await tx`
         DELETE FROM teams WHERE id = ${teamId} AND season_id = ${seasonId}
       `;
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "SEASON_NOT_FOUND") {
+      return { error: "teamManagement.error.seasonNotFound" };
+    }
+    console.error("[deleteTeamAction] Failed:", {
+      teamId,
+      seasonId,
+      clubId,
+      error,
+    });
     return { error: "teamManagement.error.serverError" };
   }
 

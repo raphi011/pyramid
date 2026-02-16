@@ -46,7 +46,6 @@ export default async function TeamManagementPage({ params }: PageProps) {
   return (
     <TeamManagementView
       seasonName={season.name}
-      maxTeamSize={season.maxTeamSize}
       teams={teams}
       unassignedPlayers={unassignedPlayers}
       clubId={clubId}

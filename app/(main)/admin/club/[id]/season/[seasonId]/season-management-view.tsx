@@ -16,9 +16,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
 import { Switch } from "@/components/ui/switch";
+import { Toast } from "@/components/ui/toast";
+import { isActionError } from "@/app/lib/action-result";
+import type { ActionResult } from "@/app/lib/action-result";
 import type { SeasonDetail, SeasonStatus } from "@/app/lib/db/admin";
-
-type ActionResult = { success: true } | { error: string };
 
 type SeasonManagementViewProps = {
   season: SeasonDetail;
@@ -53,6 +54,8 @@ export function SeasonManagementView({
 }: SeasonManagementViewProps) {
   const t = useTranslations("seasonManagement");
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const tError = useTranslations();
 
   const [name, setName] = useState(season.name);
   const [bestOf, setBestOf] = useState(season.bestOf.toString());
@@ -81,7 +84,10 @@ export function SeasonManagementView({
     fd.set("requiresConfirmation", requiresConfirmation.toString());
     fd.set("openEnrollment", openEnrollment.toString());
     startTransition(async () => {
-      await updateAction(fd);
+      const result = await updateAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -91,7 +97,10 @@ export function SeasonManagementView({
     fd.set("seasonId", season.id.toString());
     fd.set("clubId", clubId.toString());
     startTransition(async () => {
-      await startAction(fd);
+      const result = await startAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -101,7 +110,10 @@ export function SeasonManagementView({
     fd.set("seasonId", season.id.toString());
     fd.set("clubId", clubId.toString());
     startTransition(async () => {
-      await endAction(fd);
+      const result = await endAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -145,10 +157,10 @@ export function SeasonManagementView({
               onChange={(e) => setBestOf(e.target.value)}
               disabled={isEnded}
             >
-              <option value="1">Best of 1</option>
-              <option value="3">Best of 3</option>
-              <option value="5">Best of 5</option>
-              <option value="7">Best of 7</option>
+              <option value="1">{t("bestOf1")}</option>
+              <option value="3">{t("bestOf3")}</option>
+              <option value="5">{t("bestOf5")}</option>
+              <option value="7">{t("bestOf7")}</option>
             </FormField>
             <FormField
               label={t("matchDeadlineLabel")}
@@ -295,6 +307,11 @@ export function SeasonManagementView({
           </Link>
         </CardContent>
       </Card>
+      {error && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast variant="error" title={error} onClose={() => setError(null)} />
+        </div>
+      )}
     </PageLayout>
   );
 }

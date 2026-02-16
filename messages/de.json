@@ -395,7 +395,18 @@
     "players": "Spieler",
     "playersDesc": "Alle Mitglieder sind automatisch angemeldet. Entferne Spieler bei Bedarf.",
     "noMembers": "Keine Mitglieder",
-    "submit": "Saison erstellen"
+    "submit": "Saison erstellen",
+    "bestOf1": "Best of 1",
+    "bestOf3": "Best of 3",
+    "bestOf5": "Best of 5",
+    "bestOf7": "Best of 7",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "unauthorized": "Keine Berechtigung.",
+      "missingSourceSeason": "Bitte w\u00e4hle eine Quell-Saison aus.",
+      "invalidSourceSeason": "Die gew\u00e4hlte Quell-Saison ist ung\u00fcltig.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
   },
   "seasonManagement": {
     "subtitle": "Saison verwalten",
@@ -425,7 +436,19 @@
     "endSeasonConfirmTitle": "Saison beenden?",
     "endSeasonConfirmDesc": "Die Saison wird archiviert. Es k\u00f6nnen keine neuen Forderungen mehr gestellt werden.",
     "newSeason": "Neue Saison",
-    "createFromThis": "Saison von dieser erstellen"
+    "createFromThis": "Saison von dieser erstellen",
+    "bestOf1": "Best of 1",
+    "bestOf3": "Best of 3",
+    "bestOf5": "Best of 5",
+    "bestOf7": "Best of 7",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "unauthorized": "Keine Berechtigung.",
+      "seasonNotFound": "Saison nicht gefunden.",
+      "seasonNotDraft": "Die Saison kann nicht gestartet werden (nicht im Entwurf-Status).",
+      "seasonNotActive": "Die Saison kann nicht beendet werden (nicht aktiv).",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
   },
   "memberManagement": {
     "title": "Mitglieder ({count})",
@@ -443,7 +466,14 @@
     "demote": "Herabstufen",
     "remove": "Entfernen",
     "noMembers": "Keine Mitglieder",
-    "noMembersDesc": "Lade Spieler ein, um loszulegen."
+    "noMembersDesc": "Lade Spieler ein, um loszulegen.",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "unauthorized": "Keine Berechtigung.",
+      "alreadyMember": "Dieses Mitglied ist bereits im Club.",
+      "lastAdmin": "Der letzte Admin kann nicht herabgestuft oder entfernt werden.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
   },
   "teamManagement": {
     "title": "Teams",
@@ -463,7 +493,13 @@
     "noMembers": "Keine Mitglieder",
     "noUnassigned": "Alle Spieler zugewiesen",
     "deleteConfirmTitle": "Team l\u00f6schen?",
-    "deleteConfirmDesc": "Das Team und alle Zuweisungen werden entfernt."
+    "deleteConfirmDesc": "Das Team und alle Zuweisungen werden entfernt.",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "unauthorized": "Keine Berechtigung.",
+      "seasonNotFound": "Saison nicht gefunden.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
   },
   "announcements": {
     "title": "Ank\u00fcndigungen",
@@ -478,7 +514,12 @@
     "sentBy": "Von {name}",
     "emailed": "Per E-Mail",
     "emailedYes": "Ja",
-    "emailedNo": "Nein"
+    "emailedNo": "Nein",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "unauthorized": "Keine Berechtigung.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
   },
   "appAdmin": {
     "title": "App-Verwaltung",
@@ -510,7 +551,9 @@
       "unauthorized": "Keine Berechtigung.",
       "invalidInput": "Ung\u00fcltige Eingabe.",
       "playerNotFound": "Kein Spieler mit dieser E-Mail-Adresse gefunden.",
-      "cannotRemoveSelf": "Du kannst dich nicht selbst entfernen."
+      "cannotRemoveSelf": "Du kannst dich nicht selbst entfernen.",
+      "lastAdmin": "Der letzte App-Administrator kann nicht entfernt werden.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
   "feed": {

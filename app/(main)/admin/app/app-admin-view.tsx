@@ -14,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { StatBlock } from "@/components/stat-block";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
+import { Toast } from "@/components/ui/toast";
+import { isActionError } from "@/app/lib/action-result";
+import type { ActionResult } from "@/app/lib/action-result";
 import type { AppStats, AdminClub, AppAdmin } from "@/app/lib/db/admin";
-import type { ActionResult } from "./actions";
 
 type AppAdminViewProps = {
   stats: AppStats;
@@ -39,6 +41,8 @@ export function AppAdminView({
   const [showAddAdmin, setShowAddAdmin] = useState(false);
   const [addAdminEmail, setAddAdminEmail] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const tError = useTranslations();
 
   function handleToggleClub(clubId: number) {
     if (!toggleClubAction) return;
@@ -46,7 +50,10 @@ export function AppAdminView({
     fd.append("clubId", String(clubId));
 
     startTransition(async () => {
-      await toggleClubAction(fd);
+      const result = await toggleClubAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -56,7 +63,10 @@ export function AppAdminView({
     fd.append("adminId", String(adminId));
 
     startTransition(async () => {
-      await removeAdminAction(fd);
+      const result = await removeAdminAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -67,7 +77,9 @@ export function AppAdminView({
 
     startTransition(async () => {
       const result = await addAdminAction(fd);
-      if ("success" in result) {
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      } else {
         setAddAdminEmail("");
         setShowAddAdmin(false);
       }
@@ -120,7 +132,9 @@ export function AppAdminView({
                   <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <span>{t("memberCount", { count: club.memberCount })}</span>
                     <span>&middot;</span>
-                    <span>{t("adminLabel", { email: club.adminEmail })}</span>
+                    <span>
+                      {t("adminLabel", { email: club.adminEmail ?? "–" })}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-1">
@@ -225,6 +239,11 @@ export function AppAdminView({
           )}
         </CardContent>
       </Card>
+      {error && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast variant="error" title={error} onClose={() => setError(null)} />
+        </div>
+      )}
     </PageLayout>
   );
 }

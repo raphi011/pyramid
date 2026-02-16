@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
+import { Toast } from "@/components/ui/toast";
+import { isActionError } from "@/app/lib/action-result";
+import type { ActionResult } from "@/app/lib/action-result";
 import type { ClubMember } from "@/app/lib/db/admin";
-import type { ActionResult } from "./actions";
 
 type MemberManagementViewProps = {
   clubId: number;
@@ -40,6 +42,8 @@ export function MemberManagementView({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const tError = useTranslations();
 
   const adminCount = members.filter((m) => m.role === "admin").length;
   const filteredMembers = members.filter(
@@ -57,7 +61,9 @@ export function MemberManagementView({
 
     startTransition(async () => {
       const result = await inviteAction(fd);
-      if ("success" in result) {
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      } else {
         setInviteEmail("");
         setInviteName("");
         setShowInvite(false);
@@ -73,7 +79,10 @@ export function MemberManagementView({
     fd.append("role", role);
 
     startTransition(async () => {
-      await updateRoleAction(fd);
+      const result = await updateRoleAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -84,7 +93,10 @@ export function MemberManagementView({
     fd.append("memberId", String(memberId));
 
     startTransition(async () => {
-      await removeMemberAction(fd);
+      const result = await removeMemberAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -221,6 +233,11 @@ export function MemberManagementView({
           />
         </CardContent>
       </Card>
+      {error && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast variant="error" title={error} onClose={() => setError(null)} />
+        </div>
+      )}
     </PageLayout>
   );
 }

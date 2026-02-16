@@ -2,25 +2,28 @@
 
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { getPlayerRole } from "@/app/lib/db/club";
+import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import type { ActionResultWith } from "@/app/lib/action-result";
 
 // ── Result type ─────────────────────────────────────────
 
-export type CreateSeasonResult =
-  | { success: true; seasonId: number }
-  | { error: string };
+export type CreateSeasonResult = ActionResultWith<{ seasonId: number }>;
 
 // ── Schema ──────────────────────────────────────────────
+
+const VALID_BEST_OF = [1, 3, 5, 7] as const;
 
 const createSeasonSchema = z.object({
   clubId: z.coerce.number().int().positive(),
   name: z.string().trim().min(1),
   type: z.enum(["individual", "team"]),
   teamSize: z.coerce.number().int().min(1).max(4).default(1),
-  bestOf: z.coerce.number().int(),
+  bestOf: z.coerce
+    .number()
+    .int()
+    .refine((v) => VALID_BEST_OF.includes(v as 1)),
   matchDeadlineDays: z.coerce.number().int().min(1).max(90),
   reminderDays: z.coerce.number().int().min(1).max(90),
   requiresConfirmation: z
@@ -36,7 +39,14 @@ const createSeasonSchema = z.object({
   excludedMembers: z
     .string()
     .default("")
-    .transform((v) => (v === "" ? [] : v.split(",").map(Number))),
+    .transform((v) =>
+      v === ""
+        ? []
+        : v
+            .split(",")
+            .map(Number)
+            .filter((n) => !Number.isNaN(n)),
+    ),
 });
 
 // ── Action ──────────────────────────────────────────────
@@ -64,16 +74,16 @@ export async function createSeasonAction(
     excludedMembers,
   } = parsed.data;
 
-  // Auth check
-  const player = await getCurrentPlayer();
-  if (!player) {
-    return { error: "createSeason.error.unauthorized" };
+  // Require fromSeasonId when copying from previous season
+  if (startingRanks === "from_season" && fromSeasonId == null) {
+    return { error: "createSeason.error.missingSourceSeason" };
   }
 
-  const role = await getPlayerRole(sql, player.id, clubId);
-  if (role !== "admin") {
-    return { error: "createSeason.error.unauthorized" };
-  }
+  const authCheck = await requireClubAdmin(
+    clubId,
+    "createSeason.error.unauthorized",
+  );
+  if (authCheck.error) return { error: authCheck.error };
 
   const excludedSet = new Set(excludedMembers);
 
@@ -84,6 +94,16 @@ export async function createSeasonAction(
 
   try {
     seasonId = await sql.begin(async (tx) => {
+      // Verify fromSeasonId belongs to this club (IDOR prevention)
+      if (startingRanks === "from_season" && fromSeasonId != null) {
+        const sourceCheck = await tx`
+          SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId}
+        `;
+        if (sourceCheck.length === 0) {
+          throw new Error("INVALID_SOURCE_SEASON");
+        }
+      }
+
       // 1. Insert season
       const seasonRows = await tx`
         INSERT INTO seasons (
@@ -135,18 +155,17 @@ export async function createSeasonAction(
 
         // 3. Create initial standings
         if (startingRanks === "empty" && teamIds.length > 0) {
-          // Insert standings with team IDs in order
           await tx`
             INSERT INTO season_standings (season_id, match_id, results, comment, created)
             VALUES (${newSeasonId}, NULL, ${teamIds}, '', NOW())
           `;
         } else if (startingRanks === "from_season" && fromSeasonId != null) {
-          // Copy standings order from previous season
           const prevStandings = await tx`
-            SELECT results
-            FROM season_standings
-            WHERE season_id = ${fromSeasonId}
-            ORDER BY id DESC
+            SELECT ss.results
+            FROM season_standings ss
+            JOIN seasons s ON s.id = ss.season_id
+            WHERE ss.season_id = ${fromSeasonId} AND s.club_id = ${clubId}
+            ORDER BY ss.id DESC
             LIMIT 1
           `;
 
@@ -221,9 +240,14 @@ export async function createSeasonAction(
 
       return newSeasonId;
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_SOURCE_SEASON") {
+      return { error: "createSeason.error.invalidSourceSeason" };
+    }
+    console.error("[createSeasonAction] Failed:", { clubId, error });
     return { error: "createSeason.error.serverError" };
   }
 
+  // IMPORTANT: redirect() throws — must stay OUTSIDE the try-catch above
   redirect(`/admin/club/${clubId}/season/${seasonId}`);
 }

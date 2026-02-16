@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataList } from "@/components/data-list";
 import type { SeasonMember, PreviousSeason } from "@/app/lib/db/admin";
+import { Toast } from "@/components/ui/toast";
+import { isActionError } from "@/app/lib/action-result";
 import type { CreateSeasonResult } from "./actions";
 
 type CreateSeasonViewProps = {
@@ -47,6 +49,8 @@ export function CreateSeasonView({
     new Set(),
   );
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const tError = useTranslations();
 
   function toggleMember(id: number) {
     setExcludedMembers((prev) => {
@@ -80,7 +84,10 @@ export function CreateSeasonView({
     fd.append("excludedMembers", Array.from(excludedMembers).join(","));
 
     startTransition(async () => {
-      await createAction(fd);
+      const result = await createAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      }
     });
   }
 
@@ -147,10 +154,10 @@ export function CreateSeasonView({
             value={bestOf}
             onChange={(e) => setBestOf(e.target.value)}
           >
-            <option value="1">Best of 1</option>
-            <option value="3">Best of 3</option>
-            <option value="5">Best of 5</option>
-            <option value="7">Best of 7</option>
+            <option value="1">{t("bestOf1")}</option>
+            <option value="3">{t("bestOf3")}</option>
+            <option value="5">{t("bestOf5")}</option>
+            <option value="7">{t("bestOf7")}</option>
           </FormField>
         </CardContent>
       </Card>
@@ -288,6 +295,11 @@ export function CreateSeasonView({
         {t("submit")}
         <ArrowRightIcon className="size-4" />
       </Button>
+      {error && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast variant="error" title={error} onClose={() => setError(null)} />
+        </div>
+      )}
     </PageLayout>
   );
 }
