@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
@@ -11,16 +12,20 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataList } from "@/components/data-list";
 import type { SeasonMember, PreviousSeason } from "@/app/lib/db/admin";
+import type { CreateSeasonResult } from "./actions";
 
 type CreateSeasonViewProps = {
   clubId: number;
   members: SeasonMember[];
   previousSeasons: PreviousSeason[];
+  createAction?: (formData: FormData) => Promise<CreateSeasonResult>;
 };
 
 export function CreateSeasonView({
+  clubId,
   members,
   previousSeasons,
+  createAction,
 }: CreateSeasonViewProps) {
   const t = useTranslations("createSeason");
 
@@ -41,6 +46,7 @@ export function CreateSeasonView({
   const [excludedMembers, setExcludedMembers] = useState<Set<number>>(
     new Set(),
   );
+  const [isPending, startTransition] = useTransition();
 
   function toggleMember(id: number) {
     setExcludedMembers((prev) => {
@@ -54,14 +60,40 @@ export function CreateSeasonView({
     });
   }
 
+  function handleSubmit() {
+    if (!createAction) return;
+
+    const fd = new FormData();
+    fd.append("clubId", String(clubId));
+    fd.append("name", name);
+    fd.append("type", type);
+    fd.append("teamSize", type === "team" ? teamSize : "1");
+    fd.append("bestOf", bestOf);
+    fd.append("matchDeadlineDays", matchDeadlineDays);
+    fd.append("reminderDays", reminderDays);
+    fd.append("requiresConfirmation", String(requiresConfirmation));
+    fd.append("openEnrollment", String(openEnrollment));
+    fd.append("startingRanks", startingRanks);
+    if (startingRanks === "from_season" && fromSeasonId) {
+      fd.append("fromSeasonId", fromSeasonId);
+    }
+    fd.append("excludedMembers", Array.from(excludedMembers).join(","));
+
+    startTransition(async () => {
+      await createAction(fd);
+    });
+  }
+
   return (
     <PageLayout
       title={t("title")}
       action={
-        <Button variant="ghost" size="sm" disabled>
-          <ArrowLeftIcon className="size-4" />
-          {t("back")}
-        </Button>
+        <Link href={`/admin/club/${clubId}`}>
+          <Button variant="ghost" size="sm">
+            <ArrowLeftIcon className="size-4" />
+            {t("back")}
+          </Button>
+        </Link>
       }
     >
       {/* Basics */}
@@ -248,7 +280,11 @@ export function CreateSeasonView({
       </Card>
 
       {/* Submit */}
-      <Button className="w-full" disabled>
+      <Button
+        className="w-full"
+        disabled={isPending || !name.trim()}
+        onClick={handleSubmit}
+      >
         {t("submit")}
         <ArrowRightIcon className="size-4" />
       </Button>
