@@ -1,7 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
-import { within, expect } from "storybook/test";
+import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { SeasonManagementView } from "@/app/(main)/admin/club/[id]/season/[seasonId]/season-management-view";
 import type { SeasonDetail } from "@/app/lib/db/admin";
@@ -79,10 +79,12 @@ export const ActiveSeason = meta.story({
     // Configuration section
     await expect(canvas.getByText("Konfiguration")).toBeInTheDocument();
 
-    // End season button (not Start)
-    await expect(
-      canvas.getByRole("button", { name: /Saison beenden/i }),
-    ).toBeInTheDocument();
+    // End season button is present but disabled (stub)
+    const endBtn = canvas.getByRole("button", { name: /Saison beenden/i });
+    await expect(endBtn).toBeInTheDocument();
+    await expect(endBtn).toBeDisabled();
+
+    // Start button absent
     await expect(
       canvas.queryByRole("button", { name: /Saison starten/i }),
     ).not.toBeInTheDocument();
@@ -171,5 +173,9 @@ export const EndedSeason = meta.story({
     await expect(
       canvas.queryByRole("button", { name: /Änderungen speichern/i }),
     ).not.toBeInTheDocument();
+
+    // Form fields are disabled in ended state
+    const nameInput = canvas.getByLabelText("Name");
+    await expect(nameInput).toBeDisabled();
   },
 });

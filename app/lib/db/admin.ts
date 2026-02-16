@@ -127,6 +127,10 @@ export async function getClubStats(
         AS "openChallengeCount"
   `;
 
+  if (rows.length === 0) {
+    throw new Error(`getClubStats: no rows returned for clubId=${clubId}`);
+  }
+
   return rows[0] as ClubStats;
 }
 
@@ -150,7 +154,7 @@ export async function getActiveSeasonsWithStats(
        FROM season_matches sm
        WHERE sm.season_id = s.id
          AND sm.status IN ('challenged', 'date_set')
-         AND sm.created < NOW() - (s.match_deadline_days || ' days')::interval)
+         AND sm.created < NOW() - (COALESCE(s.match_deadline_days, 14) || ' days')::interval)
         AS "overdueMatchCount"
     FROM seasons s
     WHERE s.club_id = ${clubId} AND s.status = 'active'
@@ -168,18 +172,24 @@ export async function getOverdueMatches(
     SELECT
       sm.id,
       sm.season_id AS "seasonId",
-      (SELECT CONCAT(p.first_name, ' ', p.last_name)
-       FROM team_players tp JOIN player p ON p.id = tp.player_id
-       WHERE tp.team_id = sm.team1_id LIMIT 1) AS "team1Name",
-      (SELECT CONCAT(p.first_name, ' ', p.last_name)
-       FROM team_players tp JOIN player p ON p.id = tp.player_id
-       WHERE tp.team_id = sm.team2_id LIMIT 1) AS "team2Name",
-      (NOW()::date - sm.created::date) - s.match_deadline_days AS "daysOverdue"
+      COALESCE(
+        (SELECT CONCAT(p.first_name, ' ', p.last_name)
+         FROM team_players tp JOIN player p ON p.id = tp.player_id
+         WHERE tp.team_id = sm.team1_id LIMIT 1),
+        'Unknown'
+      ) AS "team1Name",
+      COALESCE(
+        (SELECT CONCAT(p.first_name, ' ', p.last_name)
+         FROM team_players tp JOIN player p ON p.id = tp.player_id
+         WHERE tp.team_id = sm.team2_id LIMIT 1),
+        'Unknown'
+      ) AS "team2Name",
+      (NOW()::date - sm.created::date) - COALESCE(s.match_deadline_days, 14) AS "daysOverdue"
     FROM season_matches sm
     JOIN seasons s ON s.id = sm.season_id
     WHERE s.club_id = ${clubId}
       AND sm.status IN ('challenged', 'date_set')
-      AND sm.created < NOW() - (s.match_deadline_days || ' days')::interval
+      AND sm.created < NOW() - (COALESCE(s.match_deadline_days, 14) || ' days')::interval
     ORDER BY sm.created ASC
   `;
 

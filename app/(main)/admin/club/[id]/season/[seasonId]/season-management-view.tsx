@@ -15,8 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
 import { Switch } from "@/components/ui/switch";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import type { SeasonDetail } from "@/app/lib/db/admin";
+import type { SeasonDetail, SeasonStatus } from "@/app/lib/db/admin";
 
 type SeasonManagementViewProps = {
   season: SeasonDetail;
@@ -25,16 +24,16 @@ type SeasonManagementViewProps = {
   clubId: number;
 };
 
-const statusVariant: Record<string, "win" | "pending" | "subtle"> = {
+const statusVariant: Record<SeasonStatus, "win" | "pending" | "subtle"> = {
   active: "win",
   draft: "pending",
   ended: "subtle",
 };
 
-const statusLabel: Record<string, string> = {
-  active: "Aktiv",
-  draft: "Entwurf",
-  ended: "Beendet",
+const statusKey: Record<SeasonStatus, string> = {
+  active: "statusActive",
+  draft: "statusDraft",
+  ended: "statusEnded",
 };
 
 export function SeasonManagementView({
@@ -56,8 +55,6 @@ export function SeasonManagementView({
     season.requiresResultConfirmation,
   );
   const [openEnrollment, setOpenEnrollment] = useState(season.openEnrollment);
-  const [showEndConfirm, setShowEndConfirm] = useState(false);
-
   const isEnded = season.status === "ended";
   const isDraft = season.status === "draft";
 
@@ -74,8 +71,8 @@ export function SeasonManagementView({
     >
       {/* Status badge */}
       <div className="flex items-center gap-2">
-        <Badge variant={statusVariant[season.status] ?? "info"}>
-          {statusLabel[season.status] ?? season.status}
+        <Badge variant={statusVariant[season.status]}>
+          {t(statusKey[season.status])}
         </Badge>
       </div>
 
@@ -205,10 +202,7 @@ export function SeasonManagementView({
               {isDraft ? (
                 <Button disabled>{t("startSeason")}</Button>
               ) : (
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowEndConfirm(true)}
-                >
+                <Button variant="destructive" disabled>
                   {t("endSeason")}
                 </Button>
               )}
@@ -229,14 +223,6 @@ export function SeasonManagementView({
           </Button>
         </CardContent>
       </Card>
-
-      <ConfirmDialog
-        open={showEndConfirm}
-        onClose={() => setShowEndConfirm(false)}
-        onConfirm={() => setShowEndConfirm(false)}
-        title={t("endSeasonConfirmTitle")}
-        description={t("endSeasonConfirmDesc")}
-      />
     </PageLayout>
   );
 }

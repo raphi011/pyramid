@@ -80,6 +80,7 @@ export function MemberManagementView({ members }: MemberManagementViewProps) {
         <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
         <Input
           placeholder={t("searchPlaceholder")}
+          aria-label={t("searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"

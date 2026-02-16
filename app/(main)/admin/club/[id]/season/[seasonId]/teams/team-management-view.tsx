@@ -19,7 +19,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { Team, TeamMember } from "@/app/lib/db/admin";
 
 type TeamManagementViewProps = {
@@ -38,8 +37,6 @@ export function TeamManagementView({
 
   const [teamName, setTeamName] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [deleteTeamId, setDeleteTeamId] = useState<number | null>(null);
-
   return (
     <PageLayout
       title={t("title")}
@@ -103,26 +100,27 @@ export function TeamManagementView({
               </CardAction>
             </CardHeader>
             <CardContent>
-              <div className="space-y-1">
-                {team.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
-                  >
+              <DataList
+                items={team.members}
+                keyExtractor={(m) => m.id}
+                separator={false}
+                className="space-y-1"
+                empty={{
+                  icon: <UsersIcon />,
+                  title: t("noMembers"),
+                }}
+                renderItem={(member) => (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <UsersIcon className="size-4 shrink-0" />
                     {member.name}
                   </div>
-                ))}
-              </div>
+                )}
+              />
               <div className="mt-3 flex gap-2">
                 <Button variant="outline" size="sm" disabled>
                   {t("edit")}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDeleteTeamId(team.id)}
-                >
+                <Button variant="ghost" size="sm" disabled>
                   {t("delete")}
                 </Button>
               </div>
@@ -141,24 +139,21 @@ export function TeamManagementView({
             </CardAction>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {unassignedPlayers.map((player) => (
-                <Badge key={player.id} variant="subtle">
-                  {player.name}
-                </Badge>
-              ))}
-            </div>
+            <DataList
+              items={unassignedPlayers}
+              keyExtractor={(p) => p.id}
+              separator={false}
+              className="flex flex-wrap gap-2"
+              empty={{
+                title: t("noUnassigned"),
+              }}
+              renderItem={(player) => (
+                <Badge variant="subtle">{player.name}</Badge>
+              )}
+            />
           </CardContent>
         </Card>
       )}
-
-      <ConfirmDialog
-        open={deleteTeamId !== null}
-        onClose={() => setDeleteTeamId(null)}
-        onConfirm={() => setDeleteTeamId(null)}
-        title={t("deleteConfirmTitle")}
-        description={t("deleteConfirmDesc")}
-      />
     </PageLayout>
   );
 }

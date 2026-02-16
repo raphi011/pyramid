@@ -394,11 +394,15 @@
     "selectSeason": "Select season",
     "players": "Players",
     "playersDesc": "All members are auto-enrolled. Remove players as needed.",
+    "noMembers": "No members",
     "submit": "Create Season"
   },
   "seasonManagement": {
     "subtitle": "Manage season",
     "back": "Back",
+    "statusActive": "Active",
+    "statusDraft": "Draft",
+    "statusEnded": "Ended",
     "configuration": "Configuration",
     "nameLabel": "Name",
     "bestOfLabel": "Best of",
@@ -456,6 +460,8 @@
     "noTeams": "No teams",
     "noTeamsDesc": "Create teams and assign players.",
     "memberCount": "{count, plural, one {# member} other {# members}}",
+    "noMembers": "No members",
+    "noUnassigned": "All players assigned",
     "deleteConfirmTitle": "Delete team?",
     "deleteConfirmDesc": "The team and all assignments will be removed."
   },

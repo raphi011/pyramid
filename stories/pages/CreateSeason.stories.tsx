@@ -1,7 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
-import { within, expect } from "storybook/test";
+import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { CreateSeasonView } from "@/app/(main)/admin/club/[id]/season/new/create-season-view";
 import type { SeasonMember, PreviousSeason } from "@/app/lib/db/admin";
@@ -68,6 +68,12 @@ export const Default = meta.story({
     await expect(
       canvas.getByRole("button", { name: /Saison erstellen/i }),
     ).toBeInTheDocument();
+
+    // Player checkboxes — toggle a member exclusion
+    const juliaCheckbox = canvas.getByLabelText("Julia Fischer");
+    await expect(juliaCheckbox).toBeChecked();
+    await userEvent.click(juliaCheckbox);
+    await expect(juliaCheckbox).not.toBeChecked();
   },
 });
 
@@ -86,8 +92,15 @@ export const TeamSeason = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Type selector is present
-    await expect(canvas.getByText("Einzel")).toBeInTheDocument();
+    // Team size field hidden initially (individual type)
+    await expect(canvas.queryByLabelText("Teamgröße")).not.toBeInTheDocument();
+
+    // Select "Team" type
+    const typeSelect = canvas.getByLabelText("Typ");
+    await userEvent.selectOptions(typeSelect, "team");
+
+    // Team size field now visible
+    await expect(canvas.getByLabelText("Teamgröße")).toBeInTheDocument();
   },
 });
 
@@ -109,6 +122,18 @@ export const WithPreviousSeasons = meta.story({
     // Starting ranks options present
     await expect(canvas.getByText("Leere Rangliste")).toBeInTheDocument();
     await expect(canvas.getByText("Von vorheriger Saison")).toBeInTheDocument();
+
+    // Season selector hidden initially
+    await expect(
+      canvas.queryByLabelText("Saison auswählen"),
+    ).not.toBeInTheDocument();
+
+    // Click "From previous season" radio
+    const fromSeasonRadio = canvas.getByLabelText("Von vorheriger Saison");
+    await userEvent.click(fromSeasonRadio);
+
+    // Season selector now visible
+    await expect(canvas.getByLabelText("Saison auswählen")).toBeInTheDocument();
   },
 });
 

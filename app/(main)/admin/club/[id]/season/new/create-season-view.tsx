@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DataList } from "@/components/data-list";
 import type { SeasonMember, PreviousSeason } from "@/app/lib/db/admin";
 
 type CreateSeasonViewProps = {
@@ -175,7 +176,7 @@ export function CreateSeasonView({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <label className="flex min-h-[44px] items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="startingRanks"
@@ -185,7 +186,7 @@ export function CreateSeasonView({
               />
               {t("ranksEmpty")}
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <label className="flex min-h-[44px] items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="startingRanks"
@@ -227,16 +228,22 @@ export function CreateSeasonView({
           <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
             {t("playersDesc")}
           </p>
-          <div className="space-y-2">
-            {members.map((member) => (
+          <DataList
+            items={members}
+            keyExtractor={(m) => m.id}
+            separator={false}
+            className="space-y-2"
+            empty={{
+              title: t("noMembers"),
+            }}
+            renderItem={(member) => (
               <Checkbox
-                key={member.id}
                 label={member.name}
                 checked={!excludedMembers.has(member.id)}
                 onChange={() => toggleMember(member.id)}
               />
-            ))}
-          </div>
+            )}
+          />
         </CardContent>
       </Card>
 

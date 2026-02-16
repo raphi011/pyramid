@@ -394,11 +394,15 @@
     "selectSeason": "Saison ausw\u00e4hlen",
     "players": "Spieler",
     "playersDesc": "Alle Mitglieder sind automatisch angemeldet. Entferne Spieler bei Bedarf.",
+    "noMembers": "Keine Mitglieder",
     "submit": "Saison erstellen"
   },
   "seasonManagement": {
     "subtitle": "Saison verwalten",
     "back": "Zur\u00fcck",
+    "statusActive": "Aktiv",
+    "statusDraft": "Entwurf",
+    "statusEnded": "Beendet",
     "configuration": "Konfiguration",
     "nameLabel": "Name",
     "bestOfLabel": "Best of",
@@ -456,6 +460,8 @@
     "noTeams": "Keine Teams",
     "noTeamsDesc": "Erstelle Teams und weise Spieler zu.",
     "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
+    "noMembers": "Keine Mitglieder",
+    "noUnassigned": "Alle Spieler zugewiesen",
     "deleteConfirmTitle": "Team l\u00f6schen?",
     "deleteConfirmDesc": "Das Team und alle Zuweisungen werden entfernt."
   },

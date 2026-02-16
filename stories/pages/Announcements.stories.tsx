@@ -1,7 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
-import { within, expect } from "storybook/test";
+import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { AnnouncementsView } from "@/app/(main)/admin/club/[id]/announcements/announcements-view";
 import type { PastAnnouncement } from "@/app/lib/db/admin";
@@ -61,6 +61,19 @@ export const Default = meta.story({
 
     // Form present
     await expect(canvas.getByText("Neue Ankündigung")).toBeInTheDocument();
+
+    // Send button disabled when textarea empty
+    const sendBtn = canvas.getByRole("button", { name: /Senden/i });
+    await expect(sendBtn).toBeDisabled();
+
+    // Type a message — button becomes enabled
+    const textarea = canvas.getByPlaceholderText(/Nachricht eingeben/i);
+    await userEvent.type(textarea, "Test-Nachricht");
+    await expect(sendBtn).toBeEnabled();
+
+    // Clear text — button disabled again
+    await userEvent.clear(textarea);
+    await expect(sendBtn).toBeDisabled();
 
     // Past announcements render
     await expect(

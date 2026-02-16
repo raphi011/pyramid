@@ -6,13 +6,7 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardAction,
-} from "@/components/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatBlock } from "@/components/stat-block";

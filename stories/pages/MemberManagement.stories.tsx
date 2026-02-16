@@ -1,7 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
-import { within, expect } from "storybook/test";
+import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { MemberManagementView } from "@/app/(main)/admin/club/[id]/members/member-management-view";
 import type { ClubMember } from "@/app/lib/db/admin";
@@ -88,9 +88,21 @@ export const Default = meta.story({
     const adminBadges = canvas.getAllByText("Admin");
     await expect(adminBadges.length).toBeGreaterThanOrEqual(2);
 
-    // Invite button
+    // Invite button — click to show form
+    const inviteBtn = canvas.getByRole("button", { name: /Einladen/i });
+    await expect(inviteBtn).toBeInTheDocument();
     await expect(
-      canvas.getByRole("button", { name: /Einladen/i }),
+      canvas.queryByText("Neues Mitglied einladen"),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(inviteBtn);
+
+    // Invite form is now visible
+    await expect(
+      canvas.getByText("Neues Mitglied einladen"),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole("button", { name: /Einladung senden/i }),
     ).toBeInTheDocument();
   },
 });
@@ -106,10 +118,26 @@ export const WithSearch = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Search input is present
+    const searchInput = canvas.getByPlaceholderText(/Mitglied suchen/i);
+    await expect(searchInput).toBeInTheDocument();
+
+    // All members visible initially
     await expect(
-      canvas.getByPlaceholderText(/Mitglied suchen/i),
-    ).toBeInTheDocument();
+      canvas.getAllByText("Julia Fischer").length,
+    ).toBeGreaterThanOrEqual(1);
+    await expect(
+      canvas.getAllByText("Tom Weber").length,
+    ).toBeGreaterThanOrEqual(1);
+
+    // Type a search query that matches only one member
+    await userEvent.type(searchInput, "Tom");
+
+    // Tom visible, Julia filtered out
+    await expect(
+      canvas.getAllByText("Tom Weber").length,
+    ).toBeGreaterThanOrEqual(1);
+    await expect(canvas.queryByText("Julia Fischer")).not.toBeInTheDocument();
+    await expect(canvas.queryByText("Lisa Müller")).not.toBeInTheDocument();
   },
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
-import { within, expect } from "storybook/test";
+import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { TeamManagementView } from "@/app/(main)/admin/club/[id]/season/[seasonId]/teams/team-management-view";
 import type { Team, TeamMember } from "@/app/lib/db/admin";
@@ -84,6 +84,24 @@ export const Default = meta.story({
     await expect(
       canvas.queryByText("Nicht zugewiesene Spieler"),
     ).not.toBeInTheDocument();
+
+    // Delete buttons are disabled (stub)
+    const deleteButtons = canvas.getAllByRole("button", {
+      name: /Löschen/i,
+    });
+    for (const btn of deleteButtons) {
+      await expect(btn).toBeDisabled();
+    }
+
+    // Click "Create team" to toggle form
+    const createBtn = canvas.getByRole("button", { name: /Team erstellen/i });
+    await userEvent.click(createBtn);
+
+    // Create form appears
+    await expect(canvas.getByLabelText("Teamname")).toBeInTheDocument();
+    await expect(
+      canvas.getByRole("button", { name: "Erstellen" }),
+    ).toBeInTheDocument();
   },
 });
 
