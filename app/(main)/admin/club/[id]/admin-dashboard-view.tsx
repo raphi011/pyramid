@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import {
   UserGroupIcon,
   CalendarDaysIcon,
@@ -29,23 +30,25 @@ import type {
 } from "@/app/lib/db/admin";
 
 type AdminDashboardViewProps = {
+  clubId?: number;
   clubName: string;
   inviteCode: string;
+  appUrl: string;
   stats: ClubStats;
   seasons: AdminSeasonSummary[];
   overdueMatches: OverdueMatch[];
 };
 
 export function AdminDashboardView({
+  clubId,
   clubName,
   inviteCode,
+  appUrl,
   stats,
   seasons,
   overdueMatches,
 }: AdminDashboardViewProps) {
   const t = useTranslations("adminDashboard");
-
-  const appUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   return (
     <PageLayout title={t("title")} subtitle={clubName}>
@@ -110,9 +113,17 @@ export function AdminDashboardView({
                     )}
                   </div>
                 </div>
-                <Button variant="outline" size="sm" disabled>
-                  {t("manage")}
-                </Button>
+                {clubId ? (
+                  <Link href={`/admin/club/${clubId}/season/${season.id}`}>
+                    <Button variant="outline" size="sm">
+                      {t("manage")}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button variant="outline" size="sm" disabled>
+                    {t("manage")}
+                  </Button>
+                )}
               </div>
             )}
           />
@@ -169,18 +180,45 @@ export function AdminDashboardView({
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button variant="outline" className="justify-start" disabled>
-              <UserGroupIcon className="size-5" />
-              {t("manageMembers")}
-            </Button>
-            <Button variant="outline" className="justify-start" disabled>
-              <CalendarDaysIcon className="size-5" />
-              {t("createSeason")}
-            </Button>
-            <Button variant="outline" className="justify-start" disabled>
-              <MegaphoneIcon className="size-5" />
-              {t("sendAnnouncement")}
-            </Button>
+            {clubId ? (
+              <Link href={`/admin/club/${clubId}/members`}>
+                <Button variant="outline" className="w-full justify-start">
+                  <UserGroupIcon className="size-5" />
+                  {t("manageMembers")}
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" className="justify-start" disabled>
+                <UserGroupIcon className="size-5" />
+                {t("manageMembers")}
+              </Button>
+            )}
+            {clubId ? (
+              <Link href={`/admin/club/${clubId}/season/new`}>
+                <Button variant="outline" className="w-full justify-start">
+                  <CalendarDaysIcon className="size-5" />
+                  {t("createSeason")}
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" className="justify-start" disabled>
+                <CalendarDaysIcon className="size-5" />
+                {t("createSeason")}
+              </Button>
+            )}
+            {clubId ? (
+              <Link href={`/admin/club/${clubId}/announcements`}>
+                <Button variant="outline" className="w-full justify-start">
+                  <MegaphoneIcon className="size-5" />
+                  {t("sendAnnouncement")}
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" className="justify-start" disabled>
+                <MegaphoneIcon className="size-5" />
+                {t("sendAnnouncement")}
+              </Button>
+            )}
             <Button variant="outline" className="justify-start" disabled>
               <Cog6ToothIcon className="size-5" />
               {t("clubSettings")}

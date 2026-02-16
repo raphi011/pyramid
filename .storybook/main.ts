@@ -43,6 +43,7 @@ const config: StorybookConfig = {
       // so "@" would shadow "@/app/lib/..." if listed first.
       "next/cache": path.resolve(__dirname, "mocks/next-cache.ts"),
       "next/headers": path.resolve(__dirname, "mocks/next-headers.ts"),
+      "next/link": path.resolve(__dirname, "mocks/next-link.tsx"),
       "@/app/lib/actions/challenge": path.resolve(
         __dirname,
         "mocks/challenge-action.ts",

@@ -74,6 +74,7 @@ export const Default = meta.story({
         <AdminDashboardView
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
+          appUrl="http://localhost:3000"
           stats={stats}
           seasons={seasons}
           overdueMatches={[]}
@@ -107,6 +108,7 @@ export const WithOverdueMatches = meta.story({
         <AdminDashboardView
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
+          appUrl="http://localhost:3000"
           stats={stats}
           seasons={seasons}
           overdueMatches={overdueMatches}
@@ -137,6 +139,7 @@ export const EmptyClub = meta.story({
         <AdminDashboardView
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
+          appUrl="http://localhost:3000"
           stats={{
             memberCount: 0,
             activeSeasonCount: 0,

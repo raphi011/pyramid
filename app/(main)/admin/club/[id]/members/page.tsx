@@ -1,20 +1,20 @@
 import { redirect } from "next/navigation";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { env } from "@/app/lib/env";
 import { getPlayerRole, getClubById } from "@/app/lib/db/club";
+import { getClubMembers } from "@/app/lib/db/admin";
+import { MemberManagementView } from "./member-management-view";
 import {
-  getClubStats,
-  getActiveSeasonsWithStats,
-  getOverdueMatches,
-} from "@/app/lib/db/admin";
-import { AdminDashboardView } from "./admin-dashboard-view";
+  inviteMemberAction,
+  updateMemberRoleAction,
+  removeMemberAction,
+} from "./actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function AdminDashboardPage({ params }: PageProps) {
+export default async function MemberManagementPage({ params }: PageProps) {
   const { id } = await params;
   const clubId = Number(id);
 
@@ -37,21 +37,15 @@ export default async function AdminDashboardPage({ params }: PageProps) {
     redirect("/rankings");
   }
 
-  const [stats, seasons, overdueMatches] = await Promise.all([
-    getClubStats(sql, clubId),
-    getActiveSeasonsWithStats(sql, clubId),
-    getOverdueMatches(sql, clubId),
-  ]);
+  const members = await getClubMembers(sql, clubId);
 
   return (
-    <AdminDashboardView
+    <MemberManagementView
       clubId={clubId}
-      clubName={club.name}
-      inviteCode={club.inviteCode}
-      appUrl={env.APP_URL}
-      stats={stats}
-      seasons={seasons}
-      overdueMatches={overdueMatches}
+      members={members}
+      inviteAction={inviteMemberAction}
+      updateRoleAction={updateMemberRoleAction}
+      removeMemberAction={removeMemberAction}
     />
   );
 }
