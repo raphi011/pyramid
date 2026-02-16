@@ -501,7 +501,17 @@
     "revokeAdmin": "Revoke admin",
     "addAdmin": "Add admin",
     "noAdmins": "No administrators",
-    "noAdminsDesc": "Add an administrator."
+    "noAdminsDesc": "Add an administrator.",
+    "adminEmailLabel": "Email address",
+    "adminEmailPlaceholder": "admin@example.com",
+    "confirmAddAdmin": "Add admin",
+    "cancel": "Cancel",
+    "error": {
+      "unauthorized": "Unauthorized.",
+      "invalidInput": "Invalid input.",
+      "playerNotFound": "No player found with this email address.",
+      "cannotRemoveSelf": "You cannot remove yourself."
+    }
   },
   "feed": {
     "title": "News",

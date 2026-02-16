@@ -501,7 +501,17 @@
     "revokeAdmin": "Admin entziehen",
     "addAdmin": "Admin hinzuf\u00fcgen",
     "noAdmins": "Keine Administratoren",
-    "noAdminsDesc": "F\u00fcge einen Administrator hinzu."
+    "noAdminsDesc": "F\u00fcge einen Administrator hinzu.",
+    "adminEmailLabel": "E-Mail-Adresse",
+    "adminEmailPlaceholder": "admin@beispiel.de",
+    "confirmAddAdmin": "Admin hinzuf\u00fcgen",
+    "cancel": "Abbrechen",
+    "error": {
+      "unauthorized": "Keine Berechtigung.",
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "playerNotFound": "Kein Spieler mit dieser E-Mail-Adresse gefunden.",
+      "cannotRemoveSelf": "Du kannst dich nicht selbst entfernen."
+    }
   },
   "feed": {
     "title": "Neuigkeiten",
