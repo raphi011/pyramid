@@ -33,6 +33,7 @@ const activeSeason: SeasonDetail = {
   requiresResultConfirmation: false,
   openEnrollment: true,
   isTeamSeason: false,
+  maxTeamSize: 1,
 };
 
 const draftSeason: SeasonDetail = {
@@ -47,6 +48,7 @@ const teamSeason: SeasonDetail = {
   id: 3,
   name: "Doppel Sommer 2026",
   isTeamSeason: true,
+  maxTeamSize: 2,
 };
 
 const endedSeason: SeasonDetail = {

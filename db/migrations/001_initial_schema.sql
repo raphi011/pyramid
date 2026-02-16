@@ -82,6 +82,7 @@ CREATE TABLE seasons (
     match_deadline_days INT NOT NULL DEFAULT 14,
     reminder_after_days INT NOT NULL DEFAULT 7,
     requires_result_confirmation BOOL NOT NULL DEFAULT false,
+    open_enrollment BOOL NOT NULL DEFAULT true,
     status TEXT NOT NULL DEFAULT 'draft',
     started_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ,

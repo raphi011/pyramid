@@ -9,6 +9,7 @@ export type Player = {
   firstName: string;
   lastName: string;
   email: string;
+  isAppAdmin: boolean;
 };
 
 export type PlayerProfile = {
@@ -30,7 +31,7 @@ export async function getPlayerByEmail(
   email: string,
 ): Promise<Player | null> {
   const rows = await sql`
-    SELECT id, first_name AS "firstName", last_name AS "lastName", email_address AS email FROM player
+    SELECT id, first_name AS "firstName", last_name AS "lastName", email_address AS email, is_app_admin AS "isAppAdmin" FROM player
     WHERE LOWER(email_address) = LOWER(${email})
   `;
 
@@ -40,6 +41,7 @@ export async function getPlayerByEmail(
         firstName: rows[0].firstName,
         lastName: rows[0].lastName,
         email: rows[0].email,
+        isAppAdmin: rows[0].isAppAdmin as boolean,
       }
     : null;
 }
@@ -49,7 +51,7 @@ export async function getPlayerById(
   playerId: number,
 ): Promise<Player | null> {
   const rows = await sql`
-    SELECT id, first_name AS "firstName", last_name AS "lastName", email_address AS email FROM player
+    SELECT id, first_name AS "firstName", last_name AS "lastName", email_address AS email, is_app_admin AS "isAppAdmin" FROM player
     WHERE id = ${playerId}
   `;
 
@@ -59,6 +61,7 @@ export async function getPlayerById(
         firstName: rows[0].firstName,
         lastName: rows[0].lastName,
         email: rows[0].email,
+        isAppAdmin: rows[0].isAppAdmin as boolean,
       }
     : null;
 }

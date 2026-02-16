@@ -71,6 +71,7 @@ export async function getCurrentPlayer(): Promise<{
   firstName: string;
   lastName: string;
   email: string;
+  isAppAdmin: boolean;
 } | null> {
   const session = await getSession();
 
