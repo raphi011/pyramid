@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { MegaphoneIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,16 +12,21 @@ import { DataList } from "@/components/data-list";
 import type { PastAnnouncement } from "@/app/lib/db/admin";
 
 type AnnouncementsViewProps = {
+  clubId?: number;
   pastAnnouncements: PastAnnouncement[];
+  sendAction?: (fd: FormData) => Promise<{ success: true } | { error: string }>;
 };
 
 export function AnnouncementsView({
+  clubId,
   pastAnnouncements,
+  sendAction,
 }: AnnouncementsViewProps) {
   const t = useTranslations("announcements");
 
   const [message, setMessage] = useState("");
   const [sendAsEmail, setSendAsEmail] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   return (
     <PageLayout title={t("title")}>
@@ -45,7 +49,24 @@ export function AnnouncementsView({
               checked={sendAsEmail}
               onChange={setSendAsEmail}
             />
-            <Button disabled={!message.trim()}>{t("send")}</Button>
+            <Button
+              disabled={isPending || !sendAction || !message.trim()}
+              onClick={() => {
+                if (!sendAction || !clubId) return;
+                const fd = new FormData();
+                fd.append("clubId", String(clubId));
+                fd.append("message", message);
+                fd.append("sendAsEmail", sendAsEmail ? "true" : "false");
+                startTransition(async () => {
+                  const result = await sendAction(fd);
+                  if ("success" in result) {
+                    setMessage("");
+                  }
+                });
+              }}
+            >
+              {t("send")}
+            </Button>
           </div>
         </CardContent>
       </Card>
