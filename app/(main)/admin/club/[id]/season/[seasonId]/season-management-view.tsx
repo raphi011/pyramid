@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
@@ -17,11 +18,16 @@ import { FormField } from "@/components/form-field";
 import { Switch } from "@/components/ui/switch";
 import type { SeasonDetail, SeasonStatus } from "@/app/lib/db/admin";
 
+type ActionResult = { success: true } | { error: string };
+
 type SeasonManagementViewProps = {
   season: SeasonDetail;
   playerCount: number;
   optedOutCount: number;
   clubId: number;
+  updateAction?: (formData: FormData) => Promise<ActionResult>;
+  startAction?: (formData: FormData) => Promise<ActionResult>;
+  endAction?: (formData: FormData) => Promise<ActionResult>;
 };
 
 const statusVariant: Record<SeasonStatus, "win" | "pending" | "subtle"> = {
@@ -40,8 +46,13 @@ export function SeasonManagementView({
   season,
   playerCount,
   optedOutCount,
+  clubId,
+  updateAction,
+  startAction,
+  endAction,
 }: SeasonManagementViewProps) {
   const t = useTranslations("seasonManagement");
+  const [pending, startTransition] = useTransition();
 
   const [name, setName] = useState(season.name);
   const [bestOf, setBestOf] = useState(season.bestOf.toString());
@@ -58,15 +69,53 @@ export function SeasonManagementView({
   const isEnded = season.status === "ended";
   const isDraft = season.status === "draft";
 
+  function handleSave() {
+    if (!updateAction) return;
+    const fd = new FormData();
+    fd.set("seasonId", season.id.toString());
+    fd.set("clubId", clubId.toString());
+    fd.set("name", name);
+    fd.set("bestOf", bestOf);
+    fd.set("matchDeadlineDays", matchDeadlineDays);
+    fd.set("reminderDays", reminderDays);
+    fd.set("requiresConfirmation", requiresConfirmation.toString());
+    fd.set("openEnrollment", openEnrollment.toString());
+    startTransition(async () => {
+      await updateAction(fd);
+    });
+  }
+
+  function handleStart() {
+    if (!startAction) return;
+    const fd = new FormData();
+    fd.set("seasonId", season.id.toString());
+    fd.set("clubId", clubId.toString());
+    startTransition(async () => {
+      await startAction(fd);
+    });
+  }
+
+  function handleEnd() {
+    if (!endAction) return;
+    const fd = new FormData();
+    fd.set("seasonId", season.id.toString());
+    fd.set("clubId", clubId.toString());
+    startTransition(async () => {
+      await endAction(fd);
+    });
+  }
+
   return (
     <PageLayout
       title={season.name}
       subtitle={t("subtitle")}
       action={
-        <Button variant="ghost" size="sm" disabled>
-          <ArrowLeftIcon className="size-4" />
-          {t("back")}
-        </Button>
+        <Link href={`/admin/club/${clubId}`}>
+          <Button variant="ghost" size="sm">
+            <ArrowLeftIcon className="size-4" />
+            {t("back")}
+          </Button>
+        </Link>
       }
     >
       {/* Status badge */}
@@ -129,7 +178,15 @@ export function SeasonManagementView({
               onChange={setOpenEnrollment}
               disabled={isEnded}
             />
-            {!isEnded && <Button disabled>{t("saveChanges")}</Button>}
+            {!isEnded && (
+              <Button
+                onClick={handleSave}
+                disabled={pending || !updateAction}
+                loading={pending}
+              >
+                {t("saveChanges")}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -183,10 +240,12 @@ export function SeasonManagementView({
             <CardTitle>{t("teamsSection")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" disabled>
-              {t("manageTeams")}
-              <ArrowRightIcon className="size-4" />
-            </Button>
+            <Link href={`/admin/club/${clubId}/season/${season.id}/teams`}>
+              <Button variant="outline">
+                {t("manageTeams")}
+                <ArrowRightIcon className="size-4" />
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}
@@ -200,9 +259,20 @@ export function SeasonManagementView({
           <CardContent>
             <div className="flex gap-2">
               {isDraft ? (
-                <Button disabled>{t("startSeason")}</Button>
+                <Button
+                  onClick={handleStart}
+                  disabled={pending || !startAction}
+                  loading={pending}
+                >
+                  {t("startSeason")}
+                </Button>
               ) : (
-                <Button variant="destructive" disabled>
+                <Button
+                  variant="destructive"
+                  onClick={handleEnd}
+                  disabled={pending || !endAction}
+                  loading={pending}
+                >
                   {t("endSeason")}
                 </Button>
               )}
@@ -217,10 +287,12 @@ export function SeasonManagementView({
           <CardTitle>{t("newSeason")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" disabled>
-            {t("createFromThis")}
-            <ArrowRightIcon className="size-4" />
-          </Button>
+          <Link href={`/admin/club/${clubId}/season/new`}>
+            <Button variant="outline">
+              {t("createFromThis")}
+              <ArrowRightIcon className="size-4" />
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </PageLayout>
