@@ -1,7 +1,7 @@
 "use client";
 
 import preview from "#.storybook/preview";
-import { within, expect, userEvent } from "storybook/test";
+import { within, expect, userEvent, fn } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
 import { AnnouncementsView } from "@/app/(main)/admin/club/[id]/announcements/announcements-view";
 import type { PastAnnouncement } from "@/app/lib/db/admin";
@@ -52,7 +52,11 @@ export const Default = meta.story({
   render: function DefaultStory() {
     return (
       <PageWrapper activeHref="/admin/club/1" isAdmin>
-        <AnnouncementsView pastAnnouncements={pastAnnouncements} />
+        <AnnouncementsView
+          pastAnnouncements={pastAnnouncements}
+          sendAction={fn().mockResolvedValue({ success: true as const })}
+          clubId={1}
+        />
       </PageWrapper>
     );
   },
@@ -94,7 +98,11 @@ export const NoPastAnnouncements = meta.story({
   render: function NoPastStory() {
     return (
       <PageWrapper activeHref="/admin/club/1" isAdmin>
-        <AnnouncementsView pastAnnouncements={[]} />
+        <AnnouncementsView
+          pastAnnouncements={[]}
+          sendAction={fn().mockResolvedValue({ success: true as const })}
+          clubId={1}
+        />
       </PageWrapper>
     );
   },
