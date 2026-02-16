@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
   UserGroupIcon,
@@ -16,19 +16,30 @@ import { Avatar } from "@/components/ui/avatar";
 import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
 import type { ClubMember } from "@/app/lib/db/admin";
+import type { ActionResult } from "./actions";
 
 type MemberManagementViewProps = {
   clubId: number;
   members: ClubMember[];
+  inviteAction?: (formData: FormData) => Promise<ActionResult>;
+  updateRoleAction?: (formData: FormData) => Promise<ActionResult>;
+  removeMemberAction?: (formData: FormData) => Promise<ActionResult>;
 };
 
-export function MemberManagementView({ members }: MemberManagementViewProps) {
+export function MemberManagementView({
+  clubId,
+  members,
+  inviteAction,
+  updateRoleAction,
+  removeMemberAction,
+}: MemberManagementViewProps) {
   const t = useTranslations("memberManagement");
 
   const [search, setSearch] = useState("");
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const adminCount = members.filter((m) => m.role === "admin").length;
   const filteredMembers = members.filter(
@@ -36,6 +47,46 @@ export function MemberManagementView({ members }: MemberManagementViewProps) {
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.email.toLowerCase().includes(search.toLowerCase()),
   );
+
+  function handleInvite() {
+    if (!inviteAction) return;
+    const fd = new FormData();
+    fd.append("clubId", String(clubId));
+    fd.append("email", inviteEmail);
+    fd.append("name", inviteName);
+
+    startTransition(async () => {
+      const result = await inviteAction(fd);
+      if ("success" in result) {
+        setInviteEmail("");
+        setInviteName("");
+        setShowInvite(false);
+      }
+    });
+  }
+
+  function handleUpdateRole(memberId: number, role: "admin" | "player") {
+    if (!updateRoleAction) return;
+    const fd = new FormData();
+    fd.append("clubId", String(clubId));
+    fd.append("memberId", String(memberId));
+    fd.append("role", role);
+
+    startTransition(async () => {
+      await updateRoleAction(fd);
+    });
+  }
+
+  function handleRemove(memberId: number) {
+    if (!removeMemberAction) return;
+    const fd = new FormData();
+    fd.append("clubId", String(clubId));
+    fd.append("memberId", String(memberId));
+
+    startTransition(async () => {
+      await removeMemberAction(fd);
+    });
+  }
 
   return (
     <PageLayout
@@ -69,7 +120,12 @@ export function MemberManagementView({ members }: MemberManagementViewProps) {
                 value={inviteName}
                 onChange={(e) => setInviteName(e.target.value)}
               />
-              <Button disabled>{t("sendInvite")}</Button>
+              <Button
+                disabled={isPending || !inviteEmail || !inviteName}
+                onClick={handleInvite}
+              >
+                {t("sendInvite")}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -132,15 +188,30 @@ export function MemberManagementView({ members }: MemberManagementViewProps) {
                   </div>
                   <div className="flex gap-1">
                     {member.role === "admin" ? (
-                      <Button variant="ghost" size="sm" disabled={isOnlyAdmin}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isOnlyAdmin || isPending}
+                        onClick={() => handleUpdateRole(member.id, "player")}
+                      >
                         {t("demote")}
                       </Button>
                     ) : (
-                      <Button variant="ghost" size="sm" disabled>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleUpdateRole(member.id, "admin")}
+                      >
                         {t("makeAdmin")}
                       </Button>
                     )}
-                    <Button variant="ghost" size="sm" disabled={isOnlyAdmin}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={isOnlyAdmin || isPending}
+                      onClick={() => handleRemove(member.id)}
+                    >
                       {t("remove")}
                     </Button>
                   </div>
