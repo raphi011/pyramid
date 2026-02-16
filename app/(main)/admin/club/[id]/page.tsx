@@ -45,6 +45,7 @@ export default async function AdminDashboardPage({ params }: PageProps) {
 
   return (
     <AdminDashboardView
+      clubId={clubId}
       clubName={club.name}
       inviteCode={club.inviteCode}
       appUrl={env.APP_URL}
