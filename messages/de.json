@@ -464,6 +464,12 @@
     "bestOf3": "Best of 3",
     "bestOf5": "Best of 5",
     "bestOf7": "Best of 7",
+    "inviteLink": "Einladungslink",
+    "inviteLinkDesc": "Teile diesen Link, um Spieler zur Saison einzuladen.",
+    "copyLink": "Link kopieren",
+    "linkCopied": "Link kopiert!",
+    "showQrCode": "QR-Code anzeigen",
+    "qrCodeTitle": "QR-Code",
     "error": {
       "invalidInput": "Ung\u00fcltige Eingabe.",
       "unauthorized": "Keine Berechtigung.",
@@ -608,5 +614,25 @@
     "notificationsEmptyDesc": "Sobald etwas passiert, wirst du hier benachrichtigt.",
     "today": "Heute",
     "yesterday": "Gestern"
+  },
+  "seasonJoin": {
+    "joinTitle": "{season} beitreten",
+    "join": "Beitreten",
+    "firstNameLabel": "Vorname",
+    "lastNameLabel": "Nachname",
+    "emailLabel": "E-Mail-Adresse",
+    "submitEmail": "Weiter",
+    "emailHint": "Du erh\u00e4ltst einen Best\u00e4tigungslink per E-Mail.",
+    "checkEmail": "E-Mail pr\u00fcfen",
+    "checkEmailDesc": "Wir haben dir einen Link zum Beitreten geschickt. Pr\u00fcfe dein Postfach.",
+    "alreadyEnrolled": "Bereits angemeldet",
+    "alreadyEnrolledDesc": "Du bist bereits in der Saison {season} angemeldet.",
+    "goToRankings": "Zur Rangliste",
+    "errorTitle": "Fehler",
+    "codeNotFound": "Code nicht gefunden",
+    "seasonNotActive": "Diese Saison ist nicht mehr aktiv.",
+    "enrollmentClosed": "Die Anmeldung ist geschlossen.",
+    "invalidCode": "Ung\u00fcltiger Code",
+    "invalidInput": "Bitte f\u00fclle alle Felder aus."
   }
 }
