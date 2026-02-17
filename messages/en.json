@@ -558,6 +558,7 @@
   },
   "enrollment": {
     "joinSeason": "Join",
+    "joining": "Joining\u2026",
     "notEnrolled": "You are not enrolled in this season yet.",
     "contactAdmin": "Contact your admin to join this season.",
     "error": {
@@ -566,7 +567,8 @@
       "seasonNotActive": "This season is no longer active.",
       "enrollmentClosed": "Enrollment for this season is closed.",
       "teamSeason": "Team seasons are managed by the admin.",
-      "alreadyEnrolled": "You are already enrolled in this season."
+      "alreadyEnrolled": "You are already enrolled in this season.",
+      "serverError": "An error occurred. Please try again."
     }
   },
   "feed": {

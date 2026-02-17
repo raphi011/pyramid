@@ -7,8 +7,6 @@ import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
 import type { ActionResult } from "@/app/lib/action-result";
 
-export type { ActionResult };
-
 // ── Schema ──────────────────────────────────────────────
 
 const sendAnnouncementSchema = z.object({

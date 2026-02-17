@@ -7,8 +7,6 @@ import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
 import type { ActionResult } from "@/app/lib/action-result";
 
-export type { ActionResult };
-
 // ── Schemas ─────────────────────────────────────────────
 
 const VALID_BEST_OF = [1, 3, 5, 7] as const;

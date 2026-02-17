@@ -7,9 +7,7 @@ import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
 import type { ActionResultWith } from "@/app/lib/action-result";
 
-// ── Result type ─────────────────────────────────────────
-
-export type CreateSeasonResult = ActionResultWith<{ seasonId: number }>;
+type CreateSeasonResult = ActionResultWith<{ seasonId: number }>;
 
 // ── Schema ──────────────────────────────────────────────
 

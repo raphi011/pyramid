@@ -96,8 +96,21 @@ describe("getSeasonById", () => {
           matchDeadlineDays: 14,
           reminderAfterDays: 7,
           requiresResultConfirmation: false,
+          openEnrollment: true,
         }),
       );
+    });
+  });
+
+  it("returns openEnrollment false when set", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId, {
+        openEnrollment: false,
+      });
+
+      const season = await getSeasonById(tx, seasonId);
+      expect(season!.openEnrollment).toBe(false);
     });
   });
 
@@ -314,6 +327,31 @@ describe("createNewPlayerEvent", () => {
       expect(event.player_id).toBe(playerId);
       expect(event.event_type).toBe("new_player");
       expect(event.metadata).toEqual({ playerName: "New Player" });
+      expect(event.season_id).toBeNull();
+    });
+  });
+
+  it("persists seasonId when provided", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const playerId = await seedPlayer(
+        tx,
+        "event-season@example.com",
+        "Season",
+        "Player",
+      );
+
+      const eventId = await createNewPlayerEvent(
+        tx,
+        clubId,
+        playerId,
+        { firstName: "Season", lastName: "Player" },
+        seasonId,
+      );
+
+      const [event] = await tx`SELECT * FROM events WHERE id = ${eventId}`;
+      expect(event.season_id).toBe(seasonId);
     });
   });
 });

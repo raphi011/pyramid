@@ -34,6 +34,10 @@ export default defineConfig({
               dirname,
               ".storybook/mocks/match-action.ts",
             ),
+            "@/app/lib/actions/enroll": path.join(
+              dirname,
+              ".storybook/mocks/enroll-action.ts",
+            ),
           },
         },
         optimizeDeps: {

@@ -7,10 +7,8 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
-import {
-  enrollInSeasonAction,
-  type EnrollResult,
-} from "@/app/lib/actions/enroll";
+import { enrollInSeasonAction } from "@/app/lib/actions/enroll";
+import type { ActionResult } from "@/app/lib/action-result";
 
 type EnrollmentBannerProps = {
   seasonId: number;
@@ -48,11 +46,15 @@ function EnrollableCard({
 }) {
   const t = useTranslations("enrollment");
   const [state, formAction, isPending] = useActionState(
-    async (_prev: EnrollResult | null, formData: FormData) => {
+    async (_prev: ActionResult | null, formData: FormData) => {
       return enrollInSeasonAction(formData);
     },
     null,
   );
+
+  if (state && "success" in state) {
+    return null;
+  }
 
   const error = state && "error" in state ? t(state.error) : null;
 
@@ -67,7 +69,7 @@ function EnrollableCard({
           <input type="hidden" name="seasonId" value={seasonId} />
           <input type="hidden" name="clubId" value={clubId} />
           <Button type="submit" size="sm" disabled={isPending}>
-            {t("joinSeason")}
+            {isPending ? t("joining") : t("joinSeason")}
           </Button>
         </form>
       </div>
