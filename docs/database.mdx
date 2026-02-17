@@ -122,6 +122,8 @@ Season configuration per club. Multiple seasons can be active simultaneously (e.
 | `reminder_after_days` | `INT` | `NOT NULL DEFAULT 7` | Days before reminder email if no date agreed |
 | `requires_result_confirmation` | `BOOL` | `NOT NULL DEFAULT false` | When true, entering a result sets status to `pending_confirmation` instead of `completed`. The opponent must confirm before standings update. |
 | `open_enrollment` | `BOOL` | `NOT NULL DEFAULT true` | When true, players can self-enroll in the season. When false, only admins can add players. |
+| `visibility` | `TEXT` | `NOT NULL DEFAULT 'club'` | `'club'` = visible to all club members; `'members_only'` = only visible to season participants. When `'members_only'`, season is completely hidden from non-participants (not in season selector). |
+| `previous_season_id` | `INT` | `FK → seasons(id)` | Link to predecessor season. Auto-set when admin creates a season using "from previous season" starting ranks. NULL if no predecessor. |
 | `status` | `TEXT` | `NOT NULL DEFAULT 'draft'` | See enum below |
 | `started_at` | `TIMESTAMPTZ` | | Set when admin starts the season |
 | `ended_at` | `TIMESTAMPTZ` | | Set when admin ends the season |
@@ -447,6 +449,7 @@ These are enforced at the application layer (not as Postgres `ENUM` types) for f
 | `clubs` → `club_members` | 1:N | A club has many members |
 | `player` → `club_members` | 1:N | A player can be in multiple clubs |
 | `clubs` → `seasons` | 1:N | Multiple seasons per club (can be simultaneous) |
+| `seasons` → `seasons` | 1:1 | `previous_season_id` links to predecessor season |
 | `seasons` → `teams` | 1:N | Every season has teams (1-person for individual) |
 | `teams` → `team_players` | 1:N | Size enforced by `seasons.min/max_team_size` |
 | `seasons` → `season_matches` | 1:N | Matches belong to a season |
@@ -509,6 +512,10 @@ When a match completes:
 2. If the **challengee wins** → no ranking change
 3. A new `season_standings` snapshot is inserted
 4. Events are generated (public feed + personal notifications)
+
+### Visibility & Enrollment Constraint
+
+`open_enrollment` can only be `true` when `visibility = 'club'`. If admin switches visibility to `'members_only'`, `open_enrollment` is automatically set to `false`. Switching visibility back to `'club'` does not auto-enable `open_enrollment`.
 
 ### Team Constraints
 

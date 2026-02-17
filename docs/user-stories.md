@@ -52,6 +52,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-RANK-06](#us-rank-06-unavailable-indicators) | Unavailable indicators | Player | P1 | Rankings | ✅ |
 | [US-RANK-07](#us-rank-07-open-challenge-indicators) | Open-challenge indicators | Player | P1 | Rankings | ✅ |
 | [US-RANK-08](#us-rank-08-archived-season-read-only) | Archived season (read-only) | Player | P1 | Rankings | |
+| [US-RANK-09](#us-rank-09-navigate-to-previous-season) | Navigate to previous season | Player | P2 | Rankings | |
 | [US-CHAL-01](#us-chal-01-challenge-from-pyramid-card) | Challenge from pyramid card | Player | P0 | Challenges | ✅ |
 | [US-CHAL-02](#us-chal-02-challenge-from-fab) | Challenge from FAB | Player | P0 | Challenges | ✅ |
 | [US-CHAL-03](#us-chal-03-challenge-from-player-profile) | Challenge from player profile | Player | P1 | Challenges | ✅ |
@@ -281,7 +282,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P0
 
-**Preconditions**: Player is a club member. Club has active seasons.
+**Preconditions**: Player is a club member. Club has active seasons. Season must have `visibility = 'club'` for self-enrollment to be possible (since `open_enrollment` requires `visibility = 'club'`).
 
 **Steps**:
 1. Player sees available seasons on the rankings page (or a dedicated section).
@@ -298,6 +299,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Edge cases**:
 - `open_enrollment = false` → Player cannot self-enroll; admin must add them (→ US-ADMIN-07).
+- `visibility = 'members_only'` → Season is completely hidden from non-participants; they can't see it in the season selector at all, so enrollment is not possible.
 - Team seasons → Player cannot self-enroll regardless of `open_enrollment` (admin assigns teams manually → US-ADMIN-07).
 - No active seasons → No enrollment options shown.
 - Player already enrolled → "Join" button not shown for that season.
@@ -653,6 +655,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Edge cases**:
 - Multiple active seasons → All shown without archive label.
 - No seasons → Season selector shows "Select season" placeholder, rankings area empty.
+- Seasons with `visibility = 'members_only'` → Only shown in the selector for players who have a team in that season. Admins always see all seasons.
 
 **Cross-refs**: → US-RANK-08
 
@@ -742,6 +745,27 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 - User tries to challenge via FAB while viewing archived season → Message: "This season has ended."
 
 **Cross-refs**: → US-RANK-04, → US-CHAL-06
+
+---
+
+### US-RANK-09: Navigate to previous season
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Season has a `previous_season_id` set (linked to a predecessor season). Player has access to the previous season (is a participant or previous season has `visibility = 'club'`).
+
+**Steps**:
+1. User views a season that has a `previous_season_id` → System shows a "Previous season" link.
+2. User taps the link → System navigates to the previous season's rankings page.
+
+**Postconditions**: Player is viewing the previous season's rankings.
+
+**Edge cases**:
+- Previous season not accessible (player is not a participant and `visibility = 'members_only'`) → Link not shown.
+- Previous season has `status = 'ended'` → Navigates to archived season view (→ US-RANK-08).
+- Chain of previous seasons (A → B → C) → Each season shows its own "Previous season" link independently.
+
+**Cross-refs**: → US-RANK-04, → US-RANK-08, → US-ADMIN-02
 
 ---
 
@@ -1139,7 +1163,9 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P1
 
-**Preconditions**: Match exists (any status). Player is a match participant.
+**Preconditions**: Match exists (any status). Player must have comment access:
+- If `season.visibility = 'club'` → Any club member can comment on any match in this season.
+- If `season.visibility = 'members_only'` → Only season participants (players with a team in the season) can comment.
 
 **Steps**:
 1. User types in the comment input at the bottom of match detail.
@@ -1151,6 +1177,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Edge cases**:
 - Empty comment → Submit button disabled.
 - Comment on a completed/withdrawn match → Still allowed (for post-match discussion).
+- `visibility = 'members_only'` → Non-participants cannot see the match and therefore cannot comment.
 
 **Cross-refs**: → US-CHAL-09, → US-CHAL-18
 
@@ -1664,12 +1691,14 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
    - Deadlines: match deadline days (default 14), reminder after days (default 7).
    - Result confirmation: toggle for `requires_result_confirmation`.
    - Enrollment: toggle for `open_enrollment` (default: on). When on, players can self-enroll. When off, only admins can add players.
+   - Visibility: toggle/radio — "Visible to all club members" (default) / "Members only". When "Members only" is selected, the `open_enrollment` toggle is disabled and forced off.
    - Starting ranks: empty (manual), from previous season (keep/shuffle/invert).
 3. Admin fills form and taps "Create Season" → System creates `seasons` row (`status = 'draft'`).
-4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season.
+4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season. System auto-sets `seasons.previous_season_id` to the chosen season's ID.
 
 **Postconditions**:
 - `seasons` row created with `status = 'draft'`.
+- If "from previous season" selected → `seasons.previous_season_id` set.
 - Season only visible to admins until started.
 
 **Edge cases**:
@@ -1715,18 +1744,33 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Club Admin | **Priority**: P1
 
-**Preconditions**: Season exists (draft or active).
+**Preconditions**: Season exists (draft or active). Ended seasons are fully read-only (no changes).
 
 **Steps**:
 1. Admin navigates to `/admin/club/[id]/season/[id]` → System shows season config form.
-2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation, open_enrollment.
-3. Admin taps "Save changes" → System updates `seasons` row.
+2. Admin edits available fields and taps "Save changes" → System updates `seasons` row.
+
+**Field editability:**
+
+**Always editable** (even with matches):
+- `name`
+- `match_deadline_days`
+- `reminder_after_days`
+- `open_enrollment` (subject to visibility constraint)
+- `visibility`
+
+**Locked after first match exists** (season has ≥1 `season_matches` row):
+- `best_of` — cannot change scoring format mid-season once matches have been played
+- `min_team_size` / `max_team_size` — cannot change team format after matches exist
+- `requires_result_confirmation` — changing confirmation rules mid-match would create inconsistency
+
+Locked fields show as disabled with a tooltip: "Cannot be changed after matches have been played."
 
 **Postconditions**: `seasons` row updated.
 
 **Edge cases**:
-- Changing `best_of` while matches are in progress → Warning: "Existing matches will use the new setting."
-- Ended season → Settings are read-only.
+- Switching `visibility` to `'members_only'` → `open_enrollment` auto-disabled and forced off. Switching back to `'club'` does not auto-enable `open_enrollment`.
+- Ended season → Settings are fully read-only.
 
 **Cross-refs**: → US-ADMIN-02
 
