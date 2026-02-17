@@ -8,6 +8,7 @@ import {
   PlusIcon,
   BoltIcon,
   BellIcon,
+  BellAlertIcon,
   Cog6ToothIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
@@ -39,14 +40,25 @@ export function AppShellWrapper({
   const router = useRouter();
   const [activeClubId, setActiveClubId] = useState<number>(clubs[0].id);
 
-  const navItems = [
-    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: unreadCount },
-    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-  ];
+  const activeClubName =
+    clubs.find((c) => c.id === activeClubId)?.name ?? clubs[0].name;
 
   const sidebarItems = [
     { icon: <BellIcon />, label: t("news"), href: "/feed", badge: unreadCount },
     { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+  ];
+
+  const mobileNavItems = [
+    { icon: <BellIcon />, label: t("news"), href: "/feed", badge: unreadCount },
+    { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+    { icon: <BoltIcon />, label: t("matches"), href: "/matches" },
+    {
+      icon: <BellAlertIcon />,
+      label: t("notifications"),
+      href: "/notifications",
+      badge: unreadCount,
+    },
     { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
   ];
 
@@ -62,9 +74,12 @@ export function AppShellWrapper({
 
   return (
     <AppShell
-      navItems={navItems}
       sidebarItems={sidebarItems}
+      mobileNavItems={mobileNavItems}
       adminItems={adminItems}
+      activeClubName={activeClubName}
+      activeClubId={activeClubId}
+      unreadCount={unreadCount}
       profile={{
         name: fullName(player.firstName, player.lastName),
         href: "/profile",

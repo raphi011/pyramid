@@ -177,7 +177,7 @@ Sporty = snappy, not sluggish.
 Key animations:
 - **Rank movement**: Framer Motion `layout` prop — player cards slide up/down when standings change.
 - **Challenge sent**: brief pulse/glow on challenged player's card.
-- **Bottom nav**: active indicator slides between items (`layoutId`).
+- **Hamburger menu**: slide-from-left drawer with transition.
 - **List items**: staggered fade-in on initial load.
 
 ---
@@ -186,7 +186,7 @@ Key animations:
 
 ### Mobile (default)
 
-- **Bottom navigation bar**: 2 items (Rankings, Feed) + center FAB
+- **Hamburger menu** (☰): slide-from-left drawer with all nav items + floating FAB (bottom-right)
 - Full-width cards, `px-4` page padding
 - Bottom sheet for dialogs (not centered modal)
 - Scroll-based views, no pagination
@@ -202,7 +202,7 @@ Key animations:
 
 | Breakpoint | Width | Layout |
 |------------|-------|--------|
-| Default | < 1024px | Bottom nav, full-width cards, `px-4` |
+| Default | < 1024px | Hamburger menu + FAB, full-width cards, `px-4` |
 | `lg` | ≥ 1024px | Sidebar nav, `max-w-2xl` content, `px-6` |
 
 ### App Shell
@@ -210,13 +210,12 @@ Key animations:
 ```
 Mobile:                          Desktop (lg+):
 ┌──────────────────┐            ┌────────┬─────────────────┐
-│   Page Content   │            │Sidebar │  Page Content    │
-│                  │            │        │                  │
-│                  │            │ Nav    │                  │
-│                  │            │ items  │                  │
-│                  │            │        │                  │
+│ ☰ Club Name  🔔  │            │Sidebar │  Page Content    │
 ├──────────────────┤            │        │                  │
-│ BottomNav (fixed)│            │        │                  │
+│                  │            │ Nav    │                  │
+│   Page Content   │            │ items  │                  │
+│                  │            │        │                  │
+│             [FAB]│            │        │                  │
 └──────────────────┘            └────────┴─────────────────┘
 ```
 
@@ -224,10 +223,13 @@ Mobile:                          Desktop (lg+):
 
 | Icon | Label | Route | Description |
 |------|-------|-------|-------------|
-| Trophy | Rankings | `/rankings` | Pyramid view |
 | Bell | Feed | `/feed` | Event timeline |
+| Trophy | Rankings | `/rankings` | Pyramid view |
+| Swords | Matches | `/matches` | Match list |
+| Bell | Notifications | `/notifications` | Activity notifications |
+| Cog | Settings | `/settings` | App settings |
 
-Profile is accessed via the sidebar (desktop) or avatar link, not as a bottom nav item.
+On mobile, tapping ☰ opens a slide-from-left drawer (MobileNav) with all nav items. Profile is shown at the bottom of the drawer (mobile) or sidebar (desktop).
 
 ---
 
@@ -320,7 +322,7 @@ placeholder:text-slate-400
 ├─────────────────────────────────────────────────┤
 │  Layer 2: Composite Components                  │
 │  Card, EmptyState, DataList, FormField,         │
-│  BottomNav, PageLayout, AppShell, StatBlock     │
+│  MobileNav, FloatingFab, PageLayout, AppShell   │
 │  — reusable patterns, app-agnostic             │
 ├─────────────────────────────────────────────────┤
 │  Layer 1: Primitives (shadcn/ui)                │
@@ -381,20 +383,25 @@ Reusable patterns from primitives. App-agnostic — no domain/player/match aware
 </PageLayout>
 ```
 
-**AppShell** — Top-level layout, switches BottomNav (mobile) ↔ SidebarNav (desktop).
+**AppShell** — Top-level layout, switches MobileNav + FloatingFab (mobile) ↔ SidebarNav (desktop).
 ```tsx
 <AppShell>
   {children}
 </AppShell>
 ```
 
-**BottomNav** — Fixed mobile navigation.
+**MobileNav** — Slide-from-left drawer, opened by ☰.
 ```tsx
-<BottomNav items={[
-  { icon: TrophyIcon, label: "Rankings", href: "/rankings" },
-  { icon: SwordsIcon, label: "Matches", href: "/matches" },
-  ...
-]} />
+<MobileNav
+  open={menuOpen}
+  onClose={() => setMenuOpen(false)}
+  items={navItems}
+  adminItems={adminItems}
+  profile={profile}
+  activeHref={pathname}
+  onNavigate={handleNavigate}
+  clubSwitcher={<ClubSwitcher />}
+/>
 ```
 
 **DataList** — List with loading, empty, and separator handling.
@@ -556,7 +563,8 @@ components/
 │
 ├── card.tsx                     # Layer 2: composites
 ├── page-layout.tsx
-├── bottom-nav.tsx
+├── mobile-nav.tsx
+├── floating-fab.tsx
 ├── sidebar-nav.tsx
 ├── app-shell.tsx
 ├── form-field.tsx

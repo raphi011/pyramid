@@ -69,7 +69,7 @@ function SidebarNav({
 
       <div className="flex-1 space-y-1 px-3 py-2">
         {items.map((item) => (
-          <SidebarButton
+          <NavButton
             key={item.href}
             item={item}
             active={activeHref === item.href}
@@ -84,7 +84,7 @@ function SidebarNav({
               {tCommon("admin")}
             </p>
             {adminItems.map((item) => (
-              <SidebarButton
+              <NavButton
                 key={item.href}
                 item={item}
                 active={activeHref === item.href}
@@ -117,7 +117,8 @@ function SidebarNav({
         )}
       </div>
 
-      <div className="border-t border-slate-200 px-3 dark:border-slate-800">
+      <div className="px-3">
+        <div className="h-px bg-slate-200 dark:bg-slate-800" />
         {clubSwitcher && <div className="pt-3">{clubSwitcher}</div>}
         {profile && (
           <div className="py-3">
@@ -142,7 +143,7 @@ function SidebarNav({
   );
 }
 
-function SidebarButton({
+function NavButton({
   item,
   active,
   onNavigate,
@@ -175,5 +176,5 @@ function SidebarButton({
   );
 }
 
-export { SidebarNav };
+export { SidebarNav, NavButton };
 export type { SidebarNavProps, SidebarItem, ProfileInfo };

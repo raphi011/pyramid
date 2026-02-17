@@ -231,7 +231,7 @@ Three types of empty state, each requiring different treatment:
 **Key rules**:
 
 - **Mobile-first, then enhance**: Start with the smallest screen and progressively add complexity. This forces prioritization and eliminates unnecessary elements.
-- **Breakpoints mark structural changes, not tweaks**: A breakpoint should switch layout patterns (stack → side-by-side, bottom nav → sidebar), not adjust padding by 4px.
+- **Breakpoints mark structural changes, not tweaks**: A breakpoint should switch layout patterns (stack → side-by-side, hamburger menu → sidebar), not adjust padding by 4px.
 - **Fluid between breakpoints**: Use relative units (%, vw, fr), `clamp()`, and CSS Grid/Flexbox so the layout adjusts smoothly between breakpoints — not just at them.
 - **Container queries for components**: Components should respond to their parent container's size, not the viewport. A card in a narrow sidebar behaves differently than the same card in a wide main area.
 - **Responsive spacing**: Padding and gaps should scale with the context. 16px page padding on mobile, 24px on desktop. Use responsive spacing tokens.
@@ -241,7 +241,7 @@ Three types of empty state, each requiring different treatment:
 
 | Pattern | Mobile | Desktop |
 |---------|--------|---------|
-| Navigation | Bottom bar (thumb-friendly) | Sidebar (visible labels) |
+| Navigation | Hamburger menu + FAB | Sidebar (visible labels) |
 | Dialogs | Bottom sheet (reachable) | Centered modal |
 | Data tables | Card-based list (stacked) | Full table with columns |
 | Actions | Hidden in overflow menu | Inline buttons |

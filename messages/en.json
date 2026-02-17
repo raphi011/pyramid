@@ -22,7 +22,11 @@
     "manageClub": "Manage club",
     "challenge": "Challenge",
     "activeChallenge": "Open match",
-    "matches": "Matches"
+    "matches": "Matches",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "notifications": "Notifications",
+    "menuLabel": "Navigation"
   },
   "challenge": {
     "title": "Challenge",

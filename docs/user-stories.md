@@ -1714,7 +1714,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Steps**:
 1. System renders top bar: `☰` (left), active club name (center, tappable → `/club/[id]`), 🔔 with unread badge (right).
-2. Player taps ☰ → System opens fullscreen overlay with sidebar navigation:
+2. Player taps ☰ → System opens slide-from-left drawer with navigation:
    - Club switcher dropdown at top (to change active club)
    - Nav items: Feed, Rankings, Matches, Notifications (with badge), Profile, Settings, Admin (if admin role)
 3. Player taps a nav item → Overlay closes, system navigates to selected route.
