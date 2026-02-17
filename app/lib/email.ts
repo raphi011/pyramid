@@ -31,6 +31,10 @@ export async function sendMagicLinkEmail(
     magicLinkUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
   }
 
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[Magic Link] ${email}: ${magicLinkUrl}`);
+  }
+
   try {
     await getTransporter().sendMail({
       from: env.SMTP_FROM,
