@@ -72,6 +72,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-CHAL-18](#us-chal-18-edit-match-comment) | Edit match comment | Player | P2 | Challenges | |
 | [US-COMMENT-IMG](#us-comment-img-upload-image-in-match-comment) | Upload image in match comment | Player | P2 | Challenges | ✅ |
 | [US-CHAL-19](#us-chal-19-rankings-update-after-result) | Rankings update after result | Player | P0 | Challenges | ✅ |
+| [US-CHAL-20](#us-chal-20-match-activity-timeline) | Match activity timeline | Player | P1 | Challenges | |
 | [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | ✅ |
 | [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | ✅ |
 | [US-PROF-03](#us-prof-03-uploadchange-profile-photo) | Upload/change profile photo | Player | P1 | Profile | ✅ |
@@ -1203,6 +1204,36 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
+### US-CHAL-20: Match activity timeline
+
+**Role**: Player | **Priority**: P1
+
+**Preconditions**: Player is viewing match detail (→ US-CHAL-09).
+
+**Steps**:
+1. System queries `events` table for all events linked to this match (via `match_id` in event metadata).
+2. System renders a chronological activity timeline in the match detail view showing:
+   - `challenged` — "Player A challenged Player B" with timestamp.
+   - `date_proposed` — "Player A proposed a date: DD.MM.YYYY HH:MM".
+   - `date_accepted` — "Player B accepted the proposed date".
+   - `result_entered` — "Player A entered the result: 6:3 4:6 7:5".
+   - `result_confirmed` — "Player B confirmed the result".
+   - `result_disputed` — "Player B disputed the result".
+   - `withdrawal` / `forfeit` — "Player A withdrew / forfeited".
+3. Each timeline entry shows: icon (reuse `eventIcons` map), actor name, description, relative timestamp.
+4. Timeline is ordered oldest → newest (natural reading order), displayed between the match header and the comments section.
+
+**Postconditions**: Player sees the full history of match-specific actions at a glance.
+
+**Edge cases**:
+- Match has no events yet (just created) → Timeline section hidden or shows only the `challenged` event.
+- Disputed result → Both `result_entered` and `result_disputed` entries visible, giving context to the dispute.
+- Multiple date proposals → Each proposal/acceptance/decline shown as separate entries.
+
+**Cross-refs**: → US-CHAL-09, → US-FEED-01
+
+---
+
 ## Player Profile & Availability
 
 ### US-PROF-01: View own profile
@@ -2188,7 +2219,7 @@ Every DB table is exercised by at least one story:
 | `images` | US-PROF-03, US-ADMIN-16, US-COMMENT-IMG |
 | `date_proposals` | US-CHAL-10, US-CHAL-11 |
 | `season_standings` | US-CHAL-19, US-ADMIN-05, US-RANK-01, US-PROF-07 |
-| `events` | US-FEED-01, US-FEED-06, US-FEED-07, US-CHAL-01 |
+| `events` | US-FEED-01, US-FEED-06, US-FEED-07, US-CHAL-01, US-CHAL-20 |
 | `event_reads` | US-FEED-06, US-FEED-07, US-FEED-09, US-FEED-10 |
 | `notification_preferences` | US-SETT-03 |
 | `magic_links` | US-AUTH-01, US-AUTH-03, US-AUTH-04 |
