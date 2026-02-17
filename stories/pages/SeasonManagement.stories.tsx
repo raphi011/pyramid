@@ -33,7 +33,7 @@ const activeSeason: SeasonDetail = {
   requiresResultConfirmation: false,
   openEnrollment: true,
   isTeamSeason: false,
-  inviteCode: "abc123def456",
+  inviteCode: "ABC123",
 };
 
 const draftSeason: SeasonDetail = {

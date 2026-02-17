@@ -633,6 +633,11 @@
     "seasonNotActive": "Diese Saison ist nicht mehr aktiv.",
     "enrollmentClosed": "Die Anmeldung ist geschlossen.",
     "invalidCode": "Ung\u00fcltiger Code",
-    "invalidInput": "Bitte f\u00fclle alle Felder aus."
+    "invalidInput": "Bitte f\u00fclle alle Felder aus.",
+    "error": {
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "teamSeason": "Bei Team-Saisons werden die Teams vom Admin verwaltet.",
+      "invalidEmail": "Bitte gib eine g\u00fcltige E-Mail-Adresse ein."
+    }
   }
 }

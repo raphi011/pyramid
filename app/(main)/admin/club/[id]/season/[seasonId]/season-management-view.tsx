@@ -54,9 +54,13 @@ function InviteLinkCard({
   const inviteUrl = `${appUrl}/season/join?code=${inviteCode}`;
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(inviteUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API can fail (permissions, focus, mobile Safari)
+    }
   }
 
   return (
@@ -147,49 +151,44 @@ export function SeasonManagementView({
   const isEnded = season.status === "ended";
   const isDraft = season.status === "draft";
 
-  function handleSave() {
-    if (!updateAction) return;
+  function runAction(
+    action: ((formData: FormData) => Promise<ActionResult>) | undefined,
+    extraFields?: Record<string, string>,
+  ) {
+    if (!action) return;
     const fd = new FormData();
     fd.set("seasonId", season.id.toString());
     fd.set("clubId", clubId.toString());
-    fd.set("name", name);
-    fd.set("bestOf", bestOf);
-    fd.set("matchDeadlineDays", matchDeadlineDays);
-    fd.set("reminderDays", reminderDays);
-    fd.set("requiresConfirmation", requiresConfirmation.toString());
-    fd.set("openEnrollment", openEnrollment.toString());
+    if (extraFields) {
+      for (const [key, value] of Object.entries(extraFields)) {
+        fd.set(key, value);
+      }
+    }
     startTransition(async () => {
-      const result = await updateAction(fd);
+      const result = await action(fd);
       if (isActionError(result)) {
         setError(tError(result.error));
       }
+    });
+  }
+
+  function handleSave() {
+    runAction(updateAction, {
+      name,
+      bestOf,
+      matchDeadlineDays,
+      reminderDays,
+      requiresConfirmation: requiresConfirmation.toString(),
+      openEnrollment: openEnrollment.toString(),
     });
   }
 
   function handleStart() {
-    if (!startAction) return;
-    const fd = new FormData();
-    fd.set("seasonId", season.id.toString());
-    fd.set("clubId", clubId.toString());
-    startTransition(async () => {
-      const result = await startAction(fd);
-      if (isActionError(result)) {
-        setError(tError(result.error));
-      }
-    });
+    runAction(startAction);
   }
 
   function handleEnd() {
-    if (!endAction) return;
-    const fd = new FormData();
-    fd.set("seasonId", season.id.toString());
-    fd.set("clubId", clubId.toString());
-    startTransition(async () => {
-      const result = await endAction(fd);
-      if (isActionError(result)) {
-        setError(tError(result.error));
-      }
-    });
+    runAction(endAction);
   }
 
   return (

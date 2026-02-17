@@ -28,8 +28,6 @@ export async function generateMetadata({
     title: `${season.name} beitreten`,
     description: `${season.clubName} \u2014 Tritt der Saison bei`,
     openGraph: {
-      title: `${season.name} beitreten`,
-      description: `${season.clubName} \u2014 Tritt der Saison bei`,
       type: "website",
       ...(imageUrl ? { images: [{ url: imageUrl }] } : {}),
     },

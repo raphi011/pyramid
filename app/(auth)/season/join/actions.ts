@@ -42,31 +42,21 @@ export type SeasonJoinState = {
 
 // ── Schemas ──────────────────────────────────────────────
 
-const codeSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z0-9]{6}$/),
-});
+const inviteCodeField = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z0-9]{6}$/);
 
-const joinSeasonSchema = z.object({
-  inviteCode: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z0-9]{6}$/),
-});
+const codeSchema = z.object({ code: inviteCodeField });
+
+const joinSeasonSchema = z.object({ inviteCode: inviteCodeField });
 
 const guestJoinSchema = z.object({
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
   email: z.string().trim().toLowerCase().email(),
-  inviteCode: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z0-9]{6}$/),
+  inviteCode: inviteCodeField,
 });
 
 // ── Actions ──────────────────────────────────────────────
@@ -80,7 +70,7 @@ export async function validateSeasonCode(
 ): Promise<SeasonJoinState> {
   const parsed = parseFormData(codeSchema, formData);
   if (!parsed.success) {
-    return { step: "error", error: "seasonJoin.invalidCode" };
+    return { step: "error", error: "invalidCode" };
   }
   const { code } = parsed.data;
 
@@ -88,15 +78,20 @@ export async function validateSeasonCode(
     const season = await getSeasonByInviteCode(sql, code);
 
     if (!season) {
-      return { step: "error", error: "seasonJoin.codeNotFound" };
+      return { step: "error", error: "codeNotFound" };
     }
 
     if (season.status !== "active") {
-      return { step: "error", error: "seasonJoin.seasonNotActive" };
+      return { step: "error", error: "seasonNotActive" };
     }
 
     if (!season.openEnrollment) {
-      return { step: "error", error: "seasonJoin.enrollmentClosed" };
+      return { step: "error", error: "enrollmentClosed" };
+    }
+
+    // Invite link join supports individual seasons only; team seasons require manual roster assignment
+    if (!isIndividualSeason(season)) {
+      return { step: "error", error: "error.teamSeason" };
     }
 
     const session = await getSession();
@@ -138,39 +133,51 @@ export async function joinSeasonAction(
 ): Promise<SeasonJoinState> {
   const parsed = parseFormData(joinSeasonSchema, formData);
   if (!parsed.success) {
-    return { step: "error", error: "seasonJoin.invalidCode" };
+    return { step: "error", error: "invalidCode" };
   }
   const { inviteCode } = parsed.data;
 
+  // redirect() throws — must stay OUTSIDE the try-catch below
   const player = await getCurrentPlayer();
   if (!player) {
     redirect("/login");
   }
 
-  const season = await getSeasonByInviteCode(sql, inviteCode);
-  if (!season || season.status !== "active" || !season.openEnrollment) {
-    return { step: "error", error: "seasonJoin.seasonNotActive" };
-  }
+  let season;
+  try {
+    season = await getSeasonByInviteCode(sql, inviteCode);
+    if (!season || season.status !== "active" || !season.openEnrollment) {
+      return { step: "error", error: "seasonNotActive" };
+    }
 
-  if (!isIndividualSeason(season)) {
-    return { step: "error", error: "error.teamSeason" };
-  }
+    // Invite link join supports individual seasons only
+    if (!isIndividualSeason(season)) {
+      return { step: "error", error: "error.teamSeason" };
+    }
 
-  if (await isPlayerEnrolledInSeason(sql, player.id, season.id)) {
-    return {
-      step: "already-enrolled",
-      seasonName: season.name,
-      clubName: season.clubName,
+    if (await isPlayerEnrolledInSeason(sql, player.id, season.id)) {
+      return {
+        step: "already-enrolled",
+        seasonName: season.name,
+        clubName: season.clubName,
+        inviteCode,
+      };
+    }
+  } catch (e) {
+    console.error("joinSeasonAction pre-transaction failed:", {
       inviteCode,
-    };
+      playerId: player.id,
+      error: e,
+    });
+    return { step: "error", error: "error.serverError" };
   }
 
   try {
     await sql.begin(async (tx) => {
-      // Join club if not a member (idempotent via ON CONFLICT)
+      // Ensure player is a club member (ON CONFLICT DO NOTHING if already joined)
       await joinClub(tx, player.id, season.clubId);
 
-      // Re-check enrollment inside transaction
+      // Re-check enrollment inside transaction to prevent TOCTOU race
       if (await isPlayerEnrolledInSeason(tx, player.id, season.id)) {
         throw new AlreadyEnrolledError();
       }
@@ -202,7 +209,11 @@ export async function joinSeasonAction(
         inviteCode,
       };
     }
-    console.error("joinSeasonAction failed:", e);
+    console.error("joinSeasonAction failed:", {
+      inviteCode,
+      playerId: player.id,
+      error: e,
+    });
     return {
       step: "season-info",
       seasonName: season.name,
@@ -216,40 +227,40 @@ export async function joinSeasonAction(
   redirect("/rankings");
 }
 
-/** Unauthenticated user: create player if needed, send magic link */
+/** Unauthenticated user: find or create player (upsert), then send magic link */
 export async function requestSeasonJoinAction(
   _prev: SeasonJoinState,
   formData: FormData,
 ): Promise<SeasonJoinState> {
   const parsed = parseFormData(guestJoinSchema, formData);
   if (!parsed.success) {
-    if (parsed.fieldErrors.email) {
-      return {
-        step: "guest-form",
-        seasonName: (formData.get("seasonName") as string) ?? "",
-        clubName: (formData.get("clubName") as string) ?? "",
-        inviteCode:
-          (formData.get("inviteCode") as string)?.trim().toUpperCase() ?? "",
-        error: "error.invalidEmail",
-      };
-    }
-    return {
+    const stateFromForm: SeasonJoinState = {
       step: "guest-form",
       seasonName: (formData.get("seasonName") as string) ?? "",
       clubName: (formData.get("clubName") as string) ?? "",
       inviteCode:
         (formData.get("inviteCode") as string)?.trim().toUpperCase() ?? "",
-      error: "seasonJoin.invalidInput",
+    };
+    return {
+      ...stateFromForm,
+      error: parsed.fieldErrors.email ? "error.invalidEmail" : "invalidInput",
     };
   }
   const { firstName, lastName, email, inviteCode } = parsed.data;
 
-  // Enumeration protection: always return check-email
+  // Validate invite code maps to a valid active season before creating a player
+  const season = await getSeasonByInviteCode(sql, inviteCode);
+  if (!season || season.status !== "active" || !season.openEnrollment) {
+    return { step: "error", error: "seasonNotActive" };
+  }
+
+  // Step 1: Ensure player exists (not enumeration-sensitive — this is account creation)
+  let player;
   try {
-    let player = await getPlayerByEmail(email);
+    player = await getPlayerByEmail(email);
 
     if (!player) {
-      // Create new player
+      // Upsert with no-op update so RETURNING works on both insert and conflict
       const [row] = await sql`
         INSERT INTO player (first_name, last_name, email_address, created)
         VALUES (${firstName}, ${lastName}, ${email}, NOW())
@@ -263,7 +274,21 @@ export async function requestSeasonJoinAction(
         email: row.email as string,
       };
     }
+  } catch (error) {
+    console.error("requestSeasonJoinAction: player creation failed:", error);
+    return {
+      step: "guest-form",
+      seasonName: season.name,
+      clubName: season.clubName,
+      inviteCode,
+      error: "error.serverError",
+    };
+  }
 
+  // Step 2: Send magic link (enumeration-protected — always return check-email regardless
+  // of whether the player existed or the email sends, so attackers cannot probe for
+  // registered addresses)
+  try {
     const token = await createMagicLink(player.id);
     const returnTo = `/season/join?code=${inviteCode}`;
     const { success, error: emailError } = await sendMagicLinkEmail(
@@ -276,7 +301,7 @@ export async function requestSeasonJoinAction(
       console.error("Failed to send season join magic link:", emailError);
     }
   } catch (error) {
-    console.error("requestSeasonJoinAction failed:", error);
+    console.error("requestSeasonJoinAction: email send failed:", error);
   }
 
   return { step: "check-email" };

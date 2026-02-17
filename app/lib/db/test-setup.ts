@@ -1,3 +1,8 @@
+// Set DATABASE_URL before any module that imports env.ts is resolved.
+// Must be at the top — vitest runs setupFiles before test module loading.
+process.env.DATABASE_URL ??=
+  "postgres://pyramid:pyramid@localhost:5433/pyramid_dev";
+
 import { beforeAll, afterAll } from "vitest";
 import postgres from "postgres";
 import { DATABASE_URL } from "./test-helpers";

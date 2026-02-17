@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/card";
@@ -35,8 +35,10 @@ export function SeasonJoinFlow({ initialCode }: SeasonJoinFlowProps) {
   );
   const autoSubmitted = useRef(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const [code] = useState(initialCode ?? "");
+  const code = initialCode ?? "";
 
+  // State priority: latest user action wins.
+  // requestState (guest magic link) > joinState (auth user join) > validateState (code validation)
   const currentState = (() => {
     if (requestState.step !== "loading") return requestState;
     if (joinState.step !== "loading") return joinState;

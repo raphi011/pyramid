@@ -267,8 +267,9 @@ describe("addTeamToStandings", () => {
       const t2 = await seedTeam(tx, seasonId, [p2]);
 
       await seedStandings(tx, seasonId, [t1]);
-      await addTeamToStandings(tx, seasonId, t2);
+      const rank = await addTeamToStandings(tx, seasonId, t2);
 
+      expect(rank).toBe(2);
       const standings = await getLatestStandings(tx, seasonId);
       expect(standings!.results).toEqual([t1, t2]);
     });
@@ -281,8 +282,9 @@ describe("addTeamToStandings", () => {
       const playerId = await seedPlayer(tx, "first@example.com");
       const teamId = await seedTeam(tx, seasonId, [playerId]);
 
-      await addTeamToStandings(tx, seasonId, teamId);
+      const rank = await addTeamToStandings(tx, seasonId, teamId);
 
+      expect(rank).toBe(1);
       const standings = await getLatestStandings(tx, seasonId);
       expect(standings!.results).toEqual([teamId]);
     });

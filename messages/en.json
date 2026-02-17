@@ -633,6 +633,11 @@
     "seasonNotActive": "This season is no longer active.",
     "enrollmentClosed": "Enrollment is closed.",
     "invalidCode": "Invalid code",
-    "invalidInput": "Please fill out all fields."
+    "invalidInput": "Please fill out all fields.",
+    "error": {
+      "serverError": "An error occurred. Please try again.",
+      "teamSeason": "Team seasons are managed by the admin.",
+      "invalidEmail": "Please enter a valid email address."
+    }
   }
 }
