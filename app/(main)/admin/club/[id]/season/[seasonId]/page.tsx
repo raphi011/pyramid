@@ -53,6 +53,8 @@ export default async function SeasonManagementPage({ params }: PageProps) {
       playerCount={playerCount}
       optedOutCount={optedOutCount}
       clubId={clubId}
+      inviteCode={season.inviteCode}
+      appUrl={process.env.APP_URL || "http://localhost:3000"}
       updateAction={updateSeasonAction}
       startAction={startSeasonAction}
       endAction={endSeasonAction}

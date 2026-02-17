@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { sql } from "@/app/lib/db";
 import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import { generateInviteCode } from "@/app/lib/auth";
 import type { ActionResultWith } from "@/app/lib/action-result";
 
 type CreateSeasonResult = ActionResultWith<{ seasonId: number }>;
@@ -108,13 +109,13 @@ export async function createSeasonAction(
           club_id, name, min_team_size, max_team_size, best_of,
           match_deadline_days, reminder_after_days,
           requires_result_confirmation, open_enrollment,
-          status, created
+          invite_code, status, created
         )
         VALUES (
           ${clubId}, ${name}, ${minTeamSize}, ${maxTeamSize}, ${bestOf},
           ${matchDeadlineDays}, ${reminderDays},
           ${requiresConfirmation}, ${openEnrollment},
-          'draft', NOW()
+          ${generateInviteCode()}, 'draft', NOW()
         )
         RETURNING id
       `;

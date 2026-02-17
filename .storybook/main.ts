@@ -44,6 +44,7 @@ const config: StorybookConfig = {
       "next/cache": path.resolve(__dirname, "mocks/next-cache.ts"),
       "next/headers": path.resolve(__dirname, "mocks/next-headers.ts"),
       "next/link": path.resolve(__dirname, "mocks/next-link.tsx"),
+      "next/navigation": path.resolve(__dirname, "mocks/next-navigation.ts"),
       "@/app/lib/actions/challenge": path.resolve(
         __dirname,
         "mocks/challenge-action.ts",

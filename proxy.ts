@@ -5,6 +5,7 @@ const PUBLIC_ROUTES = [
   "/login",
   "/check-email",
   "/join",
+  "/season",
   "/api/auth",
   "/api/images",
 ];

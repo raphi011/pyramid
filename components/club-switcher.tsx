@@ -19,6 +19,7 @@ type ClubSwitcherProps = {
   clubs: Club[];
   activeClubId: string | number;
   onSwitch: (clubId: string | number) => void;
+  onViewClub?: (clubId: string | number) => void;
   className?: string;
 };
 
@@ -26,15 +27,19 @@ function ClubSwitcher({
   clubs,
   activeClubId,
   onSwitch,
+  onViewClub,
   className,
 }: ClubSwitcherProps) {
   const activeClub = clubs.find((c) => c.id === activeClubId) ?? clubs[0];
 
   if (clubs.length <= 1) {
     return (
-      <div
+      <button
+        onClick={() => onViewClub?.(activeClub.id)}
         className={cn(
-          "flex items-center gap-2 rounded-xl px-3 py-2",
+          "flex w-full items-center gap-2 rounded-xl px-3 py-2",
+          "transition-colors hover:bg-slate-100",
+          "dark:hover:bg-slate-800",
           className,
         )}
       >
@@ -42,7 +47,7 @@ function ClubSwitcher({
         <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
           {activeClub.name}
         </span>
-      </div>
+      </button>
     );
   }
 

@@ -5,6 +5,8 @@ import type { Sql } from "../db";
 
 export type SeasonStatus = "draft" | "active" | "ended";
 
+export type SeasonVisibility = "club" | "members_only";
+
 export type Season = {
   id: number;
   clubId: number;
@@ -17,6 +19,9 @@ export type Season = {
   reminderAfterDays: number;
   requiresResultConfirmation: boolean;
   openEnrollment: boolean;
+  visibility: SeasonVisibility;
+  inviteCode: string;
+  previousSeasonId: number | null;
   startedAt: Date | null;
   endedAt: Date | null;
 };
@@ -69,6 +74,9 @@ function toSeason(row: Record<string, unknown>): Season {
     reminderAfterDays: row.reminderAfterDays as number,
     requiresResultConfirmation: row.requiresResultConfirmation as boolean,
     openEnrollment: row.openEnrollment as boolean,
+    visibility: row.visibility as SeasonVisibility,
+    inviteCode: (row.inviteCode as string) ?? "",
+    previousSeasonId: (row.previousSeasonId as number) ?? null,
     startedAt: (row.startedAt as Date) ?? null,
     endedAt: (row.endedAt as Date) ?? null,
   };
@@ -93,6 +101,9 @@ export async function getActiveSeasons(
       reminder_after_days AS "reminderAfterDays",
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
+      visibility,
+      invite_code AS "inviteCode",
+      previous_season_id AS "previousSeasonId",
       started_at AS "startedAt",
       ended_at AS "endedAt"
     FROM seasons
@@ -119,6 +130,9 @@ export async function getSeasonById(
       reminder_after_days AS "reminderAfterDays",
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
+      visibility,
+      invite_code AS "inviteCode",
+      previous_season_id AS "previousSeasonId",
       started_at AS "startedAt",
       ended_at AS "endedAt"
     FROM seasons
@@ -184,11 +198,11 @@ export async function addTeamToStandings(
   tx: postgres.TransactionSql,
   seasonId: number,
   teamId: number,
-): Promise<void> {
+): Promise<number> {
   // Advisory lock serializes concurrent standings modifications per season
   await tx`SELECT pg_advisory_xact_lock(${seasonId})`;
 
-  await tx`
+  const [row] = await tx`
     INSERT INTO season_standings (season_id, results, created)
     SELECT
       ${seasonId},
@@ -199,7 +213,10 @@ export async function addTeamToStandings(
         '{}'::int[]
       ) || ${teamId}::int,
       NOW()
+    RETURNING array_length(results, 1) AS rank
   `;
+
+  return row.rank as number;
 }
 
 export async function createNewPlayerEvent(
@@ -216,6 +233,78 @@ export async function createNewPlayerEvent(
   `;
 
   return row.id as number;
+}
+
+// ── Club page queries ─────────────────────────────────
+
+export async function getClubSeasons(
+  sql: Sql,
+  clubId: number,
+): Promise<Season[]> {
+  const rows = await sql`
+    SELECT
+      id,
+      club_id AS "clubId",
+      name,
+      status,
+      min_team_size AS "minTeamSize",
+      max_team_size AS "maxTeamSize",
+      best_of AS "bestOf",
+      match_deadline_days AS "matchDeadlineDays",
+      reminder_after_days AS "reminderAfterDays",
+      requires_result_confirmation AS "requiresResultConfirmation",
+      open_enrollment AS "openEnrollment",
+      visibility,
+      invite_code AS "inviteCode",
+      previous_season_id AS "previousSeasonId",
+      started_at AS "startedAt",
+      ended_at AS "endedAt"
+    FROM seasons
+    WHERE club_id = ${clubId} AND status != 'draft'
+    ORDER BY
+      CASE WHEN status = 'active' THEN 0 ELSE 1 END,
+      ended_at DESC NULLS LAST
+  `;
+
+  return rows.map(toSeason);
+}
+
+export async function getSeasonPlayerCounts(
+  sql: Sql,
+  seasonIds: number[],
+): Promise<Map<number, number>> {
+  if (seasonIds.length === 0) return new Map();
+
+  const rows = await sql`
+    SELECT t.season_id AS "seasonId", COUNT(DISTINCT tp.player_id)::int AS count
+    FROM team_players tp
+    JOIN teams t ON t.id = tp.team_id
+    WHERE t.season_id = ANY(${seasonIds})
+    GROUP BY t.season_id
+  `;
+
+  const map = new Map<number, number>();
+  for (const row of rows) {
+    map.set(row.seasonId as number, row.count as number);
+  }
+  return map;
+}
+
+export async function getPlayerEnrolledSeasonIds(
+  sql: Sql,
+  playerId: number,
+  seasonIds: number[],
+): Promise<Set<number>> {
+  if (seasonIds.length === 0) return new Set();
+
+  const rows = await sql`
+    SELECT DISTINCT t.season_id AS "seasonId"
+    FROM team_players tp
+    JOIN teams t ON t.id = tp.team_id
+    WHERE tp.player_id = ${playerId} AND t.season_id = ANY(${seasonIds})
+  `;
+
+  return new Set(rows.map((r) => r.seasonId as number));
 }
 
 // ── Rankings queries ──────────────────────────────────
@@ -437,4 +526,51 @@ export async function getPlayerSeasonTeams(
     seasonName: row.seasonName as string,
     clubId: row.clubId as number,
   }));
+}
+
+// ── Invite code queries ─────────────────────────
+
+export type SeasonWithClub = Season & {
+  clubName: string;
+  clubImageId: string | null;
+};
+
+export async function getSeasonByInviteCode(
+  sql: Sql,
+  code: string,
+): Promise<SeasonWithClub | null> {
+  if (!code) return null;
+
+  const rows = await sql`
+    SELECT
+      s.id,
+      s.club_id AS "clubId",
+      s.name,
+      s.status,
+      s.min_team_size AS "minTeamSize",
+      s.max_team_size AS "maxTeamSize",
+      s.best_of AS "bestOf",
+      s.match_deadline_days AS "matchDeadlineDays",
+      s.reminder_after_days AS "reminderAfterDays",
+      s.requires_result_confirmation AS "requiresResultConfirmation",
+      s.open_enrollment AS "openEnrollment",
+      s.visibility,
+      s.invite_code AS "inviteCode",
+      s.previous_season_id AS "previousSeasonId",
+      s.started_at AS "startedAt",
+      s.ended_at AS "endedAt",
+      c.name AS "clubName",
+      c.image_id::text AS "clubImageId"
+    FROM seasons s
+    JOIN clubs c ON c.id = s.club_id
+    WHERE s.invite_code = ${code}
+  `;
+
+  if (rows.length === 0) return null;
+
+  return {
+    ...toSeason(rows[0]),
+    clubName: rows[0].clubName as string,
+    clubImageId: (rows[0].clubImageId as string) ?? null,
+  };
 }

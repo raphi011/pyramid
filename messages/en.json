@@ -203,6 +203,25 @@
       "invalidEmail": "Please enter a valid email address."
     }
   },
+  "clubDetail": {
+    "title": "Club page",
+    "seasons": "Seasons",
+    "members": "Members",
+    "memberCount": "{count} members",
+    "activeSeason": "Active",
+    "endedSeason": "Ended",
+    "playerCount": "{count} players",
+    "join": "Join",
+    "joining": "Joining\u2026",
+    "enrolled": "Enrolled",
+    "admin": "Admin",
+    "noSeasons": "No seasons",
+    "noSeasonsDescription": "This club has no active seasons yet.",
+    "website": "Website",
+    "phone": "Phone",
+    "noMembers": "No members",
+    "noMembersDescription": "This club has no members yet."
+  },
   "season": {
     "archived": "(Archive)",
     "draft": "(Draft)",
@@ -445,6 +464,12 @@
     "bestOf3": "Best of 3",
     "bestOf5": "Best of 5",
     "bestOf7": "Best of 7",
+    "inviteLink": "Invite link",
+    "inviteLinkDesc": "Share this link to invite players to the season.",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied!",
+    "showQrCode": "Show QR code",
+    "qrCodeTitle": "QR code",
     "error": {
       "invalidInput": "Invalid input.",
       "unauthorized": "Unauthorized.",
@@ -589,5 +614,30 @@
     "notificationsEmptyDesc": "You'll be notified here when something happens.",
     "today": "Today",
     "yesterday": "Yesterday"
+  },
+  "seasonJoin": {
+    "joinTitle": "Join {season}",
+    "join": "Join",
+    "firstNameLabel": "First name",
+    "lastNameLabel": "Last name",
+    "emailLabel": "Email address",
+    "submitEmail": "Continue",
+    "emailHint": "You will receive a confirmation link via email.",
+    "checkEmail": "Check your email",
+    "checkEmailDesc": "We sent you a link to join. Check your inbox.",
+    "alreadyEnrolled": "Already enrolled",
+    "alreadyEnrolledDesc": "You are already enrolled in {season}.",
+    "goToRankings": "Go to rankings",
+    "errorTitle": "Error",
+    "codeNotFound": "Code not found",
+    "seasonNotActive": "This season is no longer active.",
+    "enrollmentClosed": "Enrollment is closed.",
+    "invalidCode": "Invalid code",
+    "invalidInput": "Please fill out all fields.",
+    "error": {
+      "serverError": "An error occurred. Please try again.",
+      "teamSeason": "Team seasons are managed by the admin.",
+      "invalidEmail": "Please enter a valid email address."
+    }
   }
 }

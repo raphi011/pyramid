@@ -28,6 +28,13 @@ describe("getClubByInviteCode", () => {
         id: clubId,
         name: "Tennis Club",
         inviteCode: "TENNIS-123",
+        url: "",
+        phoneNumber: "",
+        address: "",
+        city: "",
+        zip: "",
+        country: "",
+        imageId: null,
         isDisabled: false,
       });
     });

@@ -3,7 +3,14 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { QRCodeSVG } from "qrcode.react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ClipboardIcon,
+  ClipboardDocumentCheckIcon,
+  QrCodeIcon,
+} from "@heroicons/react/24/outline";
 import { PageLayout } from "@/components/page-layout";
 import {
   Card,
@@ -17,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
 import { Switch } from "@/components/ui/switch";
 import { Toast } from "@/components/ui/toast";
+import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { isActionError } from "@/app/lib/action-result";
 import type { ActionResult } from "@/app/lib/action-result";
 import type { SeasonDetail, SeasonStatus } from "@/app/lib/db/admin";
@@ -26,10 +34,79 @@ type SeasonManagementViewProps = {
   playerCount: number;
   optedOutCount: number;
   clubId: number;
+  inviteCode: string;
+  appUrl: string;
   updateAction?: (formData: FormData) => Promise<ActionResult>;
   startAction?: (formData: FormData) => Promise<ActionResult>;
   endAction?: (formData: FormData) => Promise<ActionResult>;
 };
+
+function InviteLinkCard({
+  inviteCode,
+  appUrl,
+}: {
+  inviteCode: string;
+  appUrl: string;
+}) {
+  const t = useTranslations("seasonManagement");
+  const [copied, setCopied] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const inviteUrl = `${appUrl}/season/join?code=${inviteCode}`;
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API can fail (permissions, focus, mobile Safari)
+    }
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("inviteLink")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+            {t("inviteLinkDesc")}
+          </p>
+          <div className="mb-3 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
+            <p className="break-all font-mono text-sm text-slate-700 dark:text-slate-300">
+              {inviteUrl}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              {copied ? (
+                <ClipboardDocumentCheckIcon className="size-4" />
+              ) : (
+                <ClipboardIcon className="size-4" />
+              )}
+              {copied ? t("linkCopied") : t("copyLink")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setQrOpen(true)}>
+              <QrCodeIcon className="size-4" />
+              {t("showQrCode")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <ResponsiveDialog
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        title={t("qrCodeTitle")}
+      >
+        <div className="flex justify-center p-6">
+          <QRCodeSVG value={inviteUrl} size={256} />
+        </div>
+      </ResponsiveDialog>
+    </>
+  );
+}
 
 const statusVariant: Record<SeasonStatus, "win" | "pending" | "subtle"> = {
   active: "win",
@@ -48,6 +125,8 @@ export function SeasonManagementView({
   playerCount,
   optedOutCount,
   clubId,
+  inviteCode,
+  appUrl,
   updateAction,
   startAction,
   endAction,
@@ -72,49 +151,44 @@ export function SeasonManagementView({
   const isEnded = season.status === "ended";
   const isDraft = season.status === "draft";
 
-  function handleSave() {
-    if (!updateAction) return;
+  function runAction(
+    action: ((formData: FormData) => Promise<ActionResult>) | undefined,
+    extraFields?: Record<string, string>,
+  ) {
+    if (!action) return;
     const fd = new FormData();
     fd.set("seasonId", season.id.toString());
     fd.set("clubId", clubId.toString());
-    fd.set("name", name);
-    fd.set("bestOf", bestOf);
-    fd.set("matchDeadlineDays", matchDeadlineDays);
-    fd.set("reminderDays", reminderDays);
-    fd.set("requiresConfirmation", requiresConfirmation.toString());
-    fd.set("openEnrollment", openEnrollment.toString());
+    if (extraFields) {
+      for (const [key, value] of Object.entries(extraFields)) {
+        fd.set(key, value);
+      }
+    }
     startTransition(async () => {
-      const result = await updateAction(fd);
+      const result = await action(fd);
       if (isActionError(result)) {
         setError(tError(result.error));
       }
+    });
+  }
+
+  function handleSave() {
+    runAction(updateAction, {
+      name,
+      bestOf,
+      matchDeadlineDays,
+      reminderDays,
+      requiresConfirmation: requiresConfirmation.toString(),
+      openEnrollment: openEnrollment.toString(),
     });
   }
 
   function handleStart() {
-    if (!startAction) return;
-    const fd = new FormData();
-    fd.set("seasonId", season.id.toString());
-    fd.set("clubId", clubId.toString());
-    startTransition(async () => {
-      const result = await startAction(fd);
-      if (isActionError(result)) {
-        setError(tError(result.error));
-      }
-    });
+    runAction(startAction);
   }
 
   function handleEnd() {
-    if (!endAction) return;
-    const fd = new FormData();
-    fd.set("seasonId", season.id.toString());
-    fd.set("clubId", clubId.toString());
-    startTransition(async () => {
-      const result = await endAction(fd);
-      if (isActionError(result)) {
-        setError(tError(result.error));
-      }
-    });
+    runAction(endAction);
   }
 
   return (
@@ -136,6 +210,11 @@ export function SeasonManagementView({
           {t(statusKey[season.status])}
         </Badge>
       </div>
+
+      {/* Invite Link */}
+      {season.status === "active" && openEnrollment && inviteCode && (
+        <InviteLinkCard inviteCode={inviteCode} appUrl={appUrl} />
+      )}
 
       {/* Configuration */}
       <Card>
