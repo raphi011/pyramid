@@ -131,7 +131,7 @@ function NavButton({
       <span className="relative">
         {item.icon}
         {item.badge != null && item.badge > 0 && (
-          <span className="absolute -right-1.5 -top-1 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+          <span className="absolute -right-1.5 -top-1 flex size-4 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
             {item.badge > 9 ? "9+" : item.badge}
           </span>
         )}

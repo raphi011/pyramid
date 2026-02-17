@@ -556,6 +556,21 @@
       "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
+  "enrollment": {
+    "joinSeason": "Teilnehmen",
+    "joining": "Wird angemeldet\u2026",
+    "notEnrolled": "Du bist noch nicht in dieser Saison angemeldet.",
+    "contactAdmin": "Wende dich an deinen Admin, um dieser Saison beizutreten.",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "notAuthenticated": "Nicht angemeldet.",
+      "seasonNotActive": "Diese Saison ist nicht mehr aktiv.",
+      "enrollmentClosed": "Die Anmeldung f\u00fcr diese Saison ist geschlossen.",
+      "teamSeason": "Bei Team-Saisons werden die Teams vom Admin verwaltet.",
+      "alreadyEnrolled": "Du bist bereits in dieser Saison angemeldet.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
+  },
   "feed": {
     "title": "Neuigkeiten",
     "notificationsTitle": "Benachrichtigungen",

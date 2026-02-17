@@ -167,7 +167,7 @@ function SidebarButton({
       {item.icon}
       <span className="flex-1 text-left">{item.label}</span>
       {item.badge != null && item.badge > 0 && (
-        <span className="flex size-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+        <span className="flex size-5 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
           {item.badge > 9 ? "9+" : item.badge}
         </span>
       )}

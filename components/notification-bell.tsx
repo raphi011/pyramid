@@ -37,7 +37,8 @@ function NotificationBell({
         <span
           className={cn(
             "absolute -right-0.5 -top-0.5 flex min-w-[18px] items-center justify-center",
-            "rounded-full bg-red-600 px-1 text-[10px] font-bold text-white",
+            "rounded-full bg-slate-200 px-1 text-[10px] font-bold text-slate-700",
+            "dark:bg-slate-700 dark:text-slate-200",
             pulsing && "animate-pulse",
           )}
         >

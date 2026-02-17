@@ -34,6 +34,10 @@ export default defineConfig({
               dirname,
               ".storybook/mocks/match-action.ts",
             ),
+            "@/app/lib/actions/enroll": path.join(
+              dirname,
+              ".storybook/mocks/enroll-action.ts",
+            ),
           },
         },
         optimizeDeps: {
@@ -72,6 +76,14 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: {
+          alias: {
+            "server-only": path.join(
+              dirname,
+              ".storybook/mocks/server-only.ts",
+            ),
+          },
+        },
         test: {
           name: "db",
           include: ["app/lib/**/*.test.ts"],

@@ -54,6 +54,26 @@ Even guarding with `typeof window !== 'undefined'` causes **hydration mismatches
 
 Routes in `PUBLIC_ROUTES` are matched with `pathname.startsWith(route)`. Adding `"/join"` matches both `/join` and `/join?code=X`. Be aware this also matches `/join-something` — if that becomes an issue, switch to exact matching or regex.
 
+### No type exports from `"use server"` files (Turbopack)
+
+Turbopack registers every export from a `"use server"` module as a server action reference. TypeScript `export type` is erased at compile time, so Turbopack sees a reference to a non-existent runtime export and errors: _"Export X doesn't exist in target module"_.
+
+```tsx
+// ❌ BAD — Turbopack can't find ActionResult at runtime
+"use server";
+import type { ActionResult } from "@/app/lib/action-result";
+export type { ActionResult }; // erased by TS → Turbopack error
+
+// ❌ BAD — same problem with type definitions
+"use server";
+export type EnrollResult = { success: true } | { error: string };
+
+// ✅ GOOD — import the type directly in the consumer
+// action.ts keeps "use server" clean (no type exports)
+// view.tsx imports the type from the shared module
+import type { ActionResult } from "@/app/lib/action-result";
+```
+
 ### Server Actions with `useActionState` (React 19)
 
 For multi-step forms, use `useActionState` with a state machine pattern. Each action returns the next step:

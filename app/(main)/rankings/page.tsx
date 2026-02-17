@@ -48,10 +48,13 @@ export default async function RankingsPage({
         seasons={[]}
         currentSeasonId={null}
         clubName={clubName}
+        clubId={clubId}
         pyramidPlayers={[]}
         standingsPlayers={[]}
         matches={[]}
         currentTeamId={null}
+        openEnrollment={false}
+        isIndividual={false}
       />
     );
   }
@@ -188,10 +191,13 @@ export default async function RankingsPage({
       seasons={seasons.map((s) => ({ id: s.id, name: s.name }))}
       currentSeasonId={season.id}
       clubName={clubName}
+      clubId={clubId}
       pyramidPlayers={pyramidPlayers}
       standingsPlayers={standingsPlayers}
       matches={matches}
       currentTeamId={currentTeamId}
+      openEnrollment={season.openEnrollment}
+      isIndividual={season.maxTeamSize === 1}
     />
   );
 }

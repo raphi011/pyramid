@@ -13,14 +13,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataList } from "@/components/data-list";
 import type { SeasonMember, PreviousSeason } from "@/app/lib/db/admin";
 import { Toast } from "@/components/ui/toast";
-import { isActionError } from "@/app/lib/action-result";
-import type { CreateSeasonResult } from "./actions";
+import { isActionError, type ActionResultWith } from "@/app/lib/action-result";
 
 type CreateSeasonViewProps = {
   clubId: number;
   members: SeasonMember[];
   previousSeasons: PreviousSeason[];
-  createAction?: (formData: FormData) => Promise<CreateSeasonResult>;
+  createAction?: (
+    formData: FormData,
+  ) => Promise<ActionResultWith<{ seasonId: number }>>;
 };
 
 export function CreateSeasonView({

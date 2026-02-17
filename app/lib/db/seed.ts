@@ -62,27 +62,22 @@ export async function seedSeason(
     status = "active",
     minTeamSize = 1,
     maxTeamSize = 1,
-    matchDeadlineDays,
+    matchDeadlineDays = 14,
+    openEnrollment = true,
   }: {
     name?: string;
     status?: string;
     minTeamSize?: number;
     maxTeamSize?: number;
     matchDeadlineDays?: number;
+    openEnrollment?: boolean;
   } = {},
 ): Promise<number> {
-  const [row] =
-    matchDeadlineDays != null
-      ? await tx`
-        INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, match_deadline_days, created)
-        VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, ${matchDeadlineDays}, NOW())
-        RETURNING id
-      `
-      : await tx`
-        INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, created)
-        VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, NOW())
-        RETURNING id
-      `;
+  const [row] = await tx`
+    INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, match_deadline_days, open_enrollment, created)
+    VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, ${matchDeadlineDays}, ${openEnrollment}, NOW())
+    RETURNING id
+  `;
   return row.id as number;
 }
 

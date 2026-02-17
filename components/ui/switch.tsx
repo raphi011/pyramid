@@ -19,10 +19,10 @@ function Switch({ className, label, disabled, ...props }: SwitchProps) {
       className={cn(
         "group relative inline-flex h-6 w-11 shrink-0 items-center rounded-full",
         "bg-slate-200 transition-colors duration-150 ease-out",
-        "data-[checked]:bg-court-500",
+        "data-[checked]:bg-court-500 dark:data-[checked]:bg-court-400",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-court-500 focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "dark:bg-slate-700",
+        "dark:bg-slate-700 dark:focus-visible:ring-offset-slate-900",
         className,
       )}
       {...props}

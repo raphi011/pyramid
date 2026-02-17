@@ -58,11 +58,11 @@ function PyramidGrid({ players, onPlayerClick, className }: PyramidGridProps) {
       ref={scrollRef}
       className={cn(
         "overflow-x-auto",
-        "-mx-[calc((100cqw-100%)/2)] px-[max(1rem,calc((100cqw-100%)/2))]",
+        "-mx-[calc((100cqw-100%)/2)]",
         className,
       )}
     >
-      <div className="min-w-fit space-y-2 py-1">
+      <div className="mx-auto w-fit space-y-2 px-4 py-1">
         {rows.map((row, rowIdx) => {
           const expectedCols = rowIdx + 1;
           const isLastRow = rowIdx === rows.length - 1;

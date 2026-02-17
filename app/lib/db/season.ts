@@ -16,6 +16,7 @@ export type Season = {
   matchDeadlineDays: number;
   reminderAfterDays: number;
   requiresResultConfirmation: boolean;
+  openEnrollment: boolean;
   startedAt: Date | null;
   endedAt: Date | null;
 };
@@ -67,6 +68,7 @@ function toSeason(row: Record<string, unknown>): Season {
     matchDeadlineDays: row.matchDeadlineDays as number,
     reminderAfterDays: row.reminderAfterDays as number,
     requiresResultConfirmation: row.requiresResultConfirmation as boolean,
+    openEnrollment: row.openEnrollment as boolean,
     startedAt: (row.startedAt as Date) ?? null,
     endedAt: (row.endedAt as Date) ?? null,
   };
@@ -90,6 +92,7 @@ export async function getActiveSeasons(
       match_deadline_days AS "matchDeadlineDays",
       reminder_after_days AS "reminderAfterDays",
       requires_result_confirmation AS "requiresResultConfirmation",
+      open_enrollment AS "openEnrollment",
       started_at AS "startedAt",
       ended_at AS "endedAt"
     FROM seasons
@@ -115,6 +118,7 @@ export async function getSeasonById(
       match_deadline_days AS "matchDeadlineDays",
       reminder_after_days AS "reminderAfterDays",
       requires_result_confirmation AS "requiresResultConfirmation",
+      open_enrollment AS "openEnrollment",
       started_at AS "startedAt",
       ended_at AS "endedAt"
     FROM seasons
@@ -203,10 +207,11 @@ export async function createNewPlayerEvent(
   clubId: number,
   playerId: number,
   metadata: Record<string, postgres.JSONValue>,
+  seasonId?: number,
 ): Promise<number> {
   const [row] = await sql`
-    INSERT INTO events (club_id, player_id, event_type, metadata, created)
-    VALUES (${clubId}, ${playerId}, 'new_player', ${sql.json(metadata)}, NOW())
+    INSERT INTO events (club_id, player_id, event_type, metadata, season_id, created)
+    VALUES (${clubId}, ${playerId}, 'new_player', ${sql.json(metadata)}, ${seasonId ?? null}, NOW())
     RETURNING id
   `;
 
