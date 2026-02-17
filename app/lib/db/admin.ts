@@ -54,6 +54,7 @@ export type SeasonDetail = {
   requiresResultConfirmation: boolean;
   openEnrollment: boolean;
   isTeamSeason: boolean;
+  inviteCode: string;
 };
 
 // ── Member Management types ───────────────────────────
@@ -272,7 +273,8 @@ export async function getSeasonDetail(
       reminder_after_days AS "reminderDays",
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
-      (max_team_size > 1) AS "isTeamSeason"
+      (max_team_size > 1) AS "isTeamSeason",
+      invite_code AS "inviteCode"
     FROM seasons
     WHERE id = ${seasonId}
   `;

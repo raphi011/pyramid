@@ -33,6 +33,7 @@ const activeSeason: SeasonDetail = {
   requiresResultConfirmation: false,
   openEnrollment: true,
   isTeamSeason: false,
+  inviteCode: "abc123def456",
 };
 
 const draftSeason: SeasonDetail = {
@@ -65,6 +66,8 @@ export const ActiveSeason = meta.story({
           playerCount={18}
           optedOutCount={2}
           clubId={1}
+          inviteCode={activeSeason.inviteCode}
+          appUrl="http://localhost:3000"
         />
       </PageWrapper>
     );
@@ -100,6 +103,8 @@ export const DraftSeason = meta.story({
           playerCount={24}
           optedOutCount={0}
           clubId={1}
+          inviteCode={draftSeason.inviteCode}
+          appUrl="http://localhost:3000"
         />
       </PageWrapper>
     );
@@ -128,6 +133,8 @@ export const TeamSeason = meta.story({
           playerCount={16}
           optedOutCount={0}
           clubId={1}
+          inviteCode={teamSeason.inviteCode}
+          appUrl="http://localhost:3000"
         />
       </PageWrapper>
     );
@@ -152,6 +159,8 @@ export const EndedSeason = meta.story({
           playerCount={18}
           optedOutCount={2}
           clubId={1}
+          inviteCode={endedSeason.inviteCode}
+          appUrl="http://localhost:3000"
         />
       </PageWrapper>
     );
