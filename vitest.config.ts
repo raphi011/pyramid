@@ -72,6 +72,14 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: {
+          alias: {
+            "server-only": path.join(
+              dirname,
+              ".storybook/mocks/server-only.ts",
+            ),
+          },
+        },
         test: {
           name: "db",
           include: ["app/lib/**/*.test.ts"],

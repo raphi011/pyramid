@@ -31,6 +31,7 @@ import {
   ChallengeSheet,
   type Opponent,
 } from "@/components/domain/challenge-sheet";
+import { EnrollmentBanner } from "@/components/domain/enrollment-banner";
 
 // ── Match types ─────────────────────────────────
 
@@ -105,20 +106,26 @@ type RankingsViewProps = {
   seasons: { id: number; name: string }[];
   currentSeasonId: number | null;
   clubName: string;
+  clubId: number;
   pyramidPlayers: PyramidPlayer[];
   standingsPlayers: StandingsPlayer[];
   matches: SerializedMatch[];
   currentTeamId: number | null;
+  openEnrollment: boolean;
+  isIndividual: boolean;
 };
 
 export function RankingsView({
   seasons,
   currentSeasonId,
   clubName,
+  clubId,
   pyramidPlayers,
   standingsPlayers,
   matches,
   currentTeamId,
+  openEnrollment,
+  isIndividual,
 }: RankingsViewProps) {
   const t = useTranslations("ranking");
   const router = useRouter();
@@ -232,6 +239,13 @@ export function RankingsView({
   return (
     <>
       <PageLayout title={t("title")} subtitle={subtitle} action={headerAction}>
+        {currentTeamId === null && currentSeasonId !== null && (
+          <EnrollmentBanner
+            seasonId={currentSeasonId}
+            clubId={clubId}
+            canEnroll={openEnrollment && isIndividual}
+          />
+        )}
         {!hasPlayers ? (
           emptyState
         ) : (

@@ -37,7 +37,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | ✅ |
 | [US-FEED-02](#us-feed-02-filter-feed-by-club) | Filter feed by club | Player | P1 | Feed | ✅ |
 | [US-FEED-03](#us-feed-03-navigate-from-event-card) | Navigate from event card | Player | P1 | Feed | ✅ |
-| [US-FEED-04](#us-feed-04-infinite-scroll) | Infinite scroll | Player | P1 | Feed | |
+| [US-FEED-04](#us-feed-04-load-more) | Load more | Player | P1 | Feed | ✅ |
 | [US-FEED-05](#us-feed-05-empty-feed-state) | Empty feed state | Player | P1 | Feed | ✅ |
 | [US-FEED-06](#us-feed-06-bell-badge-shows-unread-count) | Bell badge shows unread count | Player | P0 | Feed | ✅ |
 | [US-FEED-07](#us-feed-07-notification-center) | Notification center | Player | P0 | Feed | ✅ |
@@ -65,9 +65,9 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-CHAL-11](#us-chal-11-acceptdecline-date-proposal) | Accept/decline date proposal | Player | P0 | Challenges | ✅ |
 | [US-CHAL-12](#us-chal-12-enter-match-result) | Enter match result | Player | P0 | Challenges | ✅ |
 | [US-CHAL-13](#us-chal-13-confirm-match-result) | Confirm match result | Player | P0 | Challenges | ✅ |
-| [US-CHAL-14](#us-chal-14-dispute-match-result) | Dispute match result | Player | P1 | Challenges | |
-| [US-CHAL-15](#us-chal-15-forfeit-match) | Forfeit match | Player | P1 | Challenges | |
-| [US-CHAL-16](#us-chal-16-withdraw-challenge) | Withdraw challenge | Player | P1 | Challenges | |
+| [US-CHAL-14](#us-chal-14-dispute-match-result) | Dispute match result | Player | P1 | Challenges | ✅ |
+| [US-CHAL-15](#us-chal-15-forfeit-match) | Forfeit match | Player | P1 | Challenges | ✅ |
+| [US-CHAL-16](#us-chal-16-withdraw-challenge) | Withdraw challenge | Player | P1 | Challenges | ✅ |
 | [US-CHAL-17](#us-chal-17-post-match-comment) | Post match comment | Player | P1 | Challenges | ✅ |
 | [US-CHAL-18](#us-chal-18-edit-match-comment) | Edit match comment | Player | P2 | Challenges | |
 | [US-COMMENT-IMG](#us-comment-img-upload-image-in-match-comment) | Upload image in match comment | Player | P2 | Challenges | ✅ |
@@ -83,32 +83,32 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-PROF-09](#us-prof-09-view-other-player-profile) | View other player profile | Player | P1 | Profile | ✅ |
 | [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | ✅ |
 | [US-PROF-11](#us-prof-11-view-team-page) | View team page | Player | P2 | Profile | |
-| [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | |
+| [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | ✅ |
 | [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | |
 | [US-SETT-03](#us-sett-03-configure-email-notifications) | Configure email notifications | Player | P1 | Settings | |
 | [US-SETT-04](#us-sett-04-leave-club) | Leave club | Player | P1 | Settings | |
 | [US-SETT-05](#us-sett-05-join-another-club) | Join another club | Player | P1 | Settings | |
 | [US-SETT-06](#us-sett-06-delete-account) | Delete account | Player | P2 | Settings | |
-| [US-ADMIN-01](#us-admin-01-view-club-dashboard) | View club dashboard | Club Admin | P0 | Admin | |
-| [US-ADMIN-02](#us-admin-02-create-season) | Create season | Club Admin | P0 | Admin | |
-| [US-ADMIN-03](#us-admin-03-start-season) | Start season | Club Admin | P0 | Admin | |
-| [US-ADMIN-04](#us-admin-04-edit-season-settings) | Edit season settings | Club Admin | P1 | Admin | |
+| [US-ADMIN-01](#us-admin-01-view-club-dashboard) | View club dashboard | Club Admin | P0 | Admin | ✅ |
+| [US-ADMIN-02](#us-admin-02-create-season) | Create season | Club Admin | P0 | Admin | ✅ |
+| [US-ADMIN-03](#us-admin-03-start-season) | Start season | Club Admin | P0 | Admin | ✅ |
+| [US-ADMIN-04](#us-admin-04-edit-season-settings) | Edit season settings | Club Admin | P1 | Admin | ✅ |
 | [US-ADMIN-05](#us-admin-05-edit-standings-manual-reorder) | Edit standings (manual reorder) | Club Admin | P1 | Admin | |
-| [US-ADMIN-06](#us-admin-06-end-season) | End season | Club Admin | P0 | Admin | |
+| [US-ADMIN-06](#us-admin-06-end-season) | End season | Club Admin | P0 | Admin | ✅ |
 | [US-ADMIN-07](#us-admin-07-manage-teams) | Manage teams | Club Admin | P1 | Admin | |
-| [US-ADMIN-08](#us-admin-08-invite-member) | Invite member | Club Admin | P0 | Admin | |
-| [US-ADMIN-09](#us-admin-09-promote-player-to-admin) | Promote player to admin | Club Admin | P1 | Admin | |
-| [US-ADMIN-10](#us-admin-10-demote-admin-to-player) | Demote admin to player | Club Admin | P1 | Admin | |
-| [US-ADMIN-11](#us-admin-11-remove-member) | Remove member | Club Admin | P1 | Admin | |
-| [US-ADMIN-12](#us-admin-12-send-announcement) | Send announcement | Club Admin | P1 | Admin | |
+| [US-ADMIN-08](#us-admin-08-invite-member) | Invite member | Club Admin | P0 | Admin | ✅ |
+| [US-ADMIN-09](#us-admin-09-promote-player-to-admin) | Promote player to admin | Club Admin | P1 | Admin | ✅ |
+| [US-ADMIN-10](#us-admin-10-demote-admin-to-player) | Demote admin to player | Club Admin | P1 | Admin | ✅ |
+| [US-ADMIN-11](#us-admin-11-remove-member) | Remove member | Club Admin | P1 | Admin | ✅ |
+| [US-ADMIN-12](#us-admin-12-send-announcement) | Send announcement | Club Admin | P1 | Admin | ✅ |
 | [US-ADMIN-13](#us-admin-13-regenerate-invite-code) | Regenerate invite code | Club Admin | P2 | Admin | |
 | [US-ADMIN-14](#us-admin-14-nudge-overdue-match) | Nudge overdue match | Club Admin | P1 | Admin | |
 | [US-ADMIN-15](#us-admin-15-resolve-disputed-match) | Resolve disputed match | Club Admin | P1 | Admin | |
 | [US-ADMIN-16](#us-admin-16-edit-club-settings) | Edit club settings | Club Admin | P1 | Admin | |
-| [US-APP-01](#us-app-01-view-global-stats) | View global stats | App Admin | P1 | App Admin | |
+| [US-APP-01](#us-app-01-view-global-stats) | View global stats | App Admin | P1 | App Admin | ✅ |
 | [US-APP-02](#us-app-02-create-club) | Create club | App Admin | P0 | App Admin | |
-| [US-APP-03](#us-app-03-disable-club) | Disable club | App Admin | P2 | App Admin | |
-| [US-APP-04](#us-app-04-manage-app-admins) | Manage app admins | App Admin | P2 | App Admin | |
+| [US-APP-03](#us-app-03-disable-club) | Disable club | App Admin | P2 | App Admin | ✅ |
+| [US-APP-04](#us-app-04-manage-app-admins) | Manage app admins | App Admin | P2 | App Admin | ✅ |
 
 ---
 
@@ -422,7 +422,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
-### US-FEED-04: Infinite scroll
+### US-FEED-04: Load more
 
 **Role**: Player | **Priority**: P1
 
@@ -1770,6 +1770,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 - Team size exceeds `max_team_size` → Validation error.
 - Team size below `min_team_size` → Warning (team incomplete).
 - Deleting a team with match history → Should be blocked or soft-deleted.
+
+**Implementation note**: Partial — create team and delete team work. Edit team (rename, add/remove players) is not yet implemented.
 
 **Cross-refs**: → US-ADMIN-02, → US-AUTH-08
 
