@@ -180,12 +180,16 @@ export async function joinSeasonAction(
         player.id,
         season.id,
       );
-      await addTeamToStandings(tx, season.id, teamId);
+      const startingRank = await addTeamToStandings(tx, season.id, teamId);
       await createNewPlayerEvent(
         tx,
         season.clubId,
         player.id,
-        { firstName: player.firstName, lastName: player.lastName },
+        {
+          firstName: player.firstName,
+          lastName: player.lastName,
+          startingRank,
+        },
         season.id,
       );
     });

@@ -198,11 +198,11 @@ export async function addTeamToStandings(
   tx: postgres.TransactionSql,
   seasonId: number,
   teamId: number,
-): Promise<void> {
+): Promise<number> {
   // Advisory lock serializes concurrent standings modifications per season
   await tx`SELECT pg_advisory_xact_lock(${seasonId})`;
 
-  await tx`
+  const [row] = await tx`
     INSERT INTO season_standings (season_id, results, created)
     SELECT
       ${seasonId},
@@ -213,7 +213,10 @@ export async function addTeamToStandings(
         '{}'::int[]
       ) || ${teamId}::int,
       NOW()
+    RETURNING array_length(results, 1) AS rank
   `;
+
+  return row.rank as number;
 }
 
 export async function createNewPlayerEvent(

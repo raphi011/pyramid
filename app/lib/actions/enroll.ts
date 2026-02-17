@@ -70,12 +70,16 @@ export async function enrollInSeasonAction(
         player.id,
         seasonId,
       );
-      await addTeamToStandings(tx, seasonId, teamId);
+      const startingRank = await addTeamToStandings(tx, seasonId, teamId);
       await createNewPlayerEvent(
         tx,
         clubId,
         player.id,
-        { firstName: player.firstName, lastName: player.lastName },
+        {
+          firstName: player.firstName,
+          lastName: player.lastName,
+          startingRank,
+        },
         seasonId,
       );
     });
