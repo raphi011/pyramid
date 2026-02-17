@@ -39,6 +39,21 @@
   --color-trophy-500: #a8680b;
   --color-trophy-600: #8c5709;
 
+  /* ── Warm Red — Error / Danger ────────────── */
+  /* Shifted hue ~7° (tomato lean) with ~70 % sat  */
+  /* to complement Court Green + Trophy Gold.       */
+  --color-red-50: #fef3f1;
+  --color-red-100: #fde5df;
+  --color-red-200: #fccec4;
+  --color-red-300: #f8ac9c;
+  --color-red-400: #f0806b;
+  --color-red-500: #e45a42;
+  --color-red-600: #ca4129;
+  --color-red-700: #aa3521;
+  --color-red-800: #8c2f1f;
+  --color-red-900: #752c20;
+  --color-red-950: #40130c;
+
   /* ── Font ───────────────────────────────────── */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
