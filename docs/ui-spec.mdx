@@ -46,6 +46,7 @@ Summary of design decisions from the spec review:
 /profile                          → Own profile (stats, settings, availability)
 /player/[id]                      → Other player's profile
 /notifications                    → Notification center
+/club/[id]                        → Club page (info, seasons, members)
 
 /admin/club/[id]                  → Club admin dashboard
 /admin/club/[id]/season/new       → Create season
@@ -65,23 +66,34 @@ Summary of design decisions from the spec review:
 **Top Bar (mobile)** — persistent header:
 ```
 ┌──────────────────────────────┐
-│ [Club Switcher ▼]    🔔 (3) │  ← bell with unread badge
+│ ☰   [Club Name]      🔔 (3) │
+└──────────────────────────────┘
+```
+- `☰` (left): Opens slide-from-left drawer (→ US-NAV-01)
+- Club name (center): Tappable, navigates to `/club/[id]` (→ US-CLUB-01)
+- 🔔 (right): Bell with unread badge
+
+**Hamburger Menu (mobile)** — slide-from-left drawer opened by ☰:
+```
+┌──────────────────────────────┐
+│ [Club Switcher Dropdown]   ✕ │
+│ ─────────────────────────    │
+│ Feed                         │
+│ Rankings                     │
+│ Matches                      │
+│ Notifications (badge)        │
+│ Profile                      │
+│ Settings                     │
+│ ─────────────────────────    │
+│ Admin  (if admin)            │
 └──────────────────────────────┘
 ```
 
-**Bottom Nav (mobile)** — 5 items:
+Tapping a nav item closes the overlay and navigates to the selected route. Tapping outside or swiping closes the overlay.
 
-| Position | Icon | Label (EN) | Label (DE) | Route |
-|----------|------|------------|------------|-------|
-| 1 | Home/Feed | Feed | Feed | `/` |
-| 2 | Trophy | Rankings | Rangliste | `/rankings` |
-| 3 | ⊕ (FAB) | Challenge | Fordern | opens challenge flow |
-| 4 | Swords | Matches | Spiele | `/matches` |
-| 5 | User | Profile | Profil | `/profile` |
+**Challenge FAB (mobile)** — floating action button, bottom-right, `court-500`, raised with shadow. Visible on rankings and matches pages. Tapping opens the quick challenge flow.
 
-The center item (3) is a floating action button (FAB) — raised, `court-500`, larger than other nav items. Tapping it opens the quick challenge flow.
-
-**Sidebar Nav (desktop, lg+)** — same items + extras:
+**Sidebar Nav (desktop, lg+)** — persistent left sidebar:
 
 ```
 [Club Switcher Dropdown]     ← switches active club context
@@ -97,7 +109,9 @@ Settings                     /settings
 Admin  (if admin)            /admin/club/[id]
 ```
 
-**Club Switcher** — dropdown in top bar (mobile) and top of sidebar (desktop). Shows all clubs the player belongs to. Switching changes the context for rankings, matches, and the FAB challenge flow. Feed always shows cross-club content but has club filter tabs.
+Club name at top of sidebar is tappable → navigates to `/club/[id]`.
+
+**Club Switcher** — inside hamburger overlay (mobile) and top of sidebar (desktop). Shows all clubs the player belongs to. Switching changes the context for rankings, matches, and the FAB challenge flow. Feed always shows cross-club content but has club filter tabs.
 
 ---
 
@@ -440,7 +454,7 @@ After code validated:
 
 **Purpose**: Challenge someone in the fewest taps possible.
 
-**Triggered by**: Center FAB in bottom nav (mobile) or "Challenge" button in page header (desktop).
+**Triggered by**: Floating FAB (bottom-right on mobile) or "Challenge" button in page header (desktop).
 
 **Context**: Uses the currently selected club + season from the club switcher and season selector. If multiple active seasons exist, shows a season picker first.
 
@@ -844,7 +858,7 @@ Step 2 (same sheet, transitions):
 
 **Purpose**: Club admin's management hub.
 
-**Access**: Visible to players with `admin` role in the club. Nav item "Admin" appears in sidebar/bottom nav only for admins.
+**Access**: Visible to players with `admin` role in the club. Nav item "Admin" appears in sidebar (desktop) and hamburger menu (mobile) only for admins.
 
 **Layout**:
 ```
@@ -1171,7 +1185,7 @@ Admin sees extra UI on regular pages (no separate "admin mode"):
 | Match detail | "Edit result" / "Resolve dispute" / "Cancel match" buttons |
 | Player card (pyramid) | "..." menu: "Remove from season", "Change rank" |
 | Player profile | "..." menu: "Make admin", "Remove from club" |
-| Bottom nav / sidebar | "Admin" nav item appears |
+| Hamburger menu / sidebar | "Admin" nav item appears |
 
 On mobile, admin actions are hidden behind a "..." overflow menu to keep the UI clean. On desktop, they appear as inline buttons.
 
@@ -1181,11 +1195,11 @@ On mobile, admin actions are hidden behind a "..." overflow menu to keep the UI 
 
 | Element | Mobile (< lg) | Desktop (lg+) |
 |---------|---------------|---------------|
-| Navigation | Bottom nav (fixed) + top bar | Sidebar (left) |
+| Navigation | Hamburger menu (☰) + top bar | Sidebar (left) |
 | Notification bell | Top bar, right side | Sidebar, with badge |
-| Club switcher | Top bar, left side | Top of sidebar |
+| Club switcher | Inside hamburger overlay | Top of sidebar |
 | Dialogs / sheets | Bottom sheet (`rounded-t-3xl`) | Centered dialog |
-| Challenge FAB | Center of bottom nav, raised | Button in page header |
+| Challenge FAB | Floating bottom-right | Button in page header |
 | Pyramid cards | Compact (name + rank only) | Full (name + rank + W/L) |
 | Match detail | Full-width cards, stacked | Two-column layout |
 | Admin actions | Hidden in "..." menu | Visible inline buttons |

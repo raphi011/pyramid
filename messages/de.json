@@ -22,7 +22,11 @@
     "manageClub": "Club verwalten",
     "challenge": "Fordern",
     "activeChallenge": "Zur Forderung",
-    "matches": "Spiele"
+    "matches": "Spiele",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "notifications": "Benachrichtigungen",
+    "menuLabel": "Navigation"
   },
   "challenge": {
     "title": "Herausfordern",

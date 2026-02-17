@@ -7,6 +7,8 @@ import {
   TrophyIcon,
   PlusIcon,
   BellIcon,
+  BellAlertIcon,
+  BoltIcon,
   Cog6ToothIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
@@ -25,16 +27,34 @@ const meta = preview.meta({
 
 export default meta;
 
-function useNavItems() {
+function useNavItems(unreadCount = 3) {
   const t = useTranslations("nav");
   return {
-    navItems: [
-      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-      { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
-    ],
     sidebarItems: [
-      { icon: <BellIcon />, label: t("news"), href: "/feed", badge: 3 },
+      {
+        icon: <BellIcon />,
+        label: t("news"),
+        href: "/feed",
+        badge: unreadCount,
+      },
       { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+      { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+    ],
+    mobileNavItems: [
+      {
+        icon: <BellIcon />,
+        label: t("news"),
+        href: "/feed",
+        badge: unreadCount,
+      },
+      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
+      { icon: <BoltIcon />, label: t("matches"), href: "/matches" },
+      {
+        icon: <BellAlertIcon />,
+        label: t("notifications"),
+        href: "/notifications",
+        badge: unreadCount,
+      },
       { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
     ],
     adminItems: [
@@ -49,16 +69,19 @@ function useNavItems() {
 }
 
 function AppShellDemo() {
-  const { navItems, sidebarItems, fabLabel } = useNavItems();
+  const { sidebarItems, mobileNavItems, fabLabel } = useNavItems();
   const t = useTranslations("ranking");
   const tChallenge = useTranslations("challenge");
   const [active, setActive] = useState("/rankings");
   return (
     <AppShell
-      navItems={navItems}
       sidebarItems={sidebarItems}
+      mobileNavItems={mobileNavItems}
       activeHref={active}
       onNavigate={setActive}
+      activeClubName="TC Musterstadt"
+      activeClubId={1}
+      unreadCount={3}
       fab={{
         icon: <PlusIcon />,
         label: fabLabel,
@@ -100,7 +123,7 @@ export const Default = meta.story({
 });
 
 function AppShellWithMessages() {
-  const { navItems, sidebarItems, fabLabel } = useNavItems();
+  const { sidebarItems, mobileNavItems, fabLabel } = useNavItems();
   const t = useTranslations("ranking");
   const [messages, setMessages] = useState<AdminMessage[]>([
     {
@@ -121,9 +144,12 @@ function AppShellWithMessages() {
 
   return (
     <AppShell
-      navItems={navItems}
       sidebarItems={sidebarItems}
+      mobileNavItems={mobileNavItems}
       activeHref="/rankings"
+      activeClubName="TC Musterstadt"
+      activeClubId={1}
+      unreadCount={3}
       messages={messages}
       onDismissMessage={(id) =>
         setMessages((prev) => prev.filter((m) => m.id !== id))
@@ -160,14 +186,17 @@ export const WithMessages = meta.story({
 });
 
 function AppShellWithAdmin() {
-  const { navItems, sidebarItems, adminItems, fabLabel } = useNavItems();
+  const { sidebarItems, mobileNavItems, adminItems, fabLabel } = useNavItems();
   const t = useTranslations("nav");
   return (
     <AppShell
-      navItems={navItems}
       sidebarItems={sidebarItems}
+      mobileNavItems={mobileNavItems}
       adminItems={adminItems}
       activeHref="/admin/club/1"
+      activeClubName="TC Musterstadt"
+      activeClubId={1}
+      unreadCount={0}
       fab={{
         icon: <PlusIcon />,
         label: fabLabel,

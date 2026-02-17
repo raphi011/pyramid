@@ -52,6 +52,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-RANK-06](#us-rank-06-unavailable-indicators) | Unavailable indicators | Player | P1 | Rankings | ✅ |
 | [US-RANK-07](#us-rank-07-open-challenge-indicators) | Open-challenge indicators | Player | P1 | Rankings | ✅ |
 | [US-RANK-08](#us-rank-08-archived-season-read-only) | Archived season (read-only) | Player | P1 | Rankings | |
+| [US-RANK-09](#us-rank-09-navigate-to-previous-season) | Navigate to previous season | Player | P2 | Rankings | |
 | [US-CHAL-01](#us-chal-01-challenge-from-pyramid-card) | Challenge from pyramid card | Player | P0 | Challenges | ✅ |
 | [US-CHAL-02](#us-chal-02-challenge-from-fab) | Challenge from FAB | Player | P0 | Challenges | ✅ |
 | [US-CHAL-03](#us-chal-03-challenge-from-player-profile) | Challenge from player profile | Player | P1 | Challenges | ✅ |
@@ -90,6 +91,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-SETT-04](#us-sett-04-leave-club) | Leave club | Player | P1 | Settings | |
 | [US-SETT-05](#us-sett-05-join-another-club) | Join another club | Player | P1 | Settings | |
 | [US-SETT-06](#us-sett-06-delete-account) | Delete account | Player | P2 | Settings | |
+| [US-CLUB-01](#us-club-01-view-club-page) | View club page | Player | P0 | Club | |
+| [US-NAV-01](#us-nav-01-hamburger-menu-mobile) | Hamburger menu (mobile) | Player | P0 | Navigation | |
 | [US-ADMIN-01](#us-admin-01-view-club-dashboard) | View club dashboard | Club Admin | P0 | Admin | ✅ |
 | [US-ADMIN-02](#us-admin-02-create-season) | Create season | Club Admin | P0 | Admin | ✅ |
 | [US-ADMIN-03](#us-admin-03-start-season) | Start season | Club Admin | P0 | Admin | ✅ |
@@ -281,15 +284,16 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P0
 
-**Preconditions**: Player is a club member. Club has active seasons.
+**Preconditions**: Player is a club member. Club has active seasons. Season must have `visibility = 'club'` for self-enrollment to be possible (since `open_enrollment` requires `visibility = 'club'`).
 
 **Steps**:
-1. Player sees available seasons on the rankings page (or a dedicated section).
-2. If `seasons.open_enrollment = true` → "Join" button is shown. If `false` → message "Contact your admin to join" (or similar).
-3. Player taps "Join" on an individual season (`max_team_size = 1`) → System creates a `teams` row (1-person team) and a `team_players` row.
-4. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
-5. System creates a standings snapshot in `season_standings`.
-6. System generates a `new_player` event.
+1. Player navigates to `/club/[id]` (→ US-CLUB-01).
+2. Player sees active seasons with enrollment status.
+3. If `seasons.open_enrollment = true` and individual season (`max_team_size = 1`) → "Join" button is shown. If `false` → message "Contact your admin to join".
+4. Player taps "Join" → System creates a `teams` row (1-person team) and a `team_players` row.
+5. System adds player's team to the end of the current `season_standings.results` array (lowest rank).
+6. System creates a standings snapshot in `season_standings`.
+7. System generates a `new_player` event.
 
 **Postconditions**:
 - `teams` + `team_players` rows created.
@@ -298,12 +302,13 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Edge cases**:
 - `open_enrollment = false` → Player cannot self-enroll; admin must add them (→ US-ADMIN-07).
+- `visibility = 'members_only'` → Season hidden from non-participants on the club page; enrollment not possible.
 - Team seasons → Player cannot self-enroll regardless of `open_enrollment` (admin assigns teams manually → US-ADMIN-07).
 - No active seasons → No enrollment options shown.
-- Player already enrolled → "Join" button not shown for that season.
+- Player already enrolled → "Enrolled ✓" badge shown instead of "Join" button.
 - Admin can always add/remove players regardless of `open_enrollment` (→ US-ADMIN-02, → US-ADMIN-07).
 
-**Cross-refs**: → US-AUTH-06, → US-ADMIN-02, → US-ADMIN-04, → US-ADMIN-07
+**Cross-refs**: → US-CLUB-01, → US-AUTH-06, → US-ADMIN-02, → US-ADMIN-04, → US-ADMIN-07
 
 ---
 
@@ -653,8 +658,11 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Edge cases**:
 - Multiple active seasons → All shown without archive label.
 - No seasons → Season selector shows "Select season" placeholder, rankings area empty.
+- Seasons with `visibility = 'members_only'` → Only shown in the selector for players who have a team in that season. Admins always see all seasons.
 
-**Cross-refs**: → US-RANK-08
+**Cross-refs**: → US-RANK-08, → US-CLUB-01
+
+> **Note**: The club page (→ US-CLUB-01) is the primary season discovery and enrollment surface. The season selector on `/rankings` is for switching between seasons the player already has access to.
 
 ---
 
@@ -745,6 +753,27 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
+### US-RANK-09: Navigate to previous season
+
+**Role**: Player | **Priority**: P2
+
+**Preconditions**: Season has a `previous_season_id` set (linked to a predecessor season). Player has access to the previous season (is a participant or previous season has `visibility = 'club'`).
+
+**Steps**:
+1. User views a season that has a `previous_season_id` → System shows a "Previous season" link.
+2. User taps the link → System navigates to the previous season's rankings page.
+
+**Postconditions**: Player is viewing the previous season's rankings.
+
+**Edge cases**:
+- Previous season not accessible (player is not a participant and `visibility = 'members_only'`) → Link not shown.
+- Previous season has `status = 'ended'` → Navigates to archived season view (→ US-RANK-08).
+- Chain of previous seasons (A → B → C) → Each season shows its own "Previous season" link independently.
+
+**Cross-refs**: → US-RANK-04, → US-RANK-08, → US-ADMIN-02
+
+---
+
 ## Challenges & Matches
 
 ### US-CHAL-01: Challenge from pyramid card
@@ -775,7 +804,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Preconditions**: Active season, player has no open challenge.
 
 **Steps**:
-1. User taps FAB (center of bottom nav on mobile, "Challenge" button in header on desktop).
+1. User taps FAB (floating bottom-right on mobile, "Challenge" button in header on desktop).
 2. If multiple active seasons → System shows season picker first (→ US-CHAL-04).
 3. System shows eligible opponents list: avatar, name, rank — filtered by `canChallenge()` rules.
 4. User taps an opponent → System transitions to confirmation step: `"Challenge {name}?"`, optional message textarea, "Send Challenge" button.
@@ -866,7 +895,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Steps**:
 1. System detects open challenge for current player in the active season.
-2. FAB appears dimmed (reduced opacity, no elevation).
+2. Floating FAB appears dimmed (reduced opacity, no elevation).
 3. User taps dimmed FAB → System shows message: "You already have an open challenge in this season."
 
 **Postconditions**: No challenge flow opens.
@@ -1139,7 +1168,9 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Player | **Priority**: P1
 
-**Preconditions**: Match exists (any status). Player is a match participant.
+**Preconditions**: Match exists (any status). Player must have comment access:
+- If `season.visibility = 'club'` → Any club member can comment on any match in this season.
+- If `season.visibility = 'members_only'` → Only season participants (players with a team in the season) can comment.
 
 **Steps**:
 1. User types in the comment input at the bottom of match detail.
@@ -1151,6 +1182,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 **Edge cases**:
 - Empty comment → Submit button disabled.
 - Comment on a completed/withdrawn match → Still allowed (for post-match discussion).
+- `visibility = 'members_only'` → Non-participants cannot see the match and therefore cannot comment.
 
 **Cross-refs**: → US-CHAL-09, → US-CHAL-18
 
@@ -1622,6 +1654,83 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 ---
 
+## Club
+
+### US-CLUB-01: View club page
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated and a member of the club.
+
+**Steps**:
+1. Player taps club name in top bar (mobile) or sidebar header (desktop) → System navigates to `/club/[id]`.
+2. System renders club page with three sections:
+
+**Club header**:
+- Club logo (or initial-based fallback), name
+- Address, website link, phone (only populated fields shown)
+- Member count
+
+**Seasons section**:
+- Active seasons listed first, then archived (labeled)
+- Each season card: name, player/team count, status badge
+- "Join" button if: `open_enrollment = true`, `visibility = 'club'`, player not enrolled, individual season
+- "Enrolled ✓" badge if player already has a team in the season
+- Team seasons (`max_team_size > 1`): no join button (admin-managed)
+- `visibility = 'members_only'` seasons hidden unless player is a participant
+- `draft` seasons hidden (admin-only)
+- Tapping a season card navigates to `/rankings` with that season selected
+
+**Members section**:
+- Admins listed first with role badge
+- All members: avatar, name, role badge (Admin / Player)
+- Tapping a member navigates to `/player/[id]`
+
+3. Player taps "Join" on an individual season → System creates `teams` row + `team_players` row, adds team to end of standings, creates standings snapshot, generates `new_player` event.
+
+**Postconditions**:
+- Club page rendered with all sections.
+- If enrolled: `teams` + `team_players` rows created, `new_player` event generated.
+
+**Edge cases**:
+- `open_enrollment = false` → No join button; message "Contact your admin to join".
+- `visibility = 'members_only'` → Season hidden from non-participants.
+- Team seasons → No join button (admin assigns teams).
+- Player already enrolled → "Enrolled ✓" shown instead of "Join".
+- No active seasons → Seasons section shows "No active seasons".
+- Club has no optional fields (address, phone, URL) → Those lines hidden, not blank.
+
+**Cross-refs**: → US-AUTH-08, → US-RANK-04, → US-ADMIN-02
+
+---
+
+## Navigation
+
+### US-NAV-01: Hamburger menu (mobile)
+
+**Role**: Player | **Priority**: P0
+
+**Preconditions**: Player is authenticated, viewing any page on mobile (< lg breakpoint).
+
+**Steps**:
+1. System renders top bar: `☰` (left), active club name (center, tappable → `/club/[id]`), 🔔 with unread badge (right).
+2. Player taps ☰ → System opens slide-from-left drawer with navigation:
+   - Club switcher dropdown at top (to change active club)
+   - Nav items: Feed, Rankings, Matches, Notifications (with badge), Profile, Settings, Admin (if admin role)
+3. Player taps a nav item → Overlay closes, system navigates to selected route.
+4. Player taps outside or swipes → Overlay closes.
+
+**Postconditions**: Navigation rendered, route changed on selection.
+
+**Edge cases**:
+- Player in multiple clubs → Club switcher dropdown shown. Selecting a different club changes context and closes overlay.
+- Player is admin → "Admin" nav item shown at bottom with separator.
+- Unread notifications → Badge shown on "Notifications" item inside the overlay.
+
+**Cross-refs**: → US-CLUB-01, → US-CHAL-02
+
+---
+
 ## Club Administration
 
 ### US-ADMIN-01: View club dashboard
@@ -1664,12 +1773,14 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
    - Deadlines: match deadline days (default 14), reminder after days (default 7).
    - Result confirmation: toggle for `requires_result_confirmation`.
    - Enrollment: toggle for `open_enrollment` (default: on). When on, players can self-enroll. When off, only admins can add players.
+   - Visibility: toggle/radio — "Visible to all club members" (default) / "Members only". When "Members only" is selected, the `open_enrollment` toggle is disabled and forced off.
    - Starting ranks: empty (manual), from previous season (keep/shuffle/invert).
 3. Admin fills form and taps "Create Season" → System creates `seasons` row (`status = 'draft'`).
-4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season.
+4. If "from previous season" selected: System copies/shuffles/inverts the `results` array from the selected season. System auto-sets `seasons.previous_season_id` to the chosen season's ID.
 
 **Postconditions**:
 - `seasons` row created with `status = 'draft'`.
+- If "from previous season" selected → `seasons.previous_season_id` set.
 - Season only visible to admins until started.
 
 **Edge cases**:
@@ -1715,18 +1826,33 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 
 **Role**: Club Admin | **Priority**: P1
 
-**Preconditions**: Season exists (draft or active).
+**Preconditions**: Season exists (draft or active). Ended seasons are fully read-only (no changes).
 
 **Steps**:
 1. Admin navigates to `/admin/club/[id]/season/[id]` → System shows season config form.
-2. Admin edits: name, best of, match deadline days, reminder days, requires_result_confirmation, open_enrollment.
-3. Admin taps "Save changes" → System updates `seasons` row.
+2. Admin edits available fields and taps "Save changes" → System updates `seasons` row.
+
+**Field editability:**
+
+**Always editable** (even with matches):
+- `name`
+- `match_deadline_days`
+- `reminder_after_days`
+- `open_enrollment` (subject to visibility constraint)
+- `visibility`
+
+**Locked after first match exists** (season has ≥1 `season_matches` row):
+- `best_of` — cannot change scoring format mid-season once matches have been played
+- `min_team_size` / `max_team_size` — cannot change team format after matches exist
+- `requires_result_confirmation` — changing confirmation rules mid-match would create inconsistency
+
+Locked fields show as disabled with a tooltip: "Cannot be changed after matches have been played."
 
 **Postconditions**: `seasons` row updated.
 
 **Edge cases**:
-- Changing `best_of` while matches are in progress → Warning: "Existing matches will use the new setting."
-- Ended season → Settings are read-only.
+- Switching `visibility` to `'members_only'` → `open_enrollment` auto-disabled and forced off. Switching back to `'club'` does not auto-enable `open_enrollment`.
+- Ended season → Settings are fully read-only.
 
 **Cross-refs**: → US-ADMIN-02
 
@@ -2148,11 +2274,11 @@ All stories assume mobile-first design with desktop adaptations:
 
 | Element | Mobile (< lg) | Desktop (lg+) |
 |---------|---------------|---------------|
-| Navigation | Bottom nav (fixed) + top bar | Sidebar (left) |
+| Navigation | Hamburger menu (☰) + top bar (→ US-NAV-01) | Sidebar (left) |
 | Notification bell | Top bar, right side | Sidebar, with badge |
-| Club switcher | Top bar, left side | Top of sidebar |
+| Club switcher | Inside hamburger overlay | Top of sidebar |
 | Dialogs / sheets | Bottom sheet (`rounded-t-3xl`) | Centered dialog |
-| Challenge FAB | Center of bottom nav, raised | Button in page header |
+| Challenge FAB | Floating bottom-right | Button in page header |
 | Admin actions | Hidden in "..." menu | Visible inline buttons |
 
 ### Internationalization (i18n)
@@ -2194,7 +2320,7 @@ Every `events.event_type` value appears in at least one story:
 | `result_confirmed` | US-CHAL-13, US-FEED-07 |
 | `result` | US-CHAL-12, US-CHAL-19, US-FEED-01 |
 | `result_disputed` | US-CHAL-14, US-FEED-07 |
-| `new_player` | US-AUTH-06, US-FEED-01 |
+| `new_player` | US-AUTH-06, US-AUTH-08, US-CLUB-01, US-FEED-01 |
 | `season_start` | US-ADMIN-03, US-FEED-01 |
 | `season_end` | US-ADMIN-06, US-FEED-01 |
 | `unavailable` | US-PROF-04, US-PROF-05, US-FEED-01 |

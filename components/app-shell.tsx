@@ -1,20 +1,22 @@
 "use client";
 
-import { Avatar } from "@/components/ui/avatar";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Bars3Icon, BellIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
-import { BottomNav, type NavItem } from "@/components/bottom-nav";
+import { MobileNav } from "@/components/mobile-nav";
+import { FloatingFab } from "@/components/floating-fab";
 import {
   SidebarNav,
   type SidebarItem,
   type ProfileInfo,
 } from "@/components/sidebar-nav";
-import { PyramidLogo } from "@/components/pyramid-logo";
 import { AdminBanner, type AdminMessage } from "@/components/admin-banner";
 
 type AppShellProps = {
   children: React.ReactNode;
-  navItems: NavItem[];
   sidebarItems: SidebarItem[];
+  mobileNavItems: SidebarItem[];
   adminItems?: SidebarItem[];
   profile?: ProfileInfo;
   activeHref: string;
@@ -29,13 +31,16 @@ type AppShellProps = {
   messages?: AdminMessage[];
   onDismissMessage?: (id: string) => void;
   clubSwitcher?: React.ReactNode;
+  activeClubName: string;
+  activeClubId: number;
+  unreadCount: number;
   className?: string;
 };
 
 function AppShell({
   children,
-  navItems,
   sidebarItems,
+  mobileNavItems,
   adminItems,
   profile,
   activeHref,
@@ -44,8 +49,14 @@ function AppShell({
   messages,
   onDismissMessage,
   clubSwitcher,
+  activeClubName,
+  activeClubId,
+  unreadCount,
   className,
 }: AppShellProps) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const tNav = useTranslations("nav");
+
   return (
     <div
       className={cn("min-h-screen bg-slate-50 dark:bg-slate-950", className)}
@@ -72,24 +83,42 @@ function AppShell({
           "lg:hidden",
         )}
       >
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <PyramidLogo size="sm" />
-            <span className="text-base font-bold text-slate-900 dark:text-white">
-              Pyramid
+        {/* Hamburger */}
+        <button
+          onClick={() => setMobileNavOpen(true)}
+          className="flex size-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-300"
+          aria-label={tNav("openMenu")}
+        >
+          <Bars3Icon className="size-6" />
+        </button>
+
+        {/* Club name */}
+        <button
+          onClick={() => onNavigate?.(`/club/${activeClubId}`)}
+          className="min-w-0 flex-1 px-2"
+        >
+          <span className="block truncate text-center text-base font-bold text-slate-900 dark:text-white">
+            {activeClubName}
+          </span>
+        </button>
+
+        {/* Notification bell */}
+        <button
+          onClick={() => onNavigate?.("/notifications")}
+          className="relative flex size-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-300"
+          aria-label={
+            unreadCount > 0
+              ? tNav("notifications") + ` (${unreadCount})`
+              : tNav("notifications")
+          }
+        >
+          <BellIcon className="size-6" />
+          {unreadCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-court-500 text-[10px] font-bold text-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
-          </div>
-          {clubSwitcher && <div className="mt-1">{clubSwitcher}</div>}
-        </div>
-        {profile && (
-          <button
-            onClick={() => onNavigate?.(profile.href)}
-            className="ml-3 shrink-0"
-            aria-label="Profil"
-          >
-            <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
-          </button>
-        )}
+          )}
+        </button>
       </header>
 
       {/* Main content */}
@@ -111,15 +140,24 @@ function AppShell({
         </div>
       </main>
 
-      {/* Mobile bottom nav */}
-      <div className="lg:hidden">
-        <BottomNav
-          items={navItems}
-          activeHref={activeHref}
-          onNavigate={onNavigate}
-          fab={fab}
-        />
-      </div>
+      {/* Mobile nav overlay */}
+      <MobileNav
+        open={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        items={mobileNavItems}
+        adminItems={adminItems}
+        profile={profile}
+        activeHref={activeHref}
+        onNavigate={onNavigate}
+        clubSwitcher={clubSwitcher}
+      />
+
+      {/* Floating FAB (mobile only) */}
+      {fab && (
+        <div className="lg:hidden">
+          <FloatingFab {...fab} />
+        </div>
+      )}
     </div>
   );
 }
