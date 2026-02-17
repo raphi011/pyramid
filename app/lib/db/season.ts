@@ -20,6 +20,7 @@ export type Season = {
   requiresResultConfirmation: boolean;
   openEnrollment: boolean;
   visibility: SeasonVisibility;
+  inviteCode: string;
   previousSeasonId: number | null;
   startedAt: Date | null;
   endedAt: Date | null;
@@ -74,6 +75,7 @@ function toSeason(row: Record<string, unknown>): Season {
     requiresResultConfirmation: row.requiresResultConfirmation as boolean,
     openEnrollment: row.openEnrollment as boolean,
     visibility: row.visibility as SeasonVisibility,
+    inviteCode: (row.inviteCode as string) ?? "",
     previousSeasonId: (row.previousSeasonId as number) ?? null,
     startedAt: (row.startedAt as Date) ?? null,
     endedAt: (row.endedAt as Date) ?? null,
@@ -100,6 +102,7 @@ export async function getActiveSeasons(
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
       visibility,
+      invite_code AS "inviteCode",
       previous_season_id AS "previousSeasonId",
       started_at AS "startedAt",
       ended_at AS "endedAt"
@@ -128,6 +131,7 @@ export async function getSeasonById(
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
       visibility,
+      invite_code AS "inviteCode",
       previous_season_id AS "previousSeasonId",
       started_at AS "startedAt",
       ended_at AS "endedAt"
@@ -248,6 +252,7 @@ export async function getClubSeasons(
       requires_result_confirmation AS "requiresResultConfirmation",
       open_enrollment AS "openEnrollment",
       visibility,
+      invite_code AS "inviteCode",
       previous_season_id AS "previousSeasonId",
       started_at AS "startedAt",
       ended_at AS "endedAt"
@@ -518,4 +523,51 @@ export async function getPlayerSeasonTeams(
     seasonName: row.seasonName as string,
     clubId: row.clubId as number,
   }));
+}
+
+// ── Invite code queries ─────────────────────────
+
+export type SeasonWithClub = Season & {
+  clubName: string;
+  clubImageId: string | null;
+};
+
+export async function getSeasonByInviteCode(
+  sql: Sql,
+  code: string,
+): Promise<SeasonWithClub | null> {
+  if (!code) return null;
+
+  const rows = await sql`
+    SELECT
+      s.id,
+      s.club_id AS "clubId",
+      s.name,
+      s.status,
+      s.min_team_size AS "minTeamSize",
+      s.max_team_size AS "maxTeamSize",
+      s.best_of AS "bestOf",
+      s.match_deadline_days AS "matchDeadlineDays",
+      s.reminder_after_days AS "reminderAfterDays",
+      s.requires_result_confirmation AS "requiresResultConfirmation",
+      s.open_enrollment AS "openEnrollment",
+      s.visibility,
+      s.invite_code AS "inviteCode",
+      s.previous_season_id AS "previousSeasonId",
+      s.started_at AS "startedAt",
+      s.ended_at AS "endedAt",
+      c.name AS "clubName",
+      c.image_id::text AS "clubImageId"
+    FROM seasons s
+    JOIN clubs c ON c.id = s.club_id
+    WHERE s.invite_code = ${code}
+  `;
+
+  if (rows.length === 0) return null;
+
+  return {
+    ...toSeason(rows[0]),
+    clubName: rows[0].clubName as string,
+    clubImageId: (rows[0].clubImageId as string) ?? null,
+  };
 }

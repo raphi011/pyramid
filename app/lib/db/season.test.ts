@@ -24,6 +24,7 @@ import {
   getPlayerTeamId,
   getRankHistory,
   getPlayerSeasonTeams,
+  getSeasonByInviteCode,
 } from "./season";
 const db = withTestDb();
 
@@ -723,6 +724,44 @@ describe("getPlayerSeasonTeams", () => {
       const playerId = await seedPlayer(tx, "pst-none@example.com");
       const teams = await getPlayerSeasonTeams(tx, playerId);
       expect(teams).toEqual([]);
+    });
+  });
+});
+
+// ── getSeasonByInviteCode ────────────────────────
+
+describe("getSeasonByInviteCode", () => {
+  it("returns season with club info when invite code matches", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx, { name: "My Club" });
+      const seasonId = await seedSeason(tx, clubId, {
+        name: "Spring 2026",
+        inviteCode: "ABC123",
+        status: "active",
+        openEnrollment: true,
+      });
+      const result = await getSeasonByInviteCode(tx, "ABC123");
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(seasonId);
+      expect(result!.name).toBe("Spring 2026");
+      expect(result!.clubName).toBe("My Club");
+      expect(result!.clubId).toBe(clubId);
+    });
+  });
+
+  it("returns null for non-existent code", async () => {
+    await db.withinTransaction(async (tx) => {
+      const result = await getSeasonByInviteCode(tx, "ZZZZZ1");
+      expect(result).toBeNull();
+    });
+  });
+
+  it("returns null for empty invite code", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      await seedSeason(tx, clubId, { inviteCode: "" });
+      const result = await getSeasonByInviteCode(tx, "");
+      expect(result).toBeNull();
     });
   });
 });
