@@ -203,6 +203,25 @@
       "invalidEmail": "Please enter a valid email address."
     }
   },
+  "clubDetail": {
+    "title": "Club page",
+    "seasons": "Seasons",
+    "members": "Members",
+    "memberCount": "{count} members",
+    "activeSeason": "Active",
+    "endedSeason": "Ended",
+    "playerCount": "{count} players",
+    "join": "Join",
+    "joining": "Joining\u2026",
+    "enrolled": "Enrolled",
+    "admin": "Admin",
+    "noSeasons": "No seasons",
+    "noSeasonsDescription": "This club has no active seasons yet.",
+    "website": "Website",
+    "phone": "Phone",
+    "noMembers": "No members",
+    "noMembersDescription": "This club has no members yet."
+  },
   "season": {
     "archived": "(Archive)",
     "draft": "(Draft)",

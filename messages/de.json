@@ -203,6 +203,25 @@
       "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein."
     }
   },
+  "clubDetail": {
+    "title": "Vereinsseite",
+    "seasons": "Saisons",
+    "members": "Mitglieder",
+    "memberCount": "{count} Mitglieder",
+    "activeSeason": "Aktiv",
+    "endedSeason": "Beendet",
+    "playerCount": "{count} Spieler",
+    "join": "Beitreten",
+    "joining": "Wird beigetreten\u2026",
+    "enrolled": "Angemeldet",
+    "admin": "Admin",
+    "noSeasons": "Keine Saisons",
+    "noSeasonsDescription": "Dieser Verein hat noch keine aktiven Saisons.",
+    "website": "Webseite",
+    "phone": "Telefon",
+    "noMembers": "Keine Mitglieder",
+    "noMembersDescription": "Dieser Verein hat noch keine Mitglieder."
+  },
   "season": {
     "archived": "(Archiv)",
     "draft": "(Entwurf)",

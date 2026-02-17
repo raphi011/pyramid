@@ -88,6 +88,7 @@ export async function enrollInSeasonAction(
   }
 
   revalidatePath("/rankings");
+  revalidatePath("/club");
 
   return { success: true };
 }

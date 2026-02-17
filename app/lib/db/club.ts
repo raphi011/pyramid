@@ -8,6 +8,13 @@ export type Club = {
   id: number;
   name: string;
   inviteCode: string;
+  url: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+  zip: string;
+  country: string;
+  imageId: string | null;
   isDisabled: boolean;
 };
 
@@ -24,7 +31,12 @@ export async function getClubByInviteCode(
   code: string,
 ): Promise<Club | null> {
   const rows = await sql`
-    SELECT id, name, invite_code AS "inviteCode", is_disabled AS "isDisabled"
+    SELECT
+      id, name, invite_code AS "inviteCode",
+      url, phone_number AS "phoneNumber",
+      address, city, zip, country,
+      image_id::text AS "imageId",
+      is_disabled AS "isDisabled"
     FROM clubs
     WHERE invite_code = ${code}
   `;
@@ -34,7 +46,12 @@ export async function getClubByInviteCode(
 
 export async function getClubById(sql: Sql, id: number): Promise<Club | null> {
   const rows = await sql`
-    SELECT id, name, invite_code AS "inviteCode", is_disabled AS "isDisabled"
+    SELECT
+      id, name, invite_code AS "inviteCode",
+      url, phone_number AS "phoneNumber",
+      address, city, zip, country,
+      image_id::text AS "imageId",
+      is_disabled AS "isDisabled"
     FROM clubs
     WHERE id = ${id}
   `;
@@ -81,6 +98,46 @@ export async function isClubMember(
 
   return rows.length > 0;
 }
+
+// ── Club members ──────────────────────────────────────
+
+export type ClubMember = {
+  playerId: number;
+  firstName: string;
+  lastName: string;
+  imageId: string | null;
+  role: ClubRole;
+};
+
+export async function getClubMembers(
+  sql: Sql,
+  clubId: number,
+): Promise<ClubMember[]> {
+  const rows = await sql`
+    SELECT
+      p.id AS "playerId",
+      p.first_name AS "firstName",
+      p.last_name AS "lastName",
+      p.image_id::text AS "imageId",
+      cm.role
+    FROM club_members cm
+    JOIN player p ON p.id = cm.player_id
+    WHERE cm.club_id = ${clubId}
+    ORDER BY
+      CASE WHEN cm.role = 'admin' THEN 0 ELSE 1 END,
+      p.first_name, p.last_name
+  `;
+
+  return rows.map((r) => ({
+    playerId: r.playerId as number,
+    firstName: r.firstName as string,
+    lastName: r.lastName as string,
+    imageId: (r.imageId as string) ?? null,
+    role: r.role as ClubRole,
+  }));
+}
+
+// ── Join club ─────────────────────────────────────────
 
 export async function joinClub(
   sql: Sql,

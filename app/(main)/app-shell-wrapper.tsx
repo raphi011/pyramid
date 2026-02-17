@@ -105,6 +105,7 @@ export function AppShellWrapper({
           clubs={clubs}
           activeClubId={activeClubId}
           onSwitch={(id) => setActiveClubId(id as number)}
+          onViewClub={(id) => router.push(`/club/${id}`)}
         />
       }
     >
