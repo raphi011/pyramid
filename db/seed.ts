@@ -159,8 +159,8 @@ async function seed() {
 
     // ── Season ────────────────────────────────────────
     const [season] = await tx`
-      INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, best_of, created, started_at)
-      VALUES (${clubId}, 'Einzel 2026', 'active', 1, 1, 3, NOW(), ${daysAgo(30)})
+      INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, best_of, invite_code, created, started_at)
+      VALUES (${clubId}, 'Einzel 2026', 'active', 1, 1, 3, 'JOIN26', NOW(), ${daysAgo(30)})
       RETURNING id
     `;
     const seasonId = season.id;
@@ -458,6 +458,7 @@ async function seed() {
     console.log(
       `Season: Einzel 2026 (${PLAYERS.length} players, ${completedMatches.length} completed matches)`,
     );
+    console.log(`\nSeason invite link: ${appUrl}/season/join?code=JOIN26`);
     console.log(`\nLogin with any of these emails:`);
     for (const p of PLAYERS) {
       console.log(`  ${p.email} (${p.firstName} ${p.lastName})`);
