@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { TrophyIcon } from "@heroicons/react/16/solid";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -101,10 +102,16 @@ function MatchRow({
         <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
           <span className={cn(winnerId === "player1" && "font-bold")}>
             {player1.name}
+            {winnerId === "player1" && (
+              <TrophyIcon className="ml-0.5 inline size-3.5 align-[-0.125em] text-trophy-400" />
+            )}
           </span>
           {" vs "}
           <span className={cn(winnerId === "player2" && "font-bold")}>
             {player2.name}
+            {winnerId === "player2" && (
+              <TrophyIcon className="ml-0.5 inline size-3.5 align-[-0.125em] text-trophy-400" />
+            )}
           </span>
         </p>
         {date && (
@@ -115,14 +122,45 @@ function MatchRow({
       {/* Scores */}
       {scores && scores.length > 0 && (
         <div className="flex gap-1.5">
-          {scores.map(([s1, s2], i) => (
-            <span
-              key={i}
-              className="text-xs font-bold tabular-nums text-slate-700 dark:text-slate-300"
-            >
-              {s1}:{s2}
-            </span>
-          ))}
+          {scores.map(([s1, s2], i) => {
+            const winnerScore = winnerId === "player1" ? s1 : s2;
+            const loserScore = winnerId === "player1" ? s2 : s1;
+            const wonSet = winnerScore > loserScore;
+
+            return (
+              <span key={i} className="tabular-nums text-xs">
+                <span
+                  className={cn(
+                    winnerId === "player1"
+                      ? cn(
+                          "font-bold",
+                          wonSet
+                            ? "text-court-600 dark:text-court-400"
+                            : "text-red-600 dark:text-red-400",
+                        )
+                      : "font-medium text-slate-500 dark:text-slate-400",
+                  )}
+                >
+                  {s1}
+                </span>
+                <span className="text-slate-400">:</span>
+                <span
+                  className={cn(
+                    winnerId === "player2"
+                      ? cn(
+                          "font-bold",
+                          wonSet
+                            ? "text-court-600 dark:text-court-400"
+                            : "text-red-600 dark:text-red-400",
+                        )
+                      : "font-medium text-slate-500 dark:text-slate-400",
+                  )}
+                >
+                  {s2}
+                </span>
+              </span>
+            );
+          })}
         </div>
       )}
 
