@@ -20,8 +20,12 @@ export type PlayerProfile = {
   phoneNumber: string;
   bio: string;
   imageId: string | null;
+  /** Non-null when the player has an active or scheduled unavailability period. */
   unavailableFrom: Date | null;
+  /** Non-null for bounded unavailability; null means indefinite. Only meaningful when unavailableFrom is set. */
   unavailableUntil: Date | null;
+  /** Empty string when not unavailable. Only meaningful when unavailableFrom is set. */
+  unavailableReason: string;
 };
 
 // ── Queries ────────────────────────────────────────────
@@ -80,7 +84,8 @@ export async function getPlayerProfile(
       bio,
       image_id::text AS "imageId",
       unavailable_from AS "unavailableFrom",
-      unavailable_until AS "unavailableUntil"
+      unavailable_until AS "unavailableUntil",
+      unavailable_reason AS "unavailableReason"
     FROM player
     WHERE id = ${playerId}
   `;
@@ -98,6 +103,7 @@ export async function getPlayerProfile(
     imageId: (row.imageId as string) ?? null,
     unavailableFrom: (row.unavailableFrom as Date) ?? null,
     unavailableUntil: (row.unavailableUntil as Date) ?? null,
+    unavailableReason: (row.unavailableReason as string) ?? "",
   };
 }
 
@@ -223,4 +229,49 @@ export async function deleteSessionByToken(
   token: string,
 ): Promise<void> {
   await sql`DELETE FROM sessions WHERE token = ${token}`;
+}
+
+// ── Unavailability ──────────────────────────────────────
+
+export async function setPlayerUnavailability(
+  sql: Sql,
+  playerId: number,
+  { from, until, reason }: { from: Date; until: Date | null; reason: string },
+): Promise<number> {
+  const result = await sql`
+    UPDATE player
+    SET unavailable_from = ${from},
+        unavailable_until = ${until},
+        unavailable_reason = ${reason}
+    WHERE id = ${playerId}
+  `;
+  return result.count;
+}
+
+export async function cancelPlayerUnavailability(
+  sql: Sql,
+  playerId: number,
+): Promise<number> {
+  const result = await sql`
+    UPDATE player
+    SET unavailable_from = NULL,
+        unavailable_until = NULL,
+        unavailable_reason = ''
+    WHERE id = ${playerId}
+  `;
+  return result.count;
+}
+
+export async function isPlayerUnavailable(
+  sql: Sql,
+  playerId: number,
+): Promise<boolean> {
+  const [row] = await sql`
+    SELECT 1 FROM player
+    WHERE id = ${playerId}
+      AND unavailable_from IS NOT NULL
+      AND unavailable_from <= NOW()
+      AND (unavailable_until IS NULL OR unavailable_until >= NOW())
+  `;
+  return !!row;
 }

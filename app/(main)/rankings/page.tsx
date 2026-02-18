@@ -160,6 +160,7 @@ export default async function RankingsPage({
       losses: wl.losses,
       movement,
       challengeable,
+      unavailable: unavailableTeams.has(p.teamId),
       avatarSrc: imageUrl(p.imageId),
     };
   });

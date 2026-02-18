@@ -19,6 +19,7 @@ type PlayerProfileProps = {
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
   unavailable?: boolean;
+  unavailableUntil?: string | null;
   isOwnProfile?: boolean;
   canChallenge?: boolean;
   onEdit?: () => void;
@@ -38,6 +39,7 @@ function PlayerProfile({
   trend,
   trendValue,
   unavailable,
+  unavailableUntil,
   isOwnProfile,
   canChallenge,
   onEdit,
@@ -57,7 +59,13 @@ function PlayerProfile({
             <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
               {name}
             </h2>
-            {unavailable && <Badge variant="info">{t("unavailable")}</Badge>}
+            {unavailable && (
+              <Badge variant="info">
+                {unavailableUntil
+                  ? t("unavailableUntil", { date: unavailableUntil })
+                  : t("unavailableIndefinitely")}
+              </Badge>
+            )}
           </div>
           <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
             {t("rank", { rank })}

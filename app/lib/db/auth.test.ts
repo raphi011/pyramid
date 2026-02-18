@@ -11,6 +11,7 @@ import {
   createSession,
   getSessionByToken,
   deleteSessionByToken,
+  isPlayerUnavailable,
 } from "./auth";
 
 const db = withTestDb();
@@ -87,6 +88,7 @@ describe("getPlayerProfile", () => {
           bio: "Hello world",
           unavailableFrom: null,
           unavailableUntil: null,
+          unavailableReason: "",
         }),
       );
     });
@@ -99,18 +101,83 @@ describe("getPlayerProfile", () => {
     });
   });
 
-  it("includes unavailability dates when set", async () => {
+  it("includes unavailability dates and reason when set", async () => {
     await db.withinTransaction(async (tx) => {
       const id = await seedPlayer(tx, "unavail-profile@example.com");
       await tx`
         UPDATE player
-        SET unavailable_from = '2026-03-01', unavailable_until = '2026-03-15'
+        SET unavailable_from = '2026-03-01', unavailable_until = '2026-03-15',
+            unavailable_reason = 'Vacation'
         WHERE id = ${id}
       `;
 
       const profile = await getPlayerProfile(tx, id);
       expect(profile!.unavailableFrom).toBeTruthy();
       expect(profile!.unavailableUntil).toBeTruthy();
+      expect(profile!.unavailableReason).toBe("Vacation");
+    });
+  });
+});
+
+// ── isPlayerUnavailable ──────────────────────────
+
+describe("isPlayerUnavailable", () => {
+  it("returns true when currently unavailable with bounded period", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "unavail-bounded@example.com");
+      await tx`
+        UPDATE player
+        SET unavailable_from = NOW() - INTERVAL '1 day',
+            unavailable_until = NOW() + INTERVAL '7 days'
+        WHERE id = ${id}
+      `;
+      expect(await isPlayerUnavailable(tx, id)).toBe(true);
+    });
+  });
+
+  it("returns true when indefinitely unavailable (until is NULL)", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "unavail-indef@example.com");
+      await tx`
+        UPDATE player
+        SET unavailable_from = NOW() - INTERVAL '1 day',
+            unavailable_until = NULL
+        WHERE id = ${id}
+      `;
+      expect(await isPlayerUnavailable(tx, id)).toBe(true);
+    });
+  });
+
+  it("returns false when unavailable_from is in the future", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "unavail-future@example.com");
+      await tx`
+        UPDATE player
+        SET unavailable_from = NOW() + INTERVAL '1 day',
+            unavailable_until = NOW() + INTERVAL '7 days'
+        WHERE id = ${id}
+      `;
+      expect(await isPlayerUnavailable(tx, id)).toBe(false);
+    });
+  });
+
+  it("returns false when unavailability has expired", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "unavail-expired@example.com");
+      await tx`
+        UPDATE player
+        SET unavailable_from = NOW() - INTERVAL '7 days',
+            unavailable_until = NOW() - INTERVAL '1 day'
+        WHERE id = ${id}
+      `;
+      expect(await isPlayerUnavailable(tx, id)).toBe(false);
+    });
+  });
+
+  it("returns false when no unavailability set", async () => {
+    await db.withinTransaction(async (tx) => {
+      const id = await seedPlayer(tx, "unavail-none@example.com");
+      expect(await isPlayerUnavailable(tx, id)).toBe(false);
     });
   });
 });

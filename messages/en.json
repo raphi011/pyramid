@@ -173,9 +173,21 @@
     "rankTooltip": "Rank",
     "changePhoto": "Change photo",
     "uploading": "Uploading\u2026",
+    "setUnavailable": "Set as unavailable",
+    "cancelUnavailability": "Set as available",
+    "unavailableIndefinitely": "Away (indefinitely)",
+    "unavailableFromLabel": "From",
+    "unavailableUntilLabel": "Until (optional)",
+    "unavailableReasonLabel": "Reason (optional)",
+    "reasonPlaceholder": "e.g. Vacation, injury\u2026",
     "error": {
       "nameRequired": "Name is required",
       "notAuthenticated": "Not authenticated",
+      "invalidInput": "Invalid input.",
+      "alreadyUnavailable": "You are already marked as unavailable.",
+      "notUnavailable": "You are not currently marked as unavailable.",
+      "invalidDateRange": "Invalid date range.",
+      "hasOpenChallenge": "You have an open challenge. Complete it before setting unavailability.",
       "serverError": "Something went wrong. Please try again."
     }
   },

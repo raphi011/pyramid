@@ -285,6 +285,26 @@ describe("getUnavailableTeamIds", () => {
     });
   });
 
+  it("returns team when unavailable_until is NULL (indefinite)", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "indef1@example.com");
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+
+      // Mark p1 as indefinitely unavailable (no until date)
+      await tx`
+        UPDATE player
+        SET unavailable_from = NOW() - INTERVAL '1 day',
+            unavailable_until = NULL
+        WHERE id = ${p1}
+      `;
+
+      const unavailable = await getUnavailableTeamIds(tx, seasonId);
+      expect(unavailable.has(t1)).toBe(true);
+    });
+  });
+
   it("returns empty set when no unavailable players", async () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
