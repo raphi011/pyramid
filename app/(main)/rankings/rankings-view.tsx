@@ -32,6 +32,7 @@ import {
   type Opponent,
 } from "@/components/domain/challenge-sheet";
 import { EnrollmentBanner } from "@/components/domain/enrollment-banner";
+import { Toast } from "@/components/ui/toast";
 
 // ── Match types ─────────────────────────────────
 
@@ -103,7 +104,11 @@ function MatchList({
 // ── Props ───────────────────────────────────────
 
 type RankingsViewProps = {
-  seasons: { id: number; name: string }[];
+  seasons: {
+    id: number;
+    name: string;
+    status: "draft" | "active" | "ended";
+  }[];
   currentSeasonId: number | null;
   clubName: string;
   clubId: number;
@@ -113,6 +118,7 @@ type RankingsViewProps = {
   currentTeamId: number | null;
   openEnrollment: boolean;
   isIndividual: boolean;
+  isArchived: boolean;
 };
 
 export function RankingsView({
@@ -126,12 +132,18 @@ export function RankingsView({
   currentTeamId,
   openEnrollment,
   isIndividual,
+  isArchived,
 }: RankingsViewProps) {
   const t = useTranslations("ranking");
   const router = useRouter();
   const searchParams = useSearchParams();
   const challengeFromUrl = searchParams.get("challenge") === "true";
-  const [challengeOpen, setChallengeOpen] = useState(challengeFromUrl);
+  const [challengeOpen, setChallengeOpen] = useState(
+    challengeFromUrl && !isArchived,
+  );
+  const [archivedToast, setArchivedToast] = useState(
+    challengeFromUrl && isArchived,
+  );
   const [view, setView] = useState<"pyramid" | "list">("pyramid");
 
   // Clean the ?challenge=true URL param after initial render
@@ -239,7 +251,7 @@ export function RankingsView({
   return (
     <>
       <PageLayout title={t("title")} subtitle={subtitle} action={headerAction}>
-        {currentTeamId === null && currentSeasonId !== null && (
+        {currentTeamId === null && currentSeasonId !== null && !isArchived && (
           <EnrollmentBanner
             seasonId={currentSeasonId}
             clubId={clubId}
@@ -313,7 +325,7 @@ export function RankingsView({
           </>
         )}
       </PageLayout>
-      {currentSeasonId && (
+      {currentSeasonId && !isArchived && (
         <ChallengeSheet
           open={challengeOpen}
           onClose={() => setChallengeOpen(false)}
@@ -322,6 +334,15 @@ export function RankingsView({
           seasonId={currentSeasonId}
           seasons={seasons.length > 1 ? seasons : undefined}
         />
+      )}
+      {archivedToast && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+          <Toast
+            variant="error"
+            title={t("seasonEnded")}
+            onClose={() => setArchivedToast(false)}
+          />
+        </div>
       )}
     </>
   );

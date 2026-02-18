@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils";
 type Season = {
   id: string | number;
   name: string;
-  status?: "draft" | "active" | "ended";
-  archived?: boolean;
+  status: "draft" | "active" | "ended";
 };
 
 type SeasonSelectorProps = {
@@ -37,7 +36,7 @@ function SeasonSelector({
         <option key={season.id} value={season.id.toString()}>
           {season.name}
           {season.status === "draft" ? ` ${t("draft")}` : ""}
-          {season.archived ? ` ${t("archived")}` : ""}
+          {season.status === "ended" ? ` ${t("archived")}` : ""}
         </option>
       ))}
     </Select>

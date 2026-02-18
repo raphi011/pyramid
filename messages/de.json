@@ -101,7 +101,8 @@
     "noPlayers": "Keine Spieler",
     "noPlayersDesc": "Es wurden noch keine Spieler für diese Saison hinzugefügt.",
     "stateAfter": "Stand nach: {player1} vs {player2}",
-    "seasonSubtitle": "Saison {year} — {club}"
+    "seasonSubtitle": "Saison {year} — {club}",
+    "seasonEnded": "Diese Saison ist beendet."
   },
   "events": {
     "noNews": "Keine Neuigkeiten",
@@ -566,6 +567,11 @@
     "disable": "Deaktivieren",
     "enable": "Aktivieren",
     "createClub": "Neuen Verein erstellen",
+    "clubNameLabel": "Vereinsname",
+    "clubNamePlaceholder": "z.B. TC Musterstadt",
+    "clubAdminEmailLabel": "Admin E-Mail-Adresse",
+    "clubAdminEmailPlaceholder": "admin@verein.de",
+    "confirmCreateClub": "Verein erstellen",
     "noClubs": "Keine Vereine",
     "noClubsDesc": "Erstelle den ersten Verein, um loszulegen.",
     "appAdmins": "App-Administratoren",
@@ -583,7 +589,8 @@
       "playerNotFound": "Kein Spieler mit dieser E-Mail-Adresse gefunden.",
       "cannotRemoveSelf": "Du kannst dich nicht selbst entfernen.",
       "lastAdmin": "Der letzte App-Administrator kann nicht entfernt werden.",
-      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "clubCreationFailed": "Verein konnte nicht erstellt werden. Bitte versuche es erneut."
     }
   },
   "enrollment": {

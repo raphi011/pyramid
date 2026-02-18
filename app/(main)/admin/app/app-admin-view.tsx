@@ -24,6 +24,7 @@ type AppAdminViewProps = {
   clubs: AdminClub[];
   appAdmins: AppAdmin[];
   toggleClubAction?: (formData: FormData) => Promise<ActionResult>;
+  createClubAction?: (formData: FormData) => Promise<ActionResult>;
   addAdminAction?: (formData: FormData) => Promise<ActionResult>;
   removeAdminAction?: (formData: FormData) => Promise<ActionResult>;
 };
@@ -33,11 +34,15 @@ export function AppAdminView({
   clubs,
   appAdmins,
   toggleClubAction,
+  createClubAction,
   addAdminAction,
   removeAdminAction,
 }: AppAdminViewProps) {
   const t = useTranslations("appAdmin");
 
+  const [showCreateClub, setShowCreateClub] = useState(false);
+  const [clubName, setClubName] = useState("");
+  const [clubAdminEmail, setClubAdminEmail] = useState("");
   const [showAddAdmin, setShowAddAdmin] = useState(false);
   const [addAdminEmail, setAddAdminEmail] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -53,6 +58,29 @@ export function AppAdminView({
       const result = await toggleClubAction(fd);
       if (isActionError(result)) {
         setError(tError(result.error));
+      }
+    });
+  }
+
+  function resetCreateClubForm() {
+    setClubName("");
+    setClubAdminEmail("");
+    setShowCreateClub(false);
+  }
+
+  function handleCreateClub() {
+    if (!createClubAction) return;
+    setError(null);
+    const fd = new FormData();
+    fd.append("name", clubName);
+    fd.append("adminEmail", clubAdminEmail);
+
+    startTransition(async () => {
+      const result = await createClubAction(fd);
+      if (isActionError(result)) {
+        setError(tError(result.error));
+      } else {
+        resetCreateClubForm();
       }
     });
   }
@@ -155,11 +183,52 @@ export function AppAdminView({
               </div>
             )}
           />
-          <div className="mt-4">
-            <Button variant="outline" disabled>
-              {t("createClub")}
-            </Button>
-          </div>
+          {/* Create Club form */}
+          {showCreateClub ? (
+            <div className="mt-4 space-y-3">
+              <FormField
+                label={t("clubNameLabel")}
+                required
+                placeholder={t("clubNamePlaceholder")}
+                value={clubName}
+                onChange={(e) => setClubName(e.target.value)}
+              />
+              <FormField
+                label={t("clubAdminEmailLabel")}
+                type="email"
+                required
+                placeholder={t("clubAdminEmailPlaceholder")}
+                value={clubAdminEmail}
+                onChange={(e) => setClubAdminEmail(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button
+                  disabled={
+                    isPending ||
+                    !clubName.trim() ||
+                    !clubAdminEmail ||
+                    !createClubAction
+                  }
+                  onClick={handleCreateClub}
+                >
+                  {t("confirmCreateClub")}
+                </Button>
+                <Button variant="outline" onClick={resetCreateClubForm}>
+                  {t("cancel")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                disabled={!createClubAction}
+                onClick={() => setShowCreateClub(true)}
+              >
+                {t("createClub")}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

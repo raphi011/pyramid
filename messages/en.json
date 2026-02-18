@@ -101,7 +101,8 @@
     "noPlayers": "No players",
     "noPlayersDesc": "No players have been added for this season yet.",
     "stateAfter": "After: {player1} vs {player2}",
-    "seasonSubtitle": "Season {year} — {club}"
+    "seasonSubtitle": "Season {year} — {club}",
+    "seasonEnded": "This season has ended."
   },
   "events": {
     "noNews": "No news",
@@ -566,6 +567,11 @@
     "disable": "Disable",
     "enable": "Enable",
     "createClub": "Create new club",
+    "clubNameLabel": "Club name",
+    "clubNamePlaceholder": "e.g. TC Springfield",
+    "clubAdminEmailLabel": "Admin email address",
+    "clubAdminEmailPlaceholder": "admin@club.com",
+    "confirmCreateClub": "Create club",
     "noClubs": "No clubs",
     "noClubsDesc": "Create the first club to get started.",
     "appAdmins": "App Administrators",
@@ -583,7 +589,8 @@
       "playerNotFound": "No player found with this email address.",
       "cannotRemoveSelf": "You cannot remove yourself.",
       "lastAdmin": "The last app administrator cannot be removed.",
-      "serverError": "An error occurred. Please try again."
+      "serverError": "An error occurred. Please try again.",
+      "clubCreationFailed": "Failed to create club. Please try again."
     }
   },
   "enrollment": {
