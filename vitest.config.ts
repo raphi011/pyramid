@@ -78,6 +78,7 @@ export default defineConfig({
         extends: true,
         resolve: {
           alias: {
+            "@": dirname,
             "server-only": path.join(
               dirname,
               ".storybook/mocks/server-only.ts",

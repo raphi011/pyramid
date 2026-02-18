@@ -30,8 +30,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-AUTH-04](#us-auth-04-expired-magic-link) | Expired magic link | Player | P0 | Auth | ✅ |
 | [US-AUTH-05](#us-auth-05-complete-onboarding) | Complete onboarding | Player | P0 | Auth | ✅ |
 | [US-AUTH-06](#us-auth-06-join-club-via-invite-code) | Join club via invite code | Player | P0 | Auth | ✅ |
-| [US-AUTH-07](#us-auth-07-join-club-via-qr-code) | Join club via QR code | Player | P1 | Auth | |
-| [US-AUTH-08](#us-auth-08-season-enrollment) | Season enrollment | Player | P0 | Auth | |
+| [US-AUTH-07](#us-auth-07-join-club-via-qr-code) | Join club via QR code | Player | P1 | Auth | ✅ |
+| [US-AUTH-08](#us-auth-08-season-enrollment) | Season enrollment | Player | P0 | Auth | ✅ |
 | [US-AUTH-09](#us-auth-09-logout) | Logout | Player | P0 | Auth | ✅ |
 | [US-AUTH-10](#us-auth-10-session-expiry) | Session expiry | Player | P0 | Auth | ✅ |
 | [US-FEED-01](#us-feed-01-view-feed) | View feed | Player | P0 | Feed | ✅ |
@@ -51,7 +51,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-RANK-05](#us-rank-05-challengeable-indicators) | Challengeable indicators | Player | P0 | Rankings | ✅ |
 | [US-RANK-06](#us-rank-06-unavailable-indicators) | Unavailable indicators | Player | P1 | Rankings | ✅ |
 | [US-RANK-07](#us-rank-07-open-challenge-indicators) | Open-challenge indicators | Player | P1 | Rankings | ✅ |
-| [US-RANK-08](#us-rank-08-archived-season-read-only) | Archived season (read-only) | Player | P1 | Rankings | |
+| [US-RANK-08](#us-rank-08-archived-season-read-only) | Archived season (read-only) | Player | P1 | Rankings | ✅ |
 | [US-RANK-09](#us-rank-09-navigate-to-previous-season) | Navigate to previous season | Player | P2 | Rankings | |
 | [US-CHAL-01](#us-chal-01-challenge-from-pyramid-card) | Challenge from pyramid card | Player | P0 | Challenges | ✅ |
 | [US-CHAL-02](#us-chal-02-challenge-from-fab) | Challenge from FAB | Player | P0 | Challenges | ✅ |
@@ -77,8 +77,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | ✅ |
 | [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | ✅ |
 | [US-PROF-03](#us-prof-03-uploadchange-profile-photo) | Upload/change profile photo | Player | P1 | Profile | ✅ |
-| [US-PROF-04](#us-prof-04-set-unavailability) | Set unavailability | Player | P1 | Profile | |
-| [US-PROF-05](#us-prof-05-cancel-unavailability) | Cancel unavailability | Player | P1 | Profile | |
+| [US-PROF-04](#us-prof-04-set-unavailability) | Set unavailability | Player | P1 | Profile | ✅ |
+| [US-PROF-05](#us-prof-05-cancel-unavailability) | Cancel unavailability | Player | P1 | Profile | ✅ |
 | [US-PROF-06](#us-prof-06-stats-scoping-seasoncluball) | Stats scoping (season/club/all) | Player | P1 | Profile | ✅ |
 | [US-PROF-07](#us-prof-07-rank-progression-chart) | Rank progression chart | Player | P2 | Profile | ✅ |
 | [US-PROF-08](#us-prof-08-head-to-head-record) | Head-to-head record | Player | P2 | Profile | ✅ |
@@ -91,8 +91,8 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-SETT-04](#us-sett-04-leave-club) | Leave club | Player | P1 | Settings | |
 | [US-SETT-05](#us-sett-05-join-another-club) | Join another club | Player | P1 | Settings | |
 | [US-SETT-06](#us-sett-06-delete-account) | Delete account | Player | P2 | Settings | |
-| [US-CLUB-01](#us-club-01-view-club-page) | View club page | Player | P0 | Club | |
-| [US-NAV-01](#us-nav-01-hamburger-menu-mobile) | Hamburger menu (mobile) | Player | P0 | Navigation | |
+| [US-CLUB-01](#us-club-01-view-club-page) | View club page | Player | P0 | Club | ✅ |
+| [US-NAV-01](#us-nav-01-hamburger-menu-mobile) | Hamburger menu (mobile) | Player | P0 | Navigation | ✅ |
 | [US-ADMIN-01](#us-admin-01-view-club-dashboard) | View club dashboard | Club Admin | P0 | Admin | ✅ |
 | [US-ADMIN-02](#us-admin-02-create-season) | Create season | Club Admin | P0 | Admin | ✅ |
 | [US-ADMIN-03](#us-admin-03-start-season) | Start season | Club Admin | P0 | Admin | ✅ |
@@ -110,7 +110,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-ADMIN-15](#us-admin-15-resolve-disputed-match) | Resolve disputed match | Club Admin | P1 | Admin | |
 | [US-ADMIN-16](#us-admin-16-edit-club-settings) | Edit club settings | Club Admin | P1 | Admin | |
 | [US-APP-01](#us-app-01-view-global-stats) | View global stats | App Admin | P1 | App Admin | ✅ |
-| [US-APP-02](#us-app-02-create-club) | Create club | App Admin | P0 | App Admin | |
+| [US-APP-02](#us-app-02-create-club) | Create club | App Admin | P0 | App Admin | ✅ |
 | [US-APP-03](#us-app-03-disable-club) | Disable club | App Admin | P2 | App Admin | ✅ |
 | [US-APP-04](#us-app-04-manage-app-admins) | Manage app admins | App Admin | P2 | App Admin | ✅ |
 

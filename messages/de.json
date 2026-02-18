@@ -173,9 +173,21 @@
     "rankTooltip": "Rang",
     "changePhoto": "Foto ändern",
     "uploading": "Wird hochgeladen\u2026",
+    "setUnavailable": "Abwesend melden",
+    "cancelUnavailability": "Verf\u00fcgbar melden",
+    "unavailableIndefinitely": "Abwesend (unbefristet)",
+    "unavailableFromLabel": "Von",
+    "unavailableUntilLabel": "Bis (optional)",
+    "unavailableReasonLabel": "Grund (optional)",
+    "reasonPlaceholder": "z.B. Urlaub, Verletzung\u2026",
     "error": {
       "nameRequired": "Name ist erforderlich",
       "notAuthenticated": "Nicht angemeldet",
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "alreadyUnavailable": "Du bist bereits als abwesend gemeldet.",
+      "notUnavailable": "Du bist derzeit nicht als abwesend gemeldet.",
+      "invalidDateRange": "Ung\u00fcltiger Zeitraum.",
+      "hasOpenChallenge": "Du hast noch eine offene Forderung. Schlie\u00dfe sie ab, bevor du dich abwesend meldest.",
       "serverError": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
     }
   },

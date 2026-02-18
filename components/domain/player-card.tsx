@@ -28,12 +28,13 @@ const variantStyles: Record<PlayerCardVariant, string> = {
   default:
     "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
   current:
-    "bg-white ring-1 ring-slate-200 shadow-[inset_0_-2px_0_var(--color-court-500)] dark:bg-slate-900 dark:ring-slate-800 dark:shadow-[inset_0_-2px_0_var(--color-court-400)]",
+    "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
   challengeable:
     "bg-court-50/50 ring-1 ring-court-300 dark:bg-court-950/50 dark:ring-court-700",
   challenged:
-    "bg-white ring-1 ring-slate-200 opacity-50 dark:bg-slate-900 dark:ring-slate-800",
-  unavailable: "bg-slate-100 text-slate-500 opacity-60 dark:bg-slate-800",
+    "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
+  unavailable:
+    "bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800",
 };
 
 function PlayerCard({
@@ -48,6 +49,14 @@ function PlayerCard({
   className,
 }: PlayerCardProps) {
   const t = useTranslations("ranking");
+  const isDimmed = variant === "unavailable" || variant === "challenged";
+  const nameColor =
+    variant === "current"
+      ? "text-court-600 dark:text-court-400"
+      : isDimmed
+        ? "text-slate-400 dark:text-slate-500"
+        : "text-slate-900 dark:text-white";
+
   if (compact) {
     return (
       <button
@@ -70,12 +79,7 @@ function PlayerCard({
           {rank}
         </span>
         <Avatar name={name} src={avatarSrc} size="sm" />
-        <span
-          className={cn(
-            "truncate text-sm font-medium text-slate-900 dark:text-white",
-            variant === "unavailable" && "text-slate-500",
-          )}
-        >
+        <span className={cn("truncate text-sm font-medium", nameColor)}>
           {name}
         </span>
         {rank === 1 && (
@@ -105,21 +109,11 @@ function PlayerCard({
       </span>
       <Avatar name={name} src={avatarSrc} size="md" />
       <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            "truncate text-sm font-semibold text-slate-900 dark:text-white",
-            variant === "unavailable" && "text-slate-500",
-          )}
-        >
+        <p className={cn("truncate text-sm font-semibold", nameColor)}>
           {name}
         </p>
         {(wins != null || losses != null) && (
-          <p
-            className={cn(
-              "text-xs text-slate-500 dark:text-slate-400",
-              variant === "unavailable" && "text-slate-300",
-            )}
-          >
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {t("winsLosses", { wins: wins ?? 0, losses: losses ?? 0 })}
           </p>
         )}

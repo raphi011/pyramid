@@ -23,11 +23,14 @@ import { DataList } from "@/components/data-list";
 import { FormField } from "@/components/form-field";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { StatsCard } from "@/components/domain/stats-card";
+import { DateTimePicker } from "@/components/date-time-picker";
 import { Avatar } from "@/components/ui/avatar";
 import { fullName } from "@/lib/utils";
 import {
   updateProfileAction,
   updateProfileImageAction,
+  setUnavailabilityAction,
+  cancelUnavailabilityAction,
 } from "@/app/lib/actions/profile";
 import type { PlayerProfile as PlayerProfileType } from "@/app/lib/db/auth";
 import type { ClubMembership } from "@/app/lib/db/club";
@@ -138,6 +141,53 @@ function ProfileView({
     [t, router],
   );
 
+  // ── Unavailability ────────────────────────────
+  const [unavailOpen, setUnavailOpen] = useState(false);
+  const [unavailPending, startUnavailTransition] = useTransition();
+  const [unavailError, setUnavailError] = useState<string | null>(null);
+  const [unavailFrom, setUnavailFrom] = useState<Date | undefined>(new Date());
+  const [unavailUntil, setUnavailUntil] = useState<Date | undefined>(undefined);
+
+  const isUnavailable = !!profile.unavailableFrom;
+
+  const handleSetUnavailability = useCallback(
+    (formData: FormData) => {
+      startUnavailTransition(async () => {
+        setUnavailError(null);
+        try {
+          const result = await setUnavailabilityAction(formData);
+          if ("error" in result) {
+            setUnavailError(t(`error.${result.error.split(".").pop()}`));
+          } else {
+            setUnavailOpen(false);
+            router.refresh();
+          }
+        } catch (e) {
+          console.error("Set unavailability failed:", e);
+          setUnavailError(t("error.serverError"));
+        }
+      });
+    },
+    [t, router],
+  );
+
+  const handleCancelUnavailability = useCallback(() => {
+    startUnavailTransition(async () => {
+      setUnavailError(null);
+      try {
+        const result = await cancelUnavailabilityAction();
+        if ("error" in result) {
+          setUnavailError(t(`error.${result.error.split(".").pop()}`));
+        } else {
+          router.refresh();
+        }
+      } catch (e) {
+        console.error("Cancel unavailability failed:", e);
+        setUnavailError(t("error.serverError"));
+      }
+    });
+  }, [t, router]);
+
   const trendProp =
     seasonStats.trend === "none" ? undefined : seasonStats.trend;
 
@@ -153,6 +203,16 @@ function ProfileView({
         winRate={winRate(seasonStats.wins, seasonStats.losses)}
         trend={trendProp}
         trendValue={seasonStats.trendValue || undefined}
+        unavailable={isUnavailable}
+        unavailableUntil={
+          profile.unavailableUntil
+            ? profile.unavailableUntil.toLocaleDateString("de-DE", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : null
+        }
         isOwnProfile
         onEdit={() => setEditOpen(true)}
         rankChartSlot={
@@ -172,6 +232,63 @@ function ProfileView({
           ) : null
         }
       />
+
+      {/* Unavailability section */}
+      <Card>
+        <CardContent className="py-4">
+          {isUnavailable ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  {profile.unavailableUntil
+                    ? t("unavailableUntil", {
+                        date: profile.unavailableUntil.toLocaleDateString(
+                          "de-DE",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          },
+                        ),
+                      })
+                    : t("unavailableIndefinitely")}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancelUnavailability}
+                loading={unavailPending}
+              >
+                {t("cancelUnavailability")}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {t("unavailable")}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setUnavailError(null);
+                  setUnavailFrom(new Date());
+                  setUnavailUntil(undefined);
+                  setUnavailOpen(true);
+                }}
+              >
+                {t("setUnavailable")}
+              </Button>
+            </div>
+          )}
+          {unavailError && (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {unavailError}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stats scope tabs */}
       <Tabs
@@ -301,6 +418,80 @@ function ProfileView({
           {tNav("logout")}
         </Button>
       </form>
+
+      {/* Set Unavailability Dialog */}
+      <ResponsiveDialog
+        open={unavailOpen}
+        onClose={() => setUnavailOpen(false)}
+        title={t("setUnavailable")}
+      >
+        <form action={handleSetUnavailability} className="space-y-4">
+          <input
+            type="hidden"
+            name="unavailableFrom"
+            value={unavailFrom ? unavailFrom.toISOString().split("T")[0] : ""}
+          />
+          <input
+            type="hidden"
+            name="unavailableUntil"
+            value={unavailUntil ? unavailUntil.toISOString().split("T")[0] : ""}
+          />
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("unavailableFromLabel")}
+            </label>
+            <DateTimePicker
+              value={unavailFrom}
+              onChange={setUnavailFrom}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("unavailableUntilLabel")}
+            </label>
+            <DateTimePicker
+              value={unavailUntil}
+              onChange={setUnavailUntil}
+              className="w-full"
+            />
+          </div>
+          <FormField
+            type="textarea"
+            label={t("unavailableReasonLabel")}
+            placeholder={t("reasonPlaceholder")}
+            inputProps={{
+              name: "unavailableReason",
+              rows: 2,
+            }}
+          />
+
+          {unavailError && (
+            <p className="text-sm text-red-600" role="alert">
+              {unavailError}
+            </p>
+          )}
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setUnavailOpen(false)}
+              disabled={unavailPending}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1 bg-court-500 text-white hover:bg-court-600"
+              loading={unavailPending}
+            >
+              {tCommon("confirm")}
+            </Button>
+          </div>
+        </form>
+      </ResponsiveDialog>
 
       {/* Edit Profile Dialog */}
       <ResponsiveDialog

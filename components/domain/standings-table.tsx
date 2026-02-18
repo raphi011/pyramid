@@ -21,6 +21,7 @@ type StandingsPlayer = {
   losses: number;
   movement?: "up" | "down" | "none";
   challengeable?: boolean;
+  unavailable?: boolean;
 };
 
 type StandingsTableProps = {
@@ -76,7 +77,12 @@ function StandingsTable({
               size="sm"
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
+              <p
+                className={cn(
+                  "truncate text-sm font-medium text-slate-900 dark:text-white",
+                  player.unavailable && "text-slate-400",
+                )}
+              >
                 {fullName(player.firstName, player.lastName)}
               </p>
             </div>

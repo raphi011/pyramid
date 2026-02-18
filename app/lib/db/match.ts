@@ -216,9 +216,8 @@ export async function getUnavailableTeamIds(
     JOIN player p ON p.id = tp.player_id
     WHERE t.season_id = ${seasonId}
       AND p.unavailable_from IS NOT NULL
-      AND p.unavailable_until IS NOT NULL
       AND p.unavailable_from <= NOW()
-      AND p.unavailable_until >= NOW()
+      AND (p.unavailable_until IS NULL OR p.unavailable_until >= NOW())
   `;
 
   const ids = new Set<number>();

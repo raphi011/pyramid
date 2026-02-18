@@ -22,6 +22,7 @@ export type PlayerProfile = {
   imageId: string | null;
   unavailableFrom: Date | null;
   unavailableUntil: Date | null;
+  unavailableReason: string;
 };
 
 // ── Queries ────────────────────────────────────────────
@@ -80,7 +81,8 @@ export async function getPlayerProfile(
       bio,
       image_id::text AS "imageId",
       unavailable_from AS "unavailableFrom",
-      unavailable_until AS "unavailableUntil"
+      unavailable_until AS "unavailableUntil",
+      unavailable_reason AS "unavailableReason"
     FROM player
     WHERE id = ${playerId}
   `;
@@ -98,6 +100,7 @@ export async function getPlayerProfile(
     imageId: (row.imageId as string) ?? null,
     unavailableFrom: (row.unavailableFrom as Date) ?? null,
     unavailableUntil: (row.unavailableUntil as Date) ?? null,
+    unavailableReason: (row.unavailableReason as string) ?? "",
   };
 }
 
@@ -223,4 +226,47 @@ export async function deleteSessionByToken(
   token: string,
 ): Promise<void> {
   await sql`DELETE FROM sessions WHERE token = ${token}`;
+}
+
+// ── Unavailability ──────────────────────────────────────
+
+export async function setPlayerUnavailability(
+  sql: Sql,
+  playerId: number,
+  { from, until, reason }: { from: Date; until: Date | null; reason: string },
+): Promise<void> {
+  await sql`
+    UPDATE player
+    SET unavailable_from = ${from},
+        unavailable_until = ${until},
+        unavailable_reason = ${reason}
+    WHERE id = ${playerId}
+  `;
+}
+
+export async function cancelPlayerUnavailability(
+  sql: Sql,
+  playerId: number,
+): Promise<void> {
+  await sql`
+    UPDATE player
+    SET unavailable_from = NULL,
+        unavailable_until = NULL,
+        unavailable_reason = ''
+    WHERE id = ${playerId}
+  `;
+}
+
+export async function isPlayerUnavailable(
+  sql: Sql,
+  playerId: number,
+): Promise<boolean> {
+  const [row] = await sql`
+    SELECT 1 FROM player
+    WHERE id = ${playerId}
+      AND unavailable_from IS NOT NULL
+      AND unavailable_from <= NOW()
+      AND (unavailable_until IS NULL OR unavailable_until >= NOW())
+  `;
+  return !!row;
 }
