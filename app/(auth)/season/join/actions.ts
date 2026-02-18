@@ -17,6 +17,7 @@ import {
   createNewPlayerEvent,
 } from "@/app/lib/db/season";
 import { joinClub } from "@/app/lib/db/club";
+import { getOrCreatePlayer } from "@/app/lib/db/player";
 import { sendMagicLinkEmail } from "@/app/lib/email";
 import { sql } from "@/app/lib/db";
 import { fullName } from "@/lib/utils";
@@ -260,19 +261,7 @@ export async function requestSeasonJoinAction(
     player = await getPlayerByEmail(email);
 
     if (!player) {
-      // Upsert with no-op update so RETURNING works on both insert and conflict
-      const [row] = await sql`
-        INSERT INTO player (first_name, last_name, email_address, created)
-        VALUES (${firstName}, ${lastName}, ${email}, NOW())
-        ON CONFLICT (email_address) DO UPDATE SET email_address = EXCLUDED.email_address
-        RETURNING id, first_name AS "firstName", last_name AS "lastName", email_address AS email
-      `;
-      player = {
-        id: row.id as number,
-        firstName: row.firstName as string,
-        lastName: row.lastName as string,
-        email: row.email as string,
-      };
+      player = await getOrCreatePlayer(sql, { email, firstName, lastName });
     }
   } catch (error) {
     console.error("requestSeasonJoinAction: player creation failed:", error);

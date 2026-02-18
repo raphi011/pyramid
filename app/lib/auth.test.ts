@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateInviteCode } from "./auth";
+import { generateInviteCode } from "./crypto";
 
 describe("generateInviteCode", () => {
   it("returns a 6-character uppercase alphanumeric string", () => {

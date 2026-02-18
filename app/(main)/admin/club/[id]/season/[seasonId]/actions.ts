@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
 import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import { startSeason } from "@/app/lib/db/season";
 import type { ActionResult } from "@/app/lib/action-result";
 
 // ── Schemas ─────────────────────────────────────────────
@@ -105,13 +106,8 @@ export async function startSeasonAction(
   if (authCheck.error) return { error: authCheck.error };
 
   try {
-    const result = await sql`
-      UPDATE seasons
-      SET status = 'active', started_at = NOW()
-      WHERE id = ${seasonId} AND club_id = ${clubId} AND status = 'draft'
-    `;
-
-    if (result.count === 0) {
+    const updated = await startSeason(sql, seasonId, clubId);
+    if (!updated) {
       return { error: "seasonManagement.error.seasonNotDraft" };
     }
   } catch (error) {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { mapEventRowsToTimeline } from "./event-mapper";
-import type { EventRow } from "@/app/lib/db/event";
+import type { EventRow, EventType } from "@/app/lib/db/event";
 
 const NOW = new Date("2026-02-14T12:00:00Z");
 
@@ -210,7 +210,8 @@ describe("mapEventRowsToTimeline", () => {
 
   it("skips unknown event types and logs a warning", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const rows = [makeRow({ eventType: "some_future_type" })];
+    // Cast simulates a DB returning a type not yet in the EventType union
+    const rows = [makeRow({ eventType: "some_future_type" as EventType })];
     const result = mapEventRowsToTimeline(rows, defaultOpts);
 
     expect(result).toHaveLength(0);

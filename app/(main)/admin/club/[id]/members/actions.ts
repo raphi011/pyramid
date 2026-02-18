@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
 import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import { getOrCreatePlayer } from "@/app/lib/db/player";
 import type { ActionResult } from "@/app/lib/action-result";
 
 // ── Schemas ─────────────────────────────────────────────
@@ -45,23 +46,20 @@ export async function inviteMemberAction(
 
   try {
     await sql.begin(async (tx) => {
-      // Upsert player — ON CONFLICT handles concurrent invites
       const parts = name.split(/\s+/);
       const firstName = parts[0];
       const lastName = parts.slice(1).join(" ") || "";
 
-      const playerRows = await tx`
-        INSERT INTO player (first_name, last_name, email_address, created)
-        VALUES (${firstName}, ${lastName}, ${email}, NOW())
-        ON CONFLICT (email_address) DO UPDATE SET email_address = EXCLUDED.email_address
-        RETURNING id
-      `;
-      const playerId = (playerRows[0] as { id: number }).id;
+      const player = await getOrCreatePlayer(tx, {
+        email,
+        firstName,
+        lastName,
+      });
 
       // Add to club — ON CONFLICT prevents duplicate membership
       const memberRows = await tx`
         INSERT INTO club_members (player_id, club_id, role, created)
-        VALUES (${playerId}, ${clubId}, 'player', NOW())
+        VALUES (${player.id}, ${clubId}, 'player', NOW())
         ON CONFLICT (player_id, club_id) DO NOTHING
         RETURNING player_id
       `;

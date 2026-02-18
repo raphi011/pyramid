@@ -2,6 +2,27 @@ import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
 
+export type EventType =
+  | "challenge"
+  | "challenged"
+  | "challenge_accepted"
+  | "challenge_withdrawn"
+  | "result"
+  | "result_entered"
+  | "result_confirmed"
+  | "result_disputed"
+  | "withdrawal"
+  | "forfeit"
+  | "date_proposed"
+  | "date_accepted"
+  | "date_reminder"
+  | "deadline_exceeded"
+  | "new_player"
+  | "unavailable"
+  | "announcement"
+  | "season_start"
+  | "season_end";
+
 export type EventRow = {
   id: number;
   clubId: number;
@@ -9,7 +30,7 @@ export type EventRow = {
   matchId: number | null;
   playerId: number | null;
   targetPlayerId: number | null;
-  eventType: string;
+  eventType: EventType;
   metadata: Record<string, unknown>;
   created: Date;
   actorName: string | null;
@@ -76,7 +97,7 @@ function toEventRow(row: Record<string, unknown>): EventRow {
     matchId: (row.matchId as number) ?? null,
     playerId: (row.playerId as number) ?? null,
     targetPlayerId: (row.targetPlayerId as number) ?? null,
-    eventType: row.eventType as string,
+    eventType: row.eventType as EventType,
     metadata: (row.metadata as Record<string, unknown>) ?? {},
     created: row.created as Date,
     actorName: (row.actorName as string) ?? null,
@@ -191,6 +212,20 @@ export async function getEventReadWatermarks(
     map.set(row.clubId as number, row.lastReadAt as Date);
   }
   return map;
+}
+
+export async function getMatchEvents(
+  sql: Sql,
+  matchId: number,
+): Promise<EventRow[]> {
+  const rows = await sql.unsafe(
+    `SELECT ${EVENT_SELECT}
+     ${EVENT_JOIN}
+     WHERE e.match_id = $1
+     ORDER BY e.created ASC, e.id ASC`,
+    [matchId],
+  );
+  return rows.map(toEventRow);
 }
 
 export async function markAsRead(

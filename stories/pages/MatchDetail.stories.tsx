@@ -4,6 +4,7 @@ import preview from "#.storybook/preview";
 import { PageWrapper } from "./_page-wrapper";
 import { MatchDetailView } from "@/app/(main)/matches/[id]/match-detail-view";
 import type { MatchStatus } from "@/app/lib/db/match";
+import type { TimelineEvent } from "@/components/domain/event-timeline";
 
 const meta = preview.meta({
   title: "Pages/MatchDetail",
@@ -124,6 +125,72 @@ const mockComments = [
   },
 ];
 
+const mockEvents: TimelineEvent[] = [
+  {
+    id: 101,
+    type: "challenge",
+    challenger: { name: "Max Braun" },
+    challengee: { name: "Lisa Müller" },
+    time: "3d ago",
+    group: "3. Februar",
+    groupDate: "Montag, 3. Februar 2026",
+  },
+  {
+    id: 102,
+    type: "date_proposed",
+    player: { name: "Max Braun" },
+    opponent: { name: "Lisa Müller" },
+    proposedDate: "2026-02-15T10:00:00Z",
+    personal: true,
+    time: "2d ago",
+    group: "4. Februar",
+    groupDate: "Dienstag, 4. Februar 2026",
+  },
+  {
+    id: 103,
+    type: "date_accepted",
+    player: { name: "Lisa Müller" },
+    opponent: { name: "Max Braun" },
+    acceptedDate: "2026-02-15T10:00:00Z",
+    personal: true,
+    time: "2d ago",
+    group: "4. Februar",
+    groupDate: "Dienstag, 4. Februar 2026",
+  },
+];
+
+const mockCompletedEvents: TimelineEvent[] = [
+  ...mockEvents,
+  {
+    id: 104,
+    type: "result_entered",
+    player1: { name: "Max Braun" },
+    player2: { name: "Lisa Müller" },
+    scores: [
+      [6, 3],
+      [7, 5],
+    ],
+    personal: true,
+    time: "8h ago",
+    group: "10. Februar",
+    groupDate: "Montag, 10. Februar 2026",
+  },
+  {
+    id: 105,
+    type: "result",
+    player1: { name: "Max Braun" },
+    player2: { name: "Lisa Müller" },
+    winnerId: "player1",
+    scores: [
+      [6, 3],
+      [7, 5],
+    ],
+    time: "7h ago",
+    group: "10. Februar",
+    groupDate: "Montag, 10. Februar 2026",
+  },
+];
+
 // ── Stories ───────────────────────────────────────────
 
 export const Challenged = meta.story({
@@ -134,6 +201,7 @@ export const Challenged = meta.story({
           match={makeMatch()}
           proposals={mockProposals}
           comments={mockComments}
+          events={mockEvents}
           userRole="team2"
           currentPlayerId={2}
           team1Rank={5}
@@ -159,6 +227,7 @@ export const DateSet = meta.story({
             { ...mockProposals[1], status: "dismissed" },
           ]}
           comments={mockComments}
+          events={mockEvents}
           userRole="team1"
           currentPlayerId={1}
           team1Rank={5}
@@ -185,6 +254,7 @@ export const PendingConfirmation = meta.story({
           })}
           proposals={[]}
           comments={[]}
+          events={mockCompletedEvents.slice(0, -1)}
           userRole="team2"
           currentPlayerId={2}
           team1Rank={5}
@@ -211,6 +281,7 @@ export const PendingConfirmationAsEnterer = meta.story({
           })}
           proposals={[]}
           comments={[]}
+          events={mockCompletedEvents.slice(0, -1)}
           userRole="team1"
           currentPlayerId={1}
           team1Rank={5}
@@ -238,6 +309,7 @@ export const Completed = meta.story({
           })}
           proposals={[]}
           comments={mockComments}
+          events={mockCompletedEvents}
           userRole="team1"
           currentPlayerId={1}
           team1Rank={4}
@@ -257,6 +329,7 @@ export const WithDateProposals = meta.story({
           match={makeMatch()}
           proposals={mockProposals}
           comments={[]}
+          events={mockEvents}
           userRole="team2"
           currentPlayerId={2}
           team1Rank={5}
@@ -279,6 +352,7 @@ export const AsSpectator = meta.story({
           })}
           proposals={[{ ...mockProposals[0], status: "accepted" }]}
           comments={mockComments}
+          events={mockEvents}
           userRole="spectator"
           currentPlayerId={99}
           team1Rank={5}

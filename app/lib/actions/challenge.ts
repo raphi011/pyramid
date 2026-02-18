@@ -9,13 +9,12 @@ import {
   getPlayerTeamId,
   getStandingsWithPlayers,
 } from "@/app/lib/db/season";
+import { ChallengeConflictError } from "@/app/lib/db/match";
 import {
-  getTeamsWithOpenChallenge,
-  getUnavailableTeamIds,
-  createChallenge,
-  ChallengeConflictError,
-} from "@/app/lib/db/match";
-import { canChallenge } from "@/app/lib/pyramid";
+  challengeTeam,
+  IllegalChallengeError,
+  UnavailableTeamError,
+} from "@/app/lib/domain/challenge";
 import { parseFormData } from "@/app/lib/action-utils";
 
 const createChallengeSchema = z.object({
@@ -55,36 +54,8 @@ export async function createChallengeAction(
     return { error: "challenge.error.notEnrolled" };
   }
 
-  // Get current standings to check pyramid rules
-  const { players } = await getStandingsWithPlayers(sql, seasonId);
-  const challengerRank = players.find(
-    (p) => p.teamId === challengerTeamId,
-  )?.rank;
-  const challengeeRank = players.find(
-    (p) => p.teamId === challengeeTeamId,
-  )?.rank;
-
-  if (!challengerRank || !challengeeRank) {
-    return { error: "challenge.error.invalidTarget" };
-  }
-
-  if (!canChallenge(challengerRank, challengeeRank)) {
-    return { error: "challenge.error.invalidTarget" };
-  }
-
-  // Check open challenges
-  const openTeams = await getTeamsWithOpenChallenge(sql, seasonId);
-  if (openTeams.has(challengerTeamId) || openTeams.has(challengeeTeamId)) {
-    return { error: "challenge.error.openChallenge" };
-  }
-
-  // Check unavailability
-  const unavailable = await getUnavailableTeamIds(sql, seasonId);
-  if (unavailable.has(challengerTeamId) || unavailable.has(challengeeTeamId)) {
-    return { error: "challenge.error.unavailable" };
-  }
-
   // Find challengee player ID for the event
+  const { players } = await getStandingsWithPlayers(sql, seasonId);
   const challengeePlayer = players.find((p) => p.teamId === challengeeTeamId);
   if (!challengeePlayer) {
     return { error: "challenge.error.invalidTarget" };
@@ -92,22 +63,25 @@ export async function createChallengeAction(
 
   try {
     const matchId = await sql.begin(async (tx) => {
-      return createChallenge(
-        tx,
-        seasonId,
-        season.clubId,
+      return challengeTeam(tx, seasonId, season.clubId, {
         challengerTeamId,
         challengeeTeamId,
-        player.id,
-        challengeePlayer.playerId,
+        challengerPlayerId: player.id,
+        challengeePlayerId: challengeePlayer.playerId,
         challengeText,
-      );
+      });
     });
 
     revalidatePath("/rankings");
 
     return { success: true, matchId };
   } catch (e) {
+    if (e instanceof IllegalChallengeError) {
+      return { error: "challenge.error.invalidTarget" };
+    }
+    if (e instanceof UnavailableTeamError) {
+      return { error: "challenge.error.unavailable" };
+    }
     if (e instanceof ChallengeConflictError) {
       return { error: "challenge.error.openChallenge" };
     }
