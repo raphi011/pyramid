@@ -16,7 +16,7 @@ const toggleClubDisabledSchema = z.object({
 });
 
 const createClubSchema = z.object({
-  name: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(100),
   adminEmail: z.string().trim().toLowerCase().email(),
 });
 

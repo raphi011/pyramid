@@ -107,7 +107,7 @@ type RankingsViewProps = {
   seasons: {
     id: number;
     name: string;
-    status?: "draft" | "active" | "ended";
+    status: "draft" | "active" | "ended";
   }[];
   currentSeasonId: number | null;
   clubName: string;
@@ -118,7 +118,7 @@ type RankingsViewProps = {
   currentTeamId: number | null;
   openEnrollment: boolean;
   isIndividual: boolean;
-  isArchived?: boolean;
+  isArchived: boolean;
 };
 
 export function RankingsView({
@@ -132,7 +132,7 @@ export function RankingsView({
   currentTeamId,
   openEnrollment,
   isIndividual,
-  isArchived = false,
+  isArchived,
 }: RankingsViewProps) {
   const t = useTranslations("ranking");
   const router = useRouter();

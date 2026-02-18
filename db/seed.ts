@@ -300,33 +300,28 @@ async function seed() {
     // standings make some pyramid challenges invalid. Domain validation is tested
     // by the completed matches above.
 
-    // ── 8. Forfeited match ─────────────────────────
-    {
-      const matchId = await createChallenge(
+    function seedChallenge(team1Idx: number, team2Idx: number) {
+      return createChallenge(
         tx,
         seasonId,
         clubId,
-        teamIds[6],
-        teamIds[5],
-        teamPlayerIds[6],
-        teamPlayerIds[5],
+        teamIds[team1Idx],
+        teamIds[team2Idx],
+        teamPlayerIds[team1Idx],
+        teamPlayerIds[team2Idx],
         "",
       );
+    }
+
+    // ── 8. Forfeited match ─────────────────────────
+    {
+      const matchId = await seedChallenge(6, 5);
       await forfeitAndUpdateStandings(tx, matchId, teamPlayerIds[6]);
     }
 
     // ── 9. Withdrawn match ─────────────────────────
     {
-      const matchId = await createChallenge(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[19],
-        teamIds[18],
-        teamPlayerIds[19],
-        teamPlayerIds[18],
-        "",
-      );
+      const matchId = await seedChallenge(19, 18);
       await withdrawMatch(
         tx,
         matchId,
@@ -339,16 +334,7 @@ async function seed() {
 
     // ── 10. Disputed match ─────────────────────────
     {
-      const matchId = await createChallenge(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[13],
-        teamIds[12],
-        teamPlayerIds[13],
-        teamPlayerIds[12],
-        "",
-      );
+      const matchId = await seedChallenge(13, 12);
       const score = winScore();
       await submitResult(tx, matchId, teamPlayerIds[13], score.t1, score.t2);
       await disputeMatchResult(
@@ -364,65 +350,18 @@ async function seed() {
 
     // ── 11. Pending confirmation match ─────────────
     {
-      const matchId = await createChallenge(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[7],
-        teamIds[6],
-        teamPlayerIds[7],
-        teamPlayerIds[6],
-        "",
-      );
+      const matchId = await seedChallenge(7, 6);
       const score = winScore();
       await submitResult(tx, matchId, teamPlayerIds[7], score.t1, score.t2);
     }
 
     // ── 12. Open challenges ────────────────────────
-    const challengedMatch1Id = await createChallenge(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[9],
-      teamIds[10],
-      teamPlayerIds[9],
-      teamPlayerIds[10],
-      "",
-    );
-
-    const challengedMatch2Id = await createChallenge(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[14],
-      teamIds[11],
-      teamPlayerIds[14],
-      teamPlayerIds[11],
-      "",
-    );
-
-    await createChallenge(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[17],
-      teamIds[16],
-      teamPlayerIds[17],
-      teamPlayerIds[16],
-      "",
-    );
+    const challengedMatch1Id = await seedChallenge(9, 10);
+    const challengedMatch2Id = await seedChallenge(14, 11);
+    await seedChallenge(17, 16);
 
     // ── 13. Date set match ─────────────────────────
-    const dateSetMatchId = await createChallenge(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[15],
-      teamIds[13],
-      teamPlayerIds[15],
-      teamPlayerIds[13],
-      "",
-    );
+    const dateSetMatchId = await seedChallenge(15, 13);
 
     const proposalId = await createDateProposal(
       tx,

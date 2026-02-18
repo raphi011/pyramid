@@ -55,6 +55,7 @@ export default async function RankingsPage({
         currentTeamId={null}
         openEnrollment={false}
         isIndividual={false}
+        isArchived={false}
       />
     );
   }
@@ -98,24 +99,29 @@ export default async function RankingsPage({
       : null;
 
   // Map to component shapes
+  function getPlayerVariant(
+    teamId: number,
+    rank: number,
+  ): "default" | "current" | "unavailable" | "challengeable" | "challenged" {
+    if (isArchived) return "default";
+    if (teamId === currentTeamId) return "current";
+    if (unavailableTeams.has(teamId)) return "unavailable";
+    if (
+      currentPlayerRank !== null &&
+      currentTeamId !== null &&
+      canChallenge(currentPlayerRank, rank) &&
+      !openChallengeTeams.has(teamId) &&
+      !openChallengeTeams.has(currentTeamId) &&
+      !unavailableTeams.has(currentTeamId)
+    ) {
+      return "challengeable";
+    }
+    if (openChallengeTeams.has(teamId)) return "challenged";
+    return "default";
+  }
+
   const pyramidPlayers = players.map((p) => {
     const wl = winsLossesMap.get(p.teamId) ?? { wins: 0, losses: 0 };
-    const variant = isArchived
-      ? ("default" as const)
-      : p.teamId === currentTeamId
-        ? ("current" as const)
-        : unavailableTeams.has(p.teamId)
-          ? ("unavailable" as const)
-          : currentPlayerRank !== null &&
-              currentTeamId !== null &&
-              canChallenge(currentPlayerRank, p.rank) &&
-              !openChallengeTeams.has(p.teamId) &&
-              !openChallengeTeams.has(currentTeamId) &&
-              !unavailableTeams.has(currentTeamId)
-            ? ("challengeable" as const)
-            : openChallengeTeams.has(p.teamId)
-              ? ("challenged" as const)
-              : ("default" as const);
 
     return {
       id: p.teamId,
@@ -125,7 +131,7 @@ export default async function RankingsPage({
       rank: p.rank,
       wins: wl.wins,
       losses: wl.losses,
-      variant,
+      variant: getPlayerVariant(p.teamId, p.rank),
       avatarSrc: imageUrl(p.imageId),
     };
   });

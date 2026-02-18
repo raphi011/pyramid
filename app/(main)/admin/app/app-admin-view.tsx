@@ -62,8 +62,15 @@ export function AppAdminView({
     });
   }
 
+  function resetCreateClubForm() {
+    setClubName("");
+    setClubAdminEmail("");
+    setShowCreateClub(false);
+  }
+
   function handleCreateClub() {
     if (!createClubAction) return;
+    setError(null);
     const fd = new FormData();
     fd.append("name", clubName);
     fd.append("adminEmail", clubAdminEmail);
@@ -73,9 +80,7 @@ export function AppAdminView({
       if (isActionError(result)) {
         setError(tError(result.error));
       } else {
-        setClubName("");
-        setClubAdminEmail("");
-        setShowCreateClub(false);
+        resetCreateClubForm();
       }
     });
   }
@@ -208,14 +213,7 @@ export function AppAdminView({
                 >
                   {t("confirmCreateClub")}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowCreateClub(false);
-                    setClubName("");
-                    setClubAdminEmail("");
-                  }}
-                >
+                <Button variant="outline" onClick={resetCreateClubForm}>
                   {t("cancel")}
                 </Button>
               </div>
