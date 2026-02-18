@@ -193,6 +193,20 @@ export async function getEventReadWatermarks(
   return map;
 }
 
+export async function getMatchEvents(
+  sql: Sql,
+  matchId: number,
+): Promise<EventRow[]> {
+  const rows = await sql.unsafe(
+    `SELECT ${EVENT_SELECT}
+     ${EVENT_JOIN}
+     WHERE e.match_id = $1
+     ORDER BY e.created ASC, e.id ASC`,
+    [matchId],
+  );
+  return rows.map(toEventRow);
+}
+
 export async function markAsRead(
   sql: Sql,
   playerId: number,

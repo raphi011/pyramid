@@ -73,7 +73,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-CHAL-18](#us-chal-18-edit-match-comment) | Edit match comment | Player | P2 | Challenges | |
 | [US-COMMENT-IMG](#us-comment-img-upload-image-in-match-comment) | Upload image in match comment | Player | P2 | Challenges | ✅ |
 | [US-CHAL-19](#us-chal-19-rankings-update-after-result) | Rankings update after result | Player | P0 | Challenges | ✅ |
-| [US-CHAL-20](#us-chal-20-match-activity-timeline) | Match activity timeline | Player | P1 | Challenges | |
+| [US-CHAL-20](#us-chal-20-match-activity-timeline) | Match activity timeline | Player | P1 | Challenges | ✅ |
 | [US-PROF-01](#us-prof-01-view-own-profile) | View own profile | Player | P0 | Profile | ✅ |
 | [US-PROF-02](#us-prof-02-edit-profile-name-phone-bio) | Edit profile (name, phone, bio) | Player | P0 | Profile | ✅ |
 | [US-PROF-03](#us-prof-03-uploadchange-profile-photo) | Upload/change profile photo | Player | P1 | Profile | ✅ |

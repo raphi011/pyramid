@@ -9,6 +9,8 @@ import {
 } from "@/app/lib/db/match";
 import { getStandingsWithPlayers } from "@/app/lib/db/season";
 import { getPlayerRole } from "@/app/lib/db/club";
+import { getMatchEvents } from "@/app/lib/db/event";
+import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
 import { MatchDetailView } from "./match-detail-view";
 
 type MatchDetailPageProps = {
@@ -42,14 +44,20 @@ export default async function MatchDetailPage({
   const match = await getMatchById(sql, matchId);
   if (!match) notFound();
 
-  const [proposals, comments, standings, clubRole] = await Promise.all([
-    getDateProposals(sql, matchId),
-    getMatchComments(sql, matchId),
-    getStandingsWithPlayers(sql, match.seasonId),
-    getPlayerRole(sql, player.id, match.clubId),
-  ]);
+  const [proposals, comments, standings, clubRole, eventRows] =
+    await Promise.all([
+      getDateProposals(sql, matchId),
+      getMatchComments(sql, matchId),
+      getStandingsWithPlayers(sql, match.seasonId),
+      getPlayerRole(sql, player.id, match.clubId),
+      getMatchEvents(sql, matchId),
+    ]);
 
   const isAdmin = clubRole === "admin";
+
+  const events = mapEventRowsToTimeline(eventRows, {
+    watermarks: new Map(),
+  }).map(({ href: _href, ...rest }) => rest);
 
   // Determine user role
   const isTeam1 = player.id === match.team1PlayerId;
@@ -112,6 +120,7 @@ export default async function MatchDetailPage({
       team1Rank={team1Rank}
       team2Rank={team2Rank}
       isAdmin={isAdmin}
+      events={events}
     />
   );
 }

@@ -20,6 +20,10 @@ import {
   type SetScore,
 } from "@/components/domain/match-score-input";
 import {
+  EventTimeline,
+  type TimelineEvent,
+} from "@/components/domain/event-timeline";
+import {
   proposeDateAction,
   acceptDateAction,
   declineDateAction,
@@ -83,6 +87,7 @@ type MatchDetailViewProps = {
   match: SerializedMatch;
   proposals: SerializedProposal[];
   comments: SerializedComment[];
+  events: TimelineEvent[];
   userRole: "team1" | "team2" | "spectator";
   currentPlayerId: number;
   team1Rank: number | null;
@@ -153,6 +158,7 @@ export function MatchDetailView({
   match,
   proposals,
   comments,
+  events,
   userRole,
   currentPlayerId,
   team1Rank,
@@ -504,6 +510,18 @@ export function MatchDetailView({
           )}
         </CardContent>
       </Card>
+
+      {/* Activity Timeline */}
+      {events.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("activity")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EventTimeline events={events} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Result Confirmation */}
       {canConfirm && (
