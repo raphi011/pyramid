@@ -1,3 +1,4 @@
+import { generateInviteCode } from "../crypto";
 import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
@@ -135,6 +136,23 @@ export async function getClubMembers(
     imageId: (r.imageId as string) ?? null,
     role: r.role as ClubRole,
   }));
+}
+
+// ── Create club ──────────────────────────────────────
+
+export async function createClub(
+  sql: Sql,
+  { name, inviteCode }: { name: string; inviteCode?: string },
+): Promise<number> {
+  const code = inviteCode ?? generateInviteCode();
+
+  const [row] = await sql`
+    INSERT INTO clubs (name, invite_code, is_disabled, created)
+    VALUES (${name}, ${code}, false, NOW())
+    RETURNING id
+  `;
+
+  return row.id as number;
 }
 
 // ── Join club ─────────────────────────────────────────

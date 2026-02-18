@@ -3,6 +3,27 @@ import postgres from "postgres";
 // Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../app/lib/db";
 
+import { createPlayer } from "../app/lib/db/player";
+import { createClub, joinClub } from "../app/lib/db/club";
+import {
+  createSeason,
+  startSeason,
+  createNewPlayerEvent,
+} from "../app/lib/db/season";
+import {
+  withdrawMatch,
+  disputeMatchResult,
+  createDateProposal,
+  acceptDateProposal,
+  createMatchComment,
+} from "../app/lib/db/match";
+import { challengeTeam } from "../app/lib/domain/challenge";
+import {
+  submitResult,
+  confirmResult,
+  forfeitAndUpdateStandings,
+} from "../app/lib/domain/match";
+
 const DATABASE_URL =
   process.env.DATABASE_URL ??
   "postgres://pyramid:pyramid@localhost:5433/pyramid_dev";
@@ -21,17 +42,14 @@ function winScore(): { t1: number[]; t2: number[] } {
   let t2Wins = 0;
   for (let i = 0; i < sets; i++) {
     if (t1Wins === 2) {
-      // team2 must win this set (only happens in 2-1 scenario filling)
       t1.push(randomLosingScore());
       t2.push(6);
       t2Wins++;
     } else if (t2Wins === 1 && t1Wins < 2) {
-      // team1 must win remaining
       t1.push(6);
       t2.push(randomLosingScore());
       t1Wins++;
     } else if (i < sets - 1 && sets === 3 && t1Wins === 1 && t2Wins === 0) {
-      // team2 wins this set to make it 1-1
       t1.push(randomLosingScore());
       t2.push(6);
       t2Wins++;
@@ -46,14 +64,6 @@ function winScore(): { t1: number[]; t2: number[] } {
 
 function randomLosingScore(): number {
   return Math.floor(Math.random() * 5); // 0-4
-}
-
-function daysAgo(days: number): Date {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-}
-
-function hoursAgo(hours: number): Date {
-  return new Date(Date.now() - hours * 60 * 60 * 1000);
 }
 
 function daysFromNow(days: number): Date {
@@ -102,11 +112,53 @@ const COMMENTS = [
   "Nächste Woche wieder?",
 ];
 
+// ── Match definitions ────────────────────────────
+
+type MatchDef = {
+  /** team index of challenger (lower-ranked player initiating) */
+  team1Idx: number;
+  /** team index of challengee (higher-ranked player) */
+  team2Idx: number;
+  /** team index of winner */
+  winnerIdx: number;
+};
+
+// Completed matches in chronological order.
+// team1 is the challenger, team2 is the challengee.
+const completedMatches: MatchDef[] = [
+  // Week 1
+  { team1Idx: 1, team2Idx: 0, winnerIdx: 1 },
+  { team1Idx: 3, team2Idx: 2, winnerIdx: 2 },
+  { team1Idx: 5, team2Idx: 4, winnerIdx: 5 },
+  { team1Idx: 7, team2Idx: 6, winnerIdx: 7 },
+  // Week 2
+  { team1Idx: 2, team2Idx: 1, winnerIdx: 2 },
+  { team1Idx: 4, team2Idx: 3, winnerIdx: 4 },
+  { team1Idx: 9, team2Idx: 8, winnerIdx: 9 },
+  { team1Idx: 11, team2Idx: 10, winnerIdx: 10 },
+  // Week 3
+  { team1Idx: 0, team2Idx: 2, winnerIdx: 0 },
+  { team1Idx: 6, team2Idx: 5, winnerIdx: 5 },
+  { team1Idx: 8, team2Idx: 7, winnerIdx: 8 },
+  { team1Idx: 13, team2Idx: 12, winnerIdx: 13 },
+  { team1Idx: 15, team2Idx: 14, winnerIdx: 14 },
+  // Week 4
+  { team1Idx: 1, team2Idx: 0, winnerIdx: 0 },
+  { team1Idx: 3, team2Idx: 4, winnerIdx: 3 },
+  { team1Idx: 10, team2Idx: 9, winnerIdx: 10 },
+  { team1Idx: 12, team2Idx: 11, winnerIdx: 12 },
+  { team1Idx: 16, team2Idx: 15, winnerIdx: 16 },
+  { team1Idx: 18, team2Idx: 17, winnerIdx: 17 },
+  // Recent
+  { team1Idx: 5, team2Idx: 4, winnerIdx: 4 },
+  { team1Idx: 14, team2Idx: 13, winnerIdx: 14 },
+];
+
 // ── Main seed function ───────────────────────────
 
 async function seed() {
   await sql.begin(async (tx) => {
-    // ── Wipe existing data ───────────────────────────
+    // ── 1. Wipe existing data ──────────────────────
     await tx`DELETE FROM magic_links`;
     await tx`DELETE FROM sessions`;
     await tx`DELETE FROM event_reads`;
@@ -125,31 +177,28 @@ async function seed() {
     await tx`DELETE FROM images`;
     await tx`DELETE FROM player`;
 
-    // ── Club ──────────────────────────────────────────
-    const [club] = await tx`
-      INSERT INTO clubs (name, invite_code, is_disabled, created)
-      VALUES ('TC Beispiel', 'test-123', false, NOW())
-      RETURNING id
-    `;
-    const clubId = club.id;
-
-    // ── Players ───────────────────────────────────────
-    const playerIds: number[] = [];
+    // ── 2. Create players ──────────────────────────
+    const players: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+    }[] = [];
     for (const p of PLAYERS) {
-      const [row] = await tx`
-        INSERT INTO player (first_name, last_name, email_address, created)
-        VALUES (${p.firstName}, ${p.lastName}, ${p.email}, NOW())
-        RETURNING id
-      `;
-      playerIds.push(row.id);
+      const player = await createPlayer(tx, p);
+      players.push(player);
     }
+    const playerIds = players.map((p) => p.id);
 
-    // ── Club memberships ──────────────────────────────
+    // ── 3. Create club ─────────────────────────────
+    const clubId = await createClub(tx, {
+      name: "TC Beispiel",
+      inviteCode: "test-123",
+    });
+
+    // ── 4. Join club (all players) ─────────────────
     for (const playerId of playerIds) {
-      await tx`
-        INSERT INTO club_members (player_id, club_id, role, created)
-        VALUES (${playerId}, ${clubId}, 'player', NOW())
-      `;
+      await joinClub(tx, playerId, clubId);
     }
     // Make first player admin
     await tx`
@@ -157,286 +206,297 @@ async function seed() {
       WHERE player_id = ${playerIds[0]} AND club_id = ${clubId}
     `;
 
-    // ── Season ────────────────────────────────────────
-    const [season] = await tx`
-      INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, best_of, invite_code, created, started_at)
-      VALUES (${clubId}, 'Einzel 2026', 'active', 1, 1, 3, 'JOIN26', NOW(), ${daysAgo(30)})
-      RETURNING id
-    `;
-    const seasonId = season.id;
+    // ── 5. Create season ───────────────────────────
+    const { seasonId, teamIds } = await createSeason(tx, clubId, {
+      name: "Einzel 2026",
+      type: "individual",
+      teamSize: 1,
+      bestOf: 3,
+      matchDeadlineDays: 14,
+      reminderDays: 7,
+      requiresConfirmation: true,
+      openEnrollment: true,
+      startingRanks: "empty",
+      inviteCode: "JOIN26",
+    });
 
-    // ── Teams (one per player for individual season) ──
-    const teamIds: number[] = [];
-    for (const playerId of playerIds) {
-      const [team] = await tx`
-        INSERT INTO teams (season_id, name, opted_out, created)
-        VALUES (${seasonId}, '', false, NOW())
-        RETURNING id
-      `;
-      await tx`
-        INSERT INTO team_players (team_id, player_id, created)
-        VALUES (${team.id}, ${playerId}, NOW())
-      `;
-      teamIds.push(team.id);
-    }
+    // ── 6. Start season ────────────────────────────
+    await startSeason(tx, seasonId, clubId);
 
-    // ── Helper to get playerId for a teamId ──────────
-    function playerIdForTeam(teamIdx: number): number {
-      return playerIds[teamIdx];
-    }
-
-    // ── Initial standings (original pyramid order) ────
+    // Season start event
     await tx`
-      INSERT INTO season_standings (season_id, results, created)
-      VALUES (${seasonId}, ${teamIds}, ${daysAgo(28)})
+      INSERT INTO events (club_id, season_id, event_type, created)
+      VALUES (${clubId}, ${seasonId}, 'season_start', NOW())
     `;
 
-    // ── Completed matches (with scores) ──────────────
-    type MatchDef = {
-      team1Idx: number;
-      team2Idx: number;
-      winnerIdx: number;
-      daysAgo: number;
-    };
+    // New player events for all players
+    for (let i = 0; i < players.length; i++) {
+      await createNewPlayerEvent(
+        tx,
+        clubId,
+        playerIds[i],
+        {
+          firstName: players[i].firstName,
+          lastName: players[i].lastName,
+          startingRank: i + 1,
+        },
+        seasonId,
+      );
+    }
 
-    const completedMatches: MatchDef[] = [
-      // Week 1 — early matches
-      { team1Idx: 1, team2Idx: 0, winnerIdx: 1, daysAgo: 25 },
-      { team1Idx: 3, team2Idx: 2, winnerIdx: 2, daysAgo: 24 },
-      { team1Idx: 5, team2Idx: 4, winnerIdx: 5, daysAgo: 23 },
-      { team1Idx: 7, team2Idx: 6, winnerIdx: 7, daysAgo: 22 },
-      // Week 2
-      { team1Idx: 2, team2Idx: 1, winnerIdx: 2, daysAgo: 20 },
-      { team1Idx: 4, team2Idx: 3, winnerIdx: 4, daysAgo: 19 },
-      { team1Idx: 9, team2Idx: 8, winnerIdx: 9, daysAgo: 18 },
-      { team1Idx: 11, team2Idx: 10, winnerIdx: 10, daysAgo: 17 },
-      // Week 3
-      { team1Idx: 0, team2Idx: 2, winnerIdx: 0, daysAgo: 14 },
-      { team1Idx: 6, team2Idx: 5, winnerIdx: 5, daysAgo: 13 },
-      { team1Idx: 8, team2Idx: 7, winnerIdx: 8, daysAgo: 12 },
-      { team1Idx: 13, team2Idx: 12, winnerIdx: 13, daysAgo: 11 },
-      { team1Idx: 15, team2Idx: 14, winnerIdx: 14, daysAgo: 11 },
-      // Week 4
-      { team1Idx: 1, team2Idx: 0, winnerIdx: 0, daysAgo: 7 },
-      { team1Idx: 3, team2Idx: 2, winnerIdx: 3, daysAgo: 6 },
-      { team1Idx: 10, team2Idx: 9, winnerIdx: 10, daysAgo: 5 },
-      { team1Idx: 12, team2Idx: 11, winnerIdx: 12, daysAgo: 4 },
-      { team1Idx: 16, team2Idx: 15, winnerIdx: 16, daysAgo: 4 },
-      { team1Idx: 18, team2Idx: 17, winnerIdx: 17, daysAgo: 3 },
-      // Recent
-      { team1Idx: 5, team2Idx: 4, winnerIdx: 4, daysAgo: 2 },
-      { team1Idx: 14, team2Idx: 13, winnerIdx: 14, daysAgo: 1 },
-    ];
+    // ── 7. Process completed matches ───────────────
+    // Each match goes through the full lifecycle:
+    // challengeTeam → submitResult → confirmResult (includes standings update)
+    const completedMatchIds: number[] = [];
 
-    const matchIds: number[] = [];
     for (const m of completedMatches) {
+      const challengerPlayerId = playerIds[m.team1Idx];
+      const challengeePlayerId = playerIds[m.team2Idx];
+
+      // Create challenge (validates pyramid rules + unavailability + open challenges)
+      const matchId = await challengeTeam(
+        tx,
+        seasonId,
+        clubId,
+        teamIds[m.team1Idx],
+        teamIds[m.team2Idx],
+        challengerPlayerId,
+        challengeePlayerId,
+        "",
+      );
+
+      // Generate score (winner gets the winning side)
       const score = winScore();
-      // Swap scores if team2 is the winner
       const t1Score = m.winnerIdx === m.team1Idx ? score.t1 : score.t2;
       const t2Score = m.winnerIdx === m.team1Idx ? score.t2 : score.t1;
-      const enteredBy = playerIdForTeam(m.winnerIdx);
-      const confirmedBy = playerIdForTeam(
-        m.winnerIdx === m.team1Idx ? m.team2Idx : m.team1Idx,
+
+      // Result entered by winner
+      const enteredBy = playerIds[m.winnerIdx];
+      await submitResult(tx, matchId, enteredBy, t1Score, t2Score);
+
+      // Confirmed by the opponent (updates standings atomically)
+      const confirmedBy =
+        m.winnerIdx === m.team1Idx ? challengeePlayerId : challengerPlayerId;
+      await confirmResult(tx, matchId, confirmedBy);
+
+      completedMatchIds.push(matchId);
+    }
+
+    // ── 8. Forfeited match ─────────────────────────
+    // Sophie (6) challenges Felix (5), Sophie forfeits → Felix wins
+    {
+      const matchId = await challengeTeam(
+        tx,
+        seasonId,
+        clubId,
+        teamIds[6],
+        teamIds[5],
+        playerIds[6],
+        playerIds[5],
+        "",
       );
-      const gameAt = daysAgo(m.daysAgo);
 
-      const [match] = await tx`
-        INSERT INTO season_matches
-          (season_id, team1_id, team2_id, winner_team_id, status,
-           team1_score, team2_score, result_entered_by, result_entered_at,
-           confirmed_by, game_at, created)
-        VALUES
-          (${seasonId}, ${teamIds[m.team1Idx]}, ${teamIds[m.team2Idx]},
-           ${teamIds[m.winnerIdx]}, 'completed',
-           ${t1Score}, ${t2Score}, ${enteredBy}, ${gameAt},
-           ${confirmedBy}, ${gameAt}, ${gameAt})
-        RETURNING id
-      `;
-      matchIds.push(match.id);
+      await forfeitAndUpdateStandings(tx, matchId, playerIds[6]);
     }
 
-    // ── Pending confirmation match ────────────────────
+    // ── 9. Withdrawn match ─────────────────────────
+    // Tim (19) challenges Hannah (18), then withdraws
     {
-      const score = winScore();
-      const [match] = await tx`
-        INSERT INTO season_matches
-          (season_id, team1_id, team2_id, winner_team_id, status,
-           team1_score, team2_score, result_entered_by, result_entered_at, created)
-        VALUES
-          (${seasonId}, ${teamIds[7]}, ${teamIds[6]}, ${teamIds[7]}, 'pending_confirmation',
-           ${score.t1}, ${score.t2}, ${playerIds[7]}, ${hoursAgo(3)}, ${daysAgo(2)})
-        RETURNING id
-      `;
-      matchIds.push(match.id);
+      const matchId = await challengeTeam(
+        tx,
+        seasonId,
+        clubId,
+        teamIds[19],
+        teamIds[18],
+        playerIds[19],
+        playerIds[18],
+        "",
+      );
+
+      await withdrawMatch(
+        tx,
+        matchId,
+        playerIds[19],
+        clubId,
+        seasonId,
+        playerIds[18],
+      );
     }
 
-    // ── Open matches (challenged / date_set) ──────────
-    // Challenged — no date yet
-    const [challengedMatch1] = await tx`
-      INSERT INTO season_matches
-        (season_id, team1_id, team2_id, status, created)
-      VALUES
-        (${seasonId}, ${teamIds[9]}, ${teamIds[8]}, 'challenged', ${hoursAgo(12)})
-      RETURNING id
-    `;
-    matchIds.push(challengedMatch1.id);
-
-    const [challengedMatch2] = await tx`
-      INSERT INTO season_matches
-        (season_id, team1_id, team2_id, status, created)
-      VALUES
-        (${seasonId}, ${teamIds[11]}, ${teamIds[10]}, 'challenged', ${hoursAgo(6)})
-      RETURNING id
-    `;
-    matchIds.push(challengedMatch2.id);
-
-    const [challengedMatch3] = await tx`
-      INSERT INTO season_matches
-        (season_id, team1_id, team2_id, status, created)
-      VALUES
-        (${seasonId}, ${teamIds[17]}, ${teamIds[16]}, 'challenged', ${hoursAgo(2)})
-      RETURNING id
-    `;
-    matchIds.push(challengedMatch3.id);
-
-    // Date set
-    const [dateSetMatch] = await tx`
-      INSERT INTO season_matches
-        (season_id, team1_id, team2_id, status, game_at, created)
-      VALUES
-        (${seasonId}, ${teamIds[15]}, ${teamIds[14]}, 'date_set',
-         ${daysFromNow(3)}, ${daysAgo(1)})
-      RETURNING id
-    `;
-    matchIds.push(dateSetMatch.id);
-
-    // ── Withdrawn match ───────────────────────────────
-    await tx`
-      INSERT INTO season_matches
-        (season_id, team1_id, team2_id, status, created)
-      VALUES
-        (${seasonId}, ${teamIds[19]}, ${teamIds[18]}, 'withdrawn', ${daysAgo(5)})
-    `;
-
-    // ── Forfeited match ───────────────────────────────
-    await tx`
-      INSERT INTO season_matches
-        (season_id, team1_id, team2_id, winner_team_id, status, created)
-      VALUES
-        (${seasonId}, ${teamIds[6]}, ${teamIds[5]}, ${teamIds[5]}, 'forfeited', ${daysAgo(8)})
-    `;
-
-    // ── Disputed match ────────────────────────────────
+    // ── 10. Disputed match ─────────────────────────
+    // Niklas (13) challenges Lena (12), enters result, Lena disputes
     {
+      const matchId = await challengeTeam(
+        tx,
+        seasonId,
+        clubId,
+        teamIds[13],
+        teamIds[12],
+        playerIds[13],
+        playerIds[12],
+        "",
+      );
+
       const score = winScore();
-      await tx`
-        INSERT INTO season_matches
-          (season_id, team1_id, team2_id, winner_team_id, status,
-           team1_score, team2_score, result_entered_by, result_entered_at,
-           disputed_reason, created)
-        VALUES
-          (${seasonId}, ${teamIds[13]}, ${teamIds[12]}, ${teamIds[13]}, 'disputed',
-           ${score.t1}, ${score.t2}, ${playerIds[13]}, ${daysAgo(3)},
-           'Die Punkte im zweiten Satz stimmen nicht.', ${daysAgo(4)})
-      `;
+      await submitResult(tx, matchId, playerIds[13], score.t1, score.t2);
+
+      await disputeMatchResult(
+        tx,
+        matchId,
+        playerIds[12],
+        clubId,
+        seasonId,
+        playerIds[13],
+        "Die Punkte im zweiten Satz stimmen nicht.",
+      );
     }
 
-    // ── Date proposals ────────────────────────────────
-    // Proposals for challengedMatch1
-    await tx`
-      INSERT INTO date_proposals (match_id, proposed_by, proposed_datetime, status, created)
-      VALUES
-        (${challengedMatch1.id}, ${playerIds[9]}, ${daysFromNow(2)}, 'pending', ${hoursAgo(10)}),
-        (${challengedMatch1.id}, ${playerIds[8]}, ${daysFromNow(4)}, 'pending', ${hoursAgo(5)})
-    `;
+    // ── 11. Pending confirmation match ─────────────
+    // Luca (7, rank 9) challenges Sophie (6, rank 6), Luca enters result (not yet confirmed)
+    {
+      const matchId = await challengeTeam(
+        tx,
+        seasonId,
+        clubId,
+        teamIds[7],
+        teamIds[6],
+        playerIds[7],
+        playerIds[6],
+        "",
+      );
 
-    // Proposals for challengedMatch2 (one declined)
-    await tx`
-      INSERT INTO date_proposals (match_id, proposed_by, proposed_datetime, status, created)
-      VALUES
-        (${challengedMatch2.id}, ${playerIds[11]}, ${daysFromNow(1)}, 'declined', ${hoursAgo(5)}),
-        (${challengedMatch2.id}, ${playerIds[10]}, ${daysFromNow(5)}, 'pending', ${hoursAgo(3)})
-    `;
+      const score = winScore();
+      await submitResult(tx, matchId, playerIds[7], score.t1, score.t2);
+    }
 
-    // Accepted proposal for dateSetMatch
-    await tx`
-      INSERT INTO date_proposals (match_id, proposed_by, proposed_datetime, status, created)
-      VALUES
-        (${dateSetMatch.id}, ${playerIds[15]}, ${daysFromNow(3)}, 'accepted', ${daysAgo(1)}),
-        (${dateSetMatch.id}, ${playerIds[14]}, ${daysFromNow(7)}, 'dismissed', ${daysAgo(1)})
-    `;
+    // ── 12. Open challenges ────────────────────────
+    // Jonas (9) challenges Laura (10)
+    const challengedMatch1Id = await challengeTeam(
+      tx,
+      seasonId,
+      clubId,
+      teamIds[9],
+      teamIds[10],
+      playerIds[9],
+      playerIds[10],
+      "",
+    );
 
-    // ── Comments on some matches ──────────────────────
-    // Add comments to completed matches and open matches
+    // Emma (14) challenges David (11)
+    const challengedMatch2Id = await challengeTeam(
+      tx,
+      seasonId,
+      clubId,
+      teamIds[14],
+      teamIds[11],
+      playerIds[14],
+      playerIds[11],
+      "",
+    );
+
+    // Leon (17) challenges Mia (16)
+    await challengeTeam(
+      tx,
+      seasonId,
+      clubId,
+      teamIds[17],
+      teamIds[16],
+      playerIds[17],
+      playerIds[16],
+      "",
+    );
+
+    // ── 13. Date set match ─────────────────────────
+    // Paul (15) challenges Niklas (13), date proposal accepted
+    const dateSetMatchId = await challengeTeam(
+      tx,
+      seasonId,
+      clubId,
+      teamIds[15],
+      teamIds[13],
+      playerIds[15],
+      playerIds[13],
+      "",
+    );
+
+    const proposalId = await createDateProposal(
+      tx,
+      dateSetMatchId,
+      clubId,
+      seasonId,
+      playerIds[15],
+      playerIds[13],
+      daysFromNow(3),
+    );
+
+    await acceptDateProposal(
+      tx,
+      proposalId,
+      dateSetMatchId,
+      clubId,
+      seasonId,
+      playerIds[13],
+      playerIds[15],
+    );
+
+    // ── 14. Additional date proposals on open matches ──
+    // Proposals for challengedMatch1 (Jonas vs Laura)
+    await createDateProposal(
+      tx,
+      challengedMatch1Id,
+      clubId,
+      seasonId,
+      playerIds[9],
+      playerIds[10],
+      daysFromNow(2),
+    );
+    await createDateProposal(
+      tx,
+      challengedMatch1Id,
+      clubId,
+      seasonId,
+      playerIds[10],
+      playerIds[9],
+      daysFromNow(4),
+    );
+
+    // Proposals for challengedMatch2 (Emma vs David, one declined via raw SQL)
+    const declinedProposalId = await createDateProposal(
+      tx,
+      challengedMatch2Id,
+      clubId,
+      seasonId,
+      playerIds[14],
+      playerIds[11],
+      daysFromNow(1),
+    );
+    await tx`UPDATE date_proposals SET status = 'declined' WHERE id = ${declinedProposalId}`;
+
+    await createDateProposal(
+      tx,
+      challengedMatch2Id,
+      clubId,
+      seasonId,
+      playerIds[11],
+      playerIds[14],
+      daysFromNow(5),
+    );
+
+    // ── 15. Comments on matches ────────────────────
     const commentTargets = [
-      ...matchIds.slice(0, 5),
-      challengedMatch1.id,
-      challengedMatch2.id,
+      ...completedMatchIds.slice(0, 5),
+      challengedMatch1Id,
+      challengedMatch2Id,
     ];
     for (const matchId of commentTargets) {
       const numComments = 1 + Math.floor(Math.random() * 3);
       for (let i = 0; i < numComments; i++) {
         const playerId = pick(playerIds);
-        await tx`
-          INSERT INTO match_comments (match_id, player_id, comment, created)
-          VALUES (${matchId}, ${playerId}, ${pick(COMMENTS)}, ${hoursAgo(Math.floor(Math.random() * 48))})
-        `;
+        await createMatchComment(tx, matchId, playerId, pick(COMMENTS));
       }
     }
 
-    // ── Current standings (after all completed matches) ─
-    // Anna at rank 8 (middle of pyramid) so challenge highlighting is visible
-    const currentOrder = [
-      teamIds[2], // Lisa — #1
-      teamIds[1], // Max
-      teamIds[4], // Julia
-      teamIds[3], // Tom
-      teamIds[5], // Felix
-      teamIds[7], // Luca
-      teamIds[8], // Marie
-      teamIds[0], // Anna — #8 (middle)
-      teamIds[6], // Sophie
-      teamIds[9], // Jonas
-      teamIds[10], // Laura
-      teamIds[12], // Lena
-      teamIds[11], // David
-      teamIds[14], // Emma
-      teamIds[13], // Niklas
-      teamIds[16], // Mia
-      teamIds[15], // Paul
-      teamIds[17], // Leon
-      teamIds[19], // Tim
-      teamIds[18], // Hannah
-    ];
-    await tx`
-      INSERT INTO season_standings (season_id, results, created)
-      VALUES (${seasonId}, ${currentOrder}, NOW())
-    `;
-
-    // ── Events ────────────────────────────────────────
-    // Season start
-    await tx`
-      INSERT INTO events (club_id, season_id, event_type, created)
-      VALUES (${clubId}, ${seasonId}, 'season_start', ${daysAgo(30)})
-    `;
-
-    // Challenge events for open matches
-    for (const m of [challengedMatch1, challengedMatch2, challengedMatch3]) {
-      await tx`
-        INSERT INTO events (club_id, season_id, match_id, player_id, event_type, created)
-        VALUES (${clubId}, ${seasonId}, ${m.id}, ${playerIds[0]}, 'challenge', NOW())
-      `;
-    }
-
-    // Result events for some completed matches
-    for (let i = 0; i < 5; i++) {
-      await tx`
-        INSERT INTO events (club_id, season_id, match_id, event_type, created)
-        VALUES (${clubId}, ${seasonId}, ${matchIds[i]}, 'result', ${daysAgo(completedMatches[i].daysAgo)})
-      `;
-    }
-
-    // ── Magic links for quick login ──────────────────
+    // ── 16. Magic links for quick login ────────────
     const tokens: { name: string; token: string }[] = [];
     for (let i = 0; i < 3; i++) {
       const token = crypto.randomBytes(32).toString("hex");

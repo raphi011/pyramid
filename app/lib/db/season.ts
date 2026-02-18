@@ -1,4 +1,5 @@
 import type postgres from "postgres";
+import { generateInviteCode } from "../crypto";
 import type { Sql } from "../db";
 
 // ── Types ──────────────────────────────────────────────
@@ -233,6 +234,208 @@ export async function createNewPlayerEvent(
   `;
 
   return row.id as number;
+}
+
+// ── Create season ─────────────────────────────────────
+
+export type CreateSeasonOpts = {
+  name: string;
+  type: "individual" | "team";
+  teamSize: number;
+  bestOf: number;
+  matchDeadlineDays: number;
+  reminderDays: number;
+  requiresConfirmation: boolean;
+  openEnrollment: boolean;
+  startingRanks: "empty" | "from_season";
+  fromSeasonId?: number;
+  excludedMembers?: number[];
+  inviteCode?: string;
+};
+
+export async function createSeason(
+  tx: postgres.TransactionSql,
+  clubId: number,
+  opts: CreateSeasonOpts,
+): Promise<{ seasonId: number; teamIds: number[] }> {
+  const {
+    name,
+    type,
+    teamSize,
+    bestOf,
+    matchDeadlineDays,
+    reminderDays,
+    requiresConfirmation,
+    openEnrollment,
+    startingRanks,
+    fromSeasonId,
+    excludedMembers = [],
+    inviteCode,
+  } = opts;
+
+  const excludedSet = new Set(excludedMembers);
+  const minTeamSize = type === "team" ? teamSize : 1;
+  const maxTeamSize = type === "team" ? teamSize : 1;
+  const code = inviteCode ?? generateInviteCode();
+
+  // Verify fromSeasonId belongs to this club (IDOR prevention)
+  if (startingRanks === "from_season" && fromSeasonId != null) {
+    const sourceCheck = await tx`
+      SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId}
+    `;
+    if (sourceCheck.length === 0) {
+      throw new Error("INVALID_SOURCE_SEASON");
+    }
+  }
+
+  // 1. Insert season
+  const seasonRows = await tx`
+    INSERT INTO seasons (
+      club_id, name, min_team_size, max_team_size, best_of,
+      match_deadline_days, reminder_after_days,
+      requires_result_confirmation, open_enrollment,
+      invite_code, status, created
+    )
+    VALUES (
+      ${clubId}, ${name}, ${minTeamSize}, ${maxTeamSize}, ${bestOf},
+      ${matchDeadlineDays}, ${reminderDays},
+      ${requiresConfirmation}, ${openEnrollment},
+      ${code}, 'draft', NOW()
+    )
+    RETURNING id
+  `;
+  const seasonId = (seasonRows[0] as { id: number }).id;
+
+  // 2. For individual seasons: create a team per included club member
+  const teamIds: number[] = [];
+
+  if (type === "individual") {
+    const memberRows = await tx<{ id: number; name: string }[]>`
+      SELECT p.id, CONCAT(p.first_name, ' ', p.last_name) AS name
+      FROM club_members cm
+      JOIN player p ON p.id = cm.player_id
+      WHERE cm.club_id = ${clubId}
+      ORDER BY p.first_name ASC
+    `;
+
+    const includedMembers = memberRows.filter((m) => !excludedSet.has(m.id));
+
+    for (const member of includedMembers) {
+      const teamRows = await tx`
+        INSERT INTO teams (season_id, name, opted_out, created)
+        VALUES (${seasonId}, ${member.name}, false, NOW())
+        RETURNING id
+      `;
+      const teamId = (teamRows[0] as { id: number }).id;
+      teamIds.push(teamId);
+
+      await tx`
+        INSERT INTO team_players (team_id, player_id, created)
+        VALUES (${teamId}, ${member.id}, NOW())
+      `;
+    }
+
+    // 3. Create initial standings
+    if (startingRanks === "empty" && teamIds.length > 0) {
+      await tx`
+        INSERT INTO season_standings (season_id, match_id, results, comment, created)
+        VALUES (${seasonId}, NULL, ${teamIds}, '', NOW())
+      `;
+    } else if (startingRanks === "from_season" && fromSeasonId != null) {
+      const prevStandings = await tx`
+        SELECT ss.results
+        FROM season_standings ss
+        JOIN seasons s ON s.id = ss.season_id
+        WHERE ss.season_id = ${fromSeasonId} AND s.club_id = ${clubId}
+        ORDER BY ss.id DESC
+        LIMIT 1
+      `;
+
+      if (prevStandings.length > 0) {
+        const oldTeamIds = (prevStandings[0] as { results: number[] }).results;
+
+        // Map old teamId -> playerId
+        const oldTeamPlayerRows = await tx<
+          { team_id: number; player_id: number }[]
+        >`
+          SELECT tp.team_id, tp.player_id
+          FROM team_players tp
+          JOIN teams t ON t.id = tp.team_id
+          WHERE t.season_id = ${fromSeasonId}
+        `;
+        const oldTeamToPlayer = new Map<number, number>();
+        for (const row of oldTeamPlayerRows) {
+          oldTeamToPlayer.set(row.team_id, row.player_id);
+        }
+
+        // Map playerId -> new teamId
+        const newTeamPlayerRows = await tx<
+          { team_id: number; player_id: number }[]
+        >`
+          SELECT tp.team_id, tp.player_id
+          FROM team_players tp
+          JOIN teams t ON t.id = tp.team_id
+          WHERE t.season_id = ${seasonId}
+        `;
+        const playerToNewTeam = new Map<number, number>();
+        for (const row of newTeamPlayerRows) {
+          playerToNewTeam.set(row.player_id, row.team_id);
+        }
+
+        // Build new results array preserving order from previous season
+        const newResults: number[] = [];
+        for (const oldTeamId of oldTeamIds) {
+          const playerId = oldTeamToPlayer.get(oldTeamId);
+          if (playerId != null) {
+            const newTeamId = playerToNewTeam.get(playerId);
+            if (newTeamId != null) {
+              newResults.push(newTeamId);
+            }
+          }
+        }
+
+        // Add any new players not in previous season at the end
+        for (const tId of teamIds) {
+          if (!newResults.includes(tId)) {
+            newResults.push(tId);
+          }
+        }
+
+        if (newResults.length > 0) {
+          await tx`
+            INSERT INTO season_standings (season_id, match_id, results, comment, created)
+            VALUES (${seasonId}, NULL, ${newResults}, '', NOW())
+          `;
+        }
+      } else {
+        // No previous standings found, fall back to empty order
+        if (teamIds.length > 0) {
+          await tx`
+            INSERT INTO season_standings (season_id, match_id, results, comment, created)
+            VALUES (${seasonId}, NULL, ${teamIds}, '', NOW())
+          `;
+        }
+      }
+    }
+  }
+
+  return { seasonId, teamIds };
+}
+
+// ── Start / end season ────────────────────────────────
+
+export async function startSeason(
+  sql: Sql,
+  seasonId: number,
+  clubId: number,
+): Promise<boolean> {
+  const result = await sql`
+    UPDATE seasons
+    SET status = 'active', started_at = NOW()
+    WHERE id = ${seasonId} AND club_id = ${clubId} AND status = 'draft'
+  `;
+
+  return result.count > 0;
 }
 
 // ── Club page queries ─────────────────────────────────

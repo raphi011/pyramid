@@ -3,28 +3,17 @@ import { cookies } from "next/headers";
 import { sql } from "./db";
 import * as authRepo from "./db/auth";
 import type { Theme } from "./db/auth";
-import crypto from "crypto";
 import { env } from "./env";
+
+// Re-export from server-only-free module so existing imports keep working
+export { generateToken, generateInviteCode } from "./crypto";
+import { generateToken } from "./crypto";
 
 const SESSION_COOKIE_NAME = "session_token";
 const THEME_COOKIE_NAME = "theme";
 const MAGIC_LINK_EXPIRY_MINUTES = 15;
 const SESSION_EXPIRY_DAYS = 7;
 const THEME_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
-
-export function generateToken(): string {
-  return crypto.randomBytes(32).toString("hex");
-}
-
-export function generateInviteCode(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const bytes = crypto.randomBytes(6);
-  let code = "";
-  for (let i = 0; i < 6; i++) {
-    code += chars[bytes[i] % chars.length];
-  }
-  return code;
-}
 
 export async function createMagicLink(playerId: number): Promise<string> {
   const token = generateToken();

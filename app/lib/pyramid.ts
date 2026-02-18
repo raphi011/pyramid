@@ -35,6 +35,43 @@ export function canChallenge(
   return challengeeRank >= maxRank;
 }
 
+/**
+ * Validates that a challenge between two teams is legal per pyramid rules,
+ * given the current standings. Throws if illegal.
+ *
+ * @param standings - Ordered array of team IDs (index 0 = rank 1)
+ * @param challengerTeamId - Team initiating the challenge (lower-ranked)
+ * @param challengeeTeamId - Team being challenged (higher-ranked)
+ */
+export function assertLegalChallenge(
+  standings: number[],
+  challengerTeamId: number,
+  challengeeTeamId: number,
+): void {
+  const challengerIdx = standings.indexOf(challengerTeamId);
+  const challengeeIdx = standings.indexOf(challengeeTeamId);
+
+  if (challengerIdx === -1) {
+    throw new Error(
+      `Challenger team ${challengerTeamId} not found in standings`,
+    );
+  }
+  if (challengeeIdx === -1) {
+    throw new Error(
+      `Challengee team ${challengeeTeamId} not found in standings`,
+    );
+  }
+
+  const challengerRank = challengerIdx + 1;
+  const challengeeRank = challengeeIdx + 1;
+
+  if (!canChallenge(challengerRank, challengeeRank)) {
+    throw new Error(
+      `Illegal challenge: rank ${challengerRank} cannot challenge rank ${challengeeRank}`,
+    );
+  }
+}
+
 export function computeMovement(
   teamId: number,
   currentResults: number[],

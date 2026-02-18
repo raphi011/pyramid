@@ -11,19 +11,20 @@ import {
   acceptDateProposal,
   declineDateProposal,
   removeDateProposal,
-  enterMatchResult,
-  confirmMatchResult,
-  updateStandingsAfterResult,
   withdrawMatch,
-  forfeitMatch,
   disputeMatchResult,
   MatchStatusConflictError,
   createMatchComment,
   updateMatchImage,
   getMatchImageId,
 } from "@/app/lib/db/match";
+import {
+  submitResult,
+  confirmResult,
+  forfeitAndUpdateStandings,
+  InvalidScoresError,
+} from "@/app/lib/domain/match";
 import { postgresImageStorage } from "@/app/lib/image-storage";
-import { validateScores } from "@/app/lib/validate-scores";
 import { parseFormData } from "@/app/lib/action-utils";
 
 export type MatchActionResult = { success: true } | { error: string };
@@ -298,44 +299,22 @@ export async function enterResultAction(
     return { error: "matchDetail.error.notParticipant" };
   }
 
-  if (!validateScores(team1Score, team2Score, match.seasonBestOf)) {
-    return { error: "matchDetail.error.invalidScores" };
-  }
-
   if (imageId) {
     const owned = await postgresImageStorage.isOwnedBy(sql, imageId, player.id);
     if (!owned) return { error: "matchDetail.error.serverError" };
   }
 
-  // Determine winner
-  let team1Wins = 0;
-  let team2Wins = 0;
-  for (let i = 0; i < team1Score.length; i++) {
-    if (team1Score[i] > team2Score[i]) team1Wins++;
-    else team2Wins++;
-  }
-  const winnerTeamId = team1Wins > team2Wins ? match.team1Id : match.team2Id;
-
-  const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
-
   try {
     await sql.begin(async (tx) => {
-      await enterMatchResult(
-        tx,
-        matchId,
-        player.id,
-        team1Score,
-        team2Score,
-        winnerTeamId,
-        match.clubId,
-        match.seasonId,
-        opponentPlayerId,
-      );
+      await submitResult(tx, matchId, player.id, team1Score, team2Score);
       if (imageId) {
         await updateMatchImage(tx, matchId, imageId);
       }
     });
   } catch (e) {
+    if (e instanceof InvalidScoresError) {
+      return { error: "matchDetail.error.invalidScores" };
+    }
     console.error("enterResultAction transaction failed:", e);
     return { error: "matchDetail.error.serverError" };
   }
@@ -377,26 +356,7 @@ export async function confirmResultAction(
 
   try {
     await sql.begin(async (tx) => {
-      const { winnerTeamId, team1Id, team2Id } = await confirmMatchResult(
-        tx,
-        matchId,
-        player.id,
-        match.clubId,
-        match.seasonId,
-      );
-
-      // team1 is always the challenger
-      const challengerTeamId = team1Id;
-      const loserTeamId = winnerTeamId === team1Id ? team2Id : team1Id;
-
-      await updateStandingsAfterResult(
-        tx,
-        match.seasonId,
-        matchId,
-        winnerTeamId,
-        loserTeamId,
-        challengerTeamId,
-      );
+      await confirmResult(tx, matchId, player.id);
     });
   } catch (e) {
     console.error("confirmResultAction transaction failed:", e);
@@ -483,32 +443,9 @@ export async function forfeitAction(
     return { error: "matchDetail.error.notParticipant" };
   }
 
-  const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
-  const opponentTeamId = isTeam1 ? match.team2Id : match.team1Id;
-
   try {
     await sql.begin(async (tx) => {
-      const { winnerTeamId, team1Id, team2Id } = await forfeitMatch(
-        tx,
-        matchId,
-        player.id,
-        match.clubId,
-        match.seasonId,
-        opponentPlayerId,
-        opponentTeamId,
-      );
-
-      const loserTeamId = winnerTeamId === team1Id ? team2Id : team1Id;
-      const challengerTeamId = team1Id; // team1 is always the challenger
-
-      await updateStandingsAfterResult(
-        tx,
-        match.seasonId,
-        matchId,
-        winnerTeamId,
-        loserTeamId,
-        challengerTeamId,
-      );
+      await forfeitAndUpdateStandings(tx, matchId, player.id);
     });
   } catch (e) {
     if (e instanceof MatchStatusConflictError) {
