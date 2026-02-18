@@ -13,10 +13,11 @@ export type Player = {
 
 /**
  * Upsert a player by email address.
- * If a player with the given email already exists, the row is returned unchanged
- * (the no-op UPDATE ensures RETURNING works on both insert and conflict paths).
+ * If a player with the given email already exists, the existing row is returned
+ * unchanged — first/last name are NOT updated on conflict.
+ * (The no-op UPDATE ensures RETURNING works on both insert and conflict paths.)
  */
-export async function createPlayer(
+export async function getOrCreatePlayer(
   sql: Sql,
   {
     email,

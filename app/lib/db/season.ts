@@ -236,6 +236,13 @@ export async function createNewPlayerEvent(
   return row.id as number;
 }
 
+export class InvalidSourceSeasonError extends Error {
+  constructor() {
+    super("Source season does not belong to this club");
+    this.name = "InvalidSourceSeasonError";
+  }
+}
+
 // ── Create season ─────────────────────────────────────
 
 export type CreateSeasonOpts = {
@@ -284,7 +291,7 @@ export async function createSeason(
       SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId}
     `;
     if (sourceCheck.length === 0) {
-      throw new Error("INVALID_SOURCE_SEASON");
+      throw new InvalidSourceSeasonError();
     }
   }
 

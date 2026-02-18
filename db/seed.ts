@@ -3,7 +3,7 @@ import postgres from "postgres";
 // Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../app/lib/db";
 
-import { createPlayer } from "../app/lib/db/player";
+import { getOrCreatePlayer } from "../app/lib/db/player";
 import { createClub, joinClub } from "../app/lib/db/club";
 import {
   createSeason,
@@ -185,13 +185,13 @@ async function seed() {
       email: string;
     }[] = [];
     for (const p of PLAYERS) {
-      const player = await createPlayer(tx, p);
+      const player = await getOrCreatePlayer(tx, p);
       players.push(player);
     }
     const playerIds = players.map((p) => p.id);
 
     // ── 3. Create club ─────────────────────────────
-    const clubId = await createClub(tx, {
+    const { id: clubId } = await createClub(tx, {
       name: "TC Beispiel",
       inviteCode: "test-123",
     });
@@ -221,7 +221,12 @@ async function seed() {
     });
 
     // ── 6. Start season ────────────────────────────
-    await startSeason(tx, seasonId, clubId);
+    const started = await startSeason(tx, seasonId, clubId);
+    if (!started) {
+      throw new Error(
+        `Failed to start season ${seasonId} — season may not be in draft status`,
+      );
+    }
 
     // Season start event
     await tx`
@@ -254,16 +259,13 @@ async function seed() {
       const challengeePlayerId = playerIds[m.team2Idx];
 
       // Create challenge (validates pyramid rules + unavailability + open challenges)
-      const matchId = await challengeTeam(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[m.team1Idx],
-        teamIds[m.team2Idx],
+      const matchId = await challengeTeam(tx, seasonId, clubId, {
+        challengerTeamId: teamIds[m.team1Idx],
+        challengeeTeamId: teamIds[m.team2Idx],
         challengerPlayerId,
         challengeePlayerId,
-        "",
-      );
+        challengeText: "",
+      });
 
       // Generate score (winner gets the winning side)
       const score = winScore();
@@ -285,16 +287,13 @@ async function seed() {
     // ── 8. Forfeited match ─────────────────────────
     // Sophie (6) challenges Felix (5), Sophie forfeits → Felix wins
     {
-      const matchId = await challengeTeam(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[6],
-        teamIds[5],
-        playerIds[6],
-        playerIds[5],
-        "",
-      );
+      const matchId = await challengeTeam(tx, seasonId, clubId, {
+        challengerTeamId: teamIds[6],
+        challengeeTeamId: teamIds[5],
+        challengerPlayerId: playerIds[6],
+        challengeePlayerId: playerIds[5],
+        challengeText: "",
+      });
 
       await forfeitAndUpdateStandings(tx, matchId, playerIds[6]);
     }
@@ -302,16 +301,13 @@ async function seed() {
     // ── 9. Withdrawn match ─────────────────────────
     // Tim (19) challenges Hannah (18), then withdraws
     {
-      const matchId = await challengeTeam(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[19],
-        teamIds[18],
-        playerIds[19],
-        playerIds[18],
-        "",
-      );
+      const matchId = await challengeTeam(tx, seasonId, clubId, {
+        challengerTeamId: teamIds[19],
+        challengeeTeamId: teamIds[18],
+        challengerPlayerId: playerIds[19],
+        challengeePlayerId: playerIds[18],
+        challengeText: "",
+      });
 
       await withdrawMatch(
         tx,
@@ -326,16 +322,13 @@ async function seed() {
     // ── 10. Disputed match ─────────────────────────
     // Niklas (13) challenges Lena (12), enters result, Lena disputes
     {
-      const matchId = await challengeTeam(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[13],
-        teamIds[12],
-        playerIds[13],
-        playerIds[12],
-        "",
-      );
+      const matchId = await challengeTeam(tx, seasonId, clubId, {
+        challengerTeamId: teamIds[13],
+        challengeeTeamId: teamIds[12],
+        challengerPlayerId: playerIds[13],
+        challengeePlayerId: playerIds[12],
+        challengeText: "",
+      });
 
       const score = winScore();
       await submitResult(tx, matchId, playerIds[13], score.t1, score.t2);
@@ -352,18 +345,15 @@ async function seed() {
     }
 
     // ── 11. Pending confirmation match ─────────────
-    // Luca (7, rank 9) challenges Sophie (6, rank 6), Luca enters result (not yet confirmed)
+    // Luca (7) challenges Sophie (6), Luca enters result (not yet confirmed)
     {
-      const matchId = await challengeTeam(
-        tx,
-        seasonId,
-        clubId,
-        teamIds[7],
-        teamIds[6],
-        playerIds[7],
-        playerIds[6],
-        "",
-      );
+      const matchId = await challengeTeam(tx, seasonId, clubId, {
+        challengerTeamId: teamIds[7],
+        challengeeTeamId: teamIds[6],
+        challengerPlayerId: playerIds[7],
+        challengeePlayerId: playerIds[6],
+        challengeText: "",
+      });
 
       const score = winScore();
       await submitResult(tx, matchId, playerIds[7], score.t1, score.t2);
@@ -371,53 +361,41 @@ async function seed() {
 
     // ── 12. Open challenges ────────────────────────
     // Jonas (9) challenges Laura (10)
-    const challengedMatch1Id = await challengeTeam(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[9],
-      teamIds[10],
-      playerIds[9],
-      playerIds[10],
-      "",
-    );
+    const challengedMatch1Id = await challengeTeam(tx, seasonId, clubId, {
+      challengerTeamId: teamIds[9],
+      challengeeTeamId: teamIds[10],
+      challengerPlayerId: playerIds[9],
+      challengeePlayerId: playerIds[10],
+      challengeText: "",
+    });
 
     // Emma (14) challenges David (11)
-    const challengedMatch2Id = await challengeTeam(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[14],
-      teamIds[11],
-      playerIds[14],
-      playerIds[11],
-      "",
-    );
+    const challengedMatch2Id = await challengeTeam(tx, seasonId, clubId, {
+      challengerTeamId: teamIds[14],
+      challengeeTeamId: teamIds[11],
+      challengerPlayerId: playerIds[14],
+      challengeePlayerId: playerIds[11],
+      challengeText: "",
+    });
 
     // Leon (17) challenges Mia (16)
-    await challengeTeam(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[17],
-      teamIds[16],
-      playerIds[17],
-      playerIds[16],
-      "",
-    );
+    await challengeTeam(tx, seasonId, clubId, {
+      challengerTeamId: teamIds[17],
+      challengeeTeamId: teamIds[16],
+      challengerPlayerId: playerIds[17],
+      challengeePlayerId: playerIds[16],
+      challengeText: "",
+    });
 
     // ── 13. Date set match ─────────────────────────
     // Paul (15) challenges Niklas (13), date proposal accepted
-    const dateSetMatchId = await challengeTeam(
-      tx,
-      seasonId,
-      clubId,
-      teamIds[15],
-      teamIds[13],
-      playerIds[15],
-      playerIds[13],
-      "",
-    );
+    const dateSetMatchId = await challengeTeam(tx, seasonId, clubId, {
+      challengerTeamId: teamIds[15],
+      challengeeTeamId: teamIds[13],
+      challengerPlayerId: playerIds[15],
+      challengeePlayerId: playerIds[13],
+      challengeText: "",
+    });
 
     const proposalId = await createDateProposal(
       tx,

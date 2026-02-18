@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
 import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
-import { createPlayer } from "@/app/lib/db/player";
+import { getOrCreatePlayer } from "@/app/lib/db/player";
 import type { ActionResult } from "@/app/lib/action-result";
 
 // ── Schemas ─────────────────────────────────────────────
@@ -50,7 +50,11 @@ export async function inviteMemberAction(
       const firstName = parts[0];
       const lastName = parts.slice(1).join(" ") || "";
 
-      const player = await createPlayer(tx, { email, firstName, lastName });
+      const player = await getOrCreatePlayer(tx, {
+        email,
+        firstName,
+        lastName,
+      });
 
       // Add to club — ON CONFLICT prevents duplicate membership
       const memberRows = await tx`

@@ -63,16 +63,13 @@ export async function createChallengeAction(
 
   try {
     const matchId = await sql.begin(async (tx) => {
-      return challengeTeam(
-        tx,
-        seasonId,
-        season.clubId,
+      return challengeTeam(tx, seasonId, season.clubId, {
         challengerTeamId,
         challengeeTeamId,
-        player.id,
-        challengeePlayer.playerId,
+        challengerPlayerId: player.id,
+        challengeePlayerId: challengeePlayer.playerId,
         challengeText,
-      );
+      });
     });
 
     revalidatePath("/rankings");

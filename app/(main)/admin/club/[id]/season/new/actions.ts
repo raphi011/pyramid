@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { sql } from "@/app/lib/db";
 import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
-import { createSeason } from "@/app/lib/db/season";
+import { createSeason, InvalidSourceSeasonError } from "@/app/lib/db/season";
 import type { ActionResultWith } from "@/app/lib/action-result";
 
 type CreateSeasonResult = ActionResultWith<{ seasonId: number }>;
@@ -104,7 +104,7 @@ export async function createSeasonAction(
     );
     seasonId = result.seasonId;
   } catch (error) {
-    if (error instanceof Error && error.message === "INVALID_SOURCE_SEASON") {
+    if (error instanceof InvalidSourceSeasonError) {
       return { error: "createSeason.error.invalidSourceSeason" };
     }
     console.error("[createSeasonAction] Failed:", { clubId, error });

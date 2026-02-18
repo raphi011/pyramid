@@ -143,7 +143,7 @@ export async function getClubMembers(
 export async function createClub(
   sql: Sql,
   { name, inviteCode }: { name: string; inviteCode?: string },
-): Promise<number> {
+): Promise<{ id: number; inviteCode: string }> {
   const code = inviteCode ?? generateInviteCode();
 
   const [row] = await sql`
@@ -152,7 +152,7 @@ export async function createClub(
     RETURNING id
   `;
 
-  return row.id as number;
+  return { id: row.id as number, inviteCode: code };
 }
 
 // ── Join club ─────────────────────────────────────────

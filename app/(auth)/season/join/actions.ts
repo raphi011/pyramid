@@ -17,7 +17,7 @@ import {
   createNewPlayerEvent,
 } from "@/app/lib/db/season";
 import { joinClub } from "@/app/lib/db/club";
-import { createPlayer } from "@/app/lib/db/player";
+import { getOrCreatePlayer } from "@/app/lib/db/player";
 import { sendMagicLinkEmail } from "@/app/lib/email";
 import { sql } from "@/app/lib/db";
 import { fullName } from "@/lib/utils";
@@ -261,7 +261,7 @@ export async function requestSeasonJoinAction(
     player = await getPlayerByEmail(email);
 
     if (!player) {
-      player = await createPlayer(sql, { email, firstName, lastName });
+      player = await getOrCreatePlayer(sql, { email, firstName, lastName });
     }
   } catch (error) {
     console.error("requestSeasonJoinAction: player creation failed:", error);

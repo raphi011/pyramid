@@ -16,7 +16,8 @@ export class InvalidScoresError extends Error {
 }
 
 /**
- * Validates scores, computes the winner, and enters the match result.
+ * Loads the match, validates scores against its best-of setting,
+ * computes the winner, and enters the result.
  */
 export async function submitResult(
   tx: postgres.TransactionSql,
@@ -30,12 +31,18 @@ export async function submitResult(
     throw new Error(`Match ${matchId} not found`);
   }
 
+  if (enteredBy !== match.team1PlayerId && enteredBy !== match.team2PlayerId) {
+    throw new Error(
+      `Player ${enteredBy} is not a participant in match ${matchId}`,
+    );
+  }
+
   // Validate scores against season's best-of setting
   if (!validateScores(team1Score, team2Score, match.seasonBestOf)) {
     throw new InvalidScoresError();
   }
 
-  // Compute winner from game wins
+  // Compute winner from set wins
   let team1Wins = 0;
   let team2Wins = 0;
   for (let i = 0; i < team1Score.length; i++) {
@@ -64,7 +71,7 @@ export async function submitResult(
 }
 
 /**
- * Confirms a match result and updates standings in one operation.
+ * Loads the match, confirms the result, and updates standings in one transaction.
  */
 export async function confirmResult(
   tx: postgres.TransactionSql,
@@ -99,7 +106,7 @@ export async function confirmResult(
 }
 
 /**
- * Forfeits a match and updates standings in one operation.
+ * Loads the match, forfeits it, and updates standings in one transaction.
  */
 export async function forfeitAndUpdateStandings(
   tx: postgres.TransactionSql,
@@ -113,6 +120,11 @@ export async function forfeitAndUpdateStandings(
 
   // Derive opponent from the forfeiting player
   const isTeam1 = forfeitedBy === match.team1PlayerId;
+  if (!isTeam1 && forfeitedBy !== match.team2PlayerId) {
+    throw new Error(
+      `Player ${forfeitedBy} is not a participant in match ${matchId}`,
+    );
+  }
   const opponentPlayerId = isTeam1 ? match.team2PlayerId : match.team1PlayerId;
   const opponentTeamId = isTeam1 ? match.team2Id : match.team1Id;
 

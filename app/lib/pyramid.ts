@@ -35,9 +35,16 @@ export function canChallenge(
   return challengeeRank >= maxRank;
 }
 
+export class PyramidValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PyramidValidationError";
+  }
+}
+
 /**
  * Validates that a challenge between two teams is legal per pyramid rules,
- * given the current standings. Throws if illegal.
+ * given the current standings. Throws PyramidValidationError if illegal.
  *
  * @param standings - Ordered array of team IDs (index 0 = rank 1)
  * @param challengerTeamId - Team initiating the challenge (lower-ranked)
@@ -52,12 +59,12 @@ export function assertLegalChallenge(
   const challengeeIdx = standings.indexOf(challengeeTeamId);
 
   if (challengerIdx === -1) {
-    throw new Error(
+    throw new PyramidValidationError(
       `Challenger team ${challengerTeamId} not found in standings`,
     );
   }
   if (challengeeIdx === -1) {
-    throw new Error(
+    throw new PyramidValidationError(
       `Challengee team ${challengeeTeamId} not found in standings`,
     );
   }
@@ -66,7 +73,7 @@ export function assertLegalChallenge(
   const challengeeRank = challengeeIdx + 1;
 
   if (!canChallenge(challengerRank, challengeeRank)) {
-    throw new Error(
+    throw new PyramidValidationError(
       `Illegal challenge: rank ${challengerRank} cannot challenge rank ${challengeeRank}`,
     );
   }
