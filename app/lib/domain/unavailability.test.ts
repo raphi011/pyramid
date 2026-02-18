@@ -22,6 +22,14 @@ const db = withTestDb();
 
 afterAll(() => db.cleanup());
 
+/** Returns a Date N days from now at local midnight. */
+function daysFromNow(days: number): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
 // ── setUnavailability ──────────────────────────────────
 
 describe("setUnavailability", () => {
@@ -31,9 +39,12 @@ describe("setUnavailability", () => {
       const playerId = await seedPlayer(tx, "unavail-set@test.com");
       await seedClubMember(tx, playerId, clubId);
 
+      const from = daysFromNow(1);
+      const until = daysFromNow(15);
+
       await setUnavailability(tx, playerId, [{ clubId }], {
-        from: new Date("2026-03-01"),
-        until: new Date("2026-03-15"),
+        from,
+        until,
         reason: "Vacation",
       });
 
@@ -49,7 +60,7 @@ describe("setUnavailability", () => {
       `;
       expect(events.length).toBe(1);
       expect((events[0].metadata as Record<string, unknown>).returnDate).toBe(
-        "2026-03-15T00:00:00.000Z",
+        until.toISOString(),
       );
     });
   });
@@ -61,7 +72,7 @@ describe("setUnavailability", () => {
       await seedClubMember(tx, playerId, clubId);
 
       await setUnavailability(tx, playerId, [{ clubId }], {
-        from: new Date("2026-03-01"),
+        from: daysFromNow(1),
         until: null,
         reason: "Injury",
       });
@@ -81,6 +92,22 @@ describe("setUnavailability", () => {
     });
   });
 
+  it("throws InvalidDateRangeError when from is in the past", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const playerId = await seedPlayer(tx, "unavail-past@test.com");
+      await seedClubMember(tx, playerId, clubId);
+
+      await expect(
+        setUnavailability(tx, playerId, [{ clubId }], {
+          from: daysFromNow(-1),
+          until: null,
+          reason: "",
+        }),
+      ).rejects.toThrow(InvalidDateRangeError);
+    });
+  });
+
   it("throws InvalidDateRangeError when until < from", async () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
@@ -89,8 +116,8 @@ describe("setUnavailability", () => {
 
       await expect(
         setUnavailability(tx, playerId, [{ clubId }], {
-          from: new Date("2026-03-15"),
-          until: new Date("2026-03-01"),
+          from: daysFromNow(15),
+          until: daysFromNow(1),
           reason: "",
         }),
       ).rejects.toThrow(InvalidDateRangeError);
@@ -113,7 +140,7 @@ describe("setUnavailability", () => {
 
       await expect(
         setUnavailability(tx, playerId, [{ clubId }], {
-          from: new Date("2026-04-01"),
+          from: daysFromNow(30),
           until: null,
           reason: "",
         }),
@@ -121,7 +148,7 @@ describe("setUnavailability", () => {
     });
   });
 
-  it("throws HasOpenChallengeError when player has open challenge", async () => {
+  it("throws HasOpenChallengeError when challenger has open challenge", async () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
@@ -135,7 +162,29 @@ describe("setUnavailability", () => {
 
       await expect(
         setUnavailability(tx, p1, [{ clubId }], {
-          from: new Date("2026-03-01"),
+          from: daysFromNow(1),
+          until: null,
+          reason: "",
+        }),
+      ).rejects.toThrow(HasOpenChallengeError);
+    });
+  });
+
+  it("throws HasOpenChallengeError when challengee has open challenge", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId);
+      const p1 = await seedPlayer(tx, "unavail-cee1@test.com");
+      const p2 = await seedPlayer(tx, "unavail-cee2@test.com");
+      await seedClubMember(tx, p2, clubId);
+      const t1 = await seedTeam(tx, seasonId, [p1]);
+      const t2 = await seedTeam(tx, seasonId, [p2]);
+
+      await seedMatch(tx, seasonId, t1, t2, { status: "challenged" });
+
+      await expect(
+        setUnavailability(tx, p2, [{ clubId }], {
+          from: daysFromNow(1),
           until: null,
           reason: "",
         }),
@@ -156,8 +205,8 @@ describe("setUnavailability", () => {
         playerId,
         [{ clubId: club1 }, { clubId: club2 }],
         {
-          from: new Date("2026-03-01"),
-          until: new Date("2026-03-15"),
+          from: daysFromNow(1),
+          until: daysFromNow(15),
           reason: "",
         },
       );

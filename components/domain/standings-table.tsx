@@ -80,7 +80,7 @@ function StandingsTable({
               <p
                 className={cn(
                   "truncate text-sm font-medium text-slate-900 dark:text-white",
-                  player.unavailable && "text-slate-400",
+                  player.unavailable && "text-slate-400 dark:text-slate-500",
                 )}
               >
                 {fullName(player.firstName, player.lastName)}

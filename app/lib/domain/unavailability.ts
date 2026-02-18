@@ -31,8 +31,11 @@ export class InvalidDateRangeError extends Error {
 }
 
 export class HasOpenChallengeError extends Error {
-  constructor() {
-    super("Player has an open challenge");
+  constructor(
+    public readonly teamId: number,
+    public readonly seasonId: number,
+  ) {
+    super(`Team ${teamId} has an open challenge in season ${seasonId}`);
     this.name = "HasOpenChallengeError";
   }
 }
@@ -65,9 +68,12 @@ export async function setUnavailability(
     }
   }
 
-  // 2. Check player is not already unavailable
+  // 2. Check player exists and is not already unavailable
   const profile = await getPlayerProfile(tx, playerId);
-  if (profile?.unavailableFrom) {
+  if (!profile) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+  if (profile.unavailableFrom) {
     throw new AlreadyUnavailableError();
   }
 
@@ -80,17 +86,22 @@ export async function setUnavailability(
 
       const openTeams = await getTeamsWithOpenChallenge(tx, season.id);
       if (openTeams.has(teamId)) {
-        throw new HasOpenChallengeError();
+        throw new HasOpenChallengeError(teamId, season.id);
       }
     }
   }
 
   // 4. Write unavailability
-  await setPlayerUnavailability(tx, playerId, {
+  const count = await setPlayerUnavailability(tx, playerId, {
     from: opts.from,
     until: opts.until,
     reason: opts.reason,
   });
+  if (count === 0) {
+    throw new Error(
+      `Player ${playerId} not found during unavailability update`,
+    );
+  }
 
   // 5. Create public 'unavailable' event per club
   const returnDate = opts.until ? opts.until.toISOString() : null;
@@ -107,14 +118,22 @@ export async function cancelUnavailability(
   playerId: number,
   clubs: { clubId: number }[],
 ): Promise<void> {
-  // 1. Check player is currently unavailable
+  // 1. Check player exists and is currently unavailable
   const profile = await getPlayerProfile(tx, playerId);
-  if (!profile?.unavailableFrom) {
+  if (!profile) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+  if (!profile.unavailableFrom) {
     throw new NotUnavailableError();
   }
 
   // 2. Clear unavailability
-  await cancelPlayerUnavailability(tx, playerId);
+  const count = await cancelPlayerUnavailability(tx, playerId);
+  if (count === 0) {
+    throw new Error(
+      `Player ${playerId} not found during unavailability cancel`,
+    );
+  }
 
   // 3. Create 'available' event per club (no returnDate = available again)
   for (const { clubId } of clubs) {

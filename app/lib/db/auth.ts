@@ -20,8 +20,11 @@ export type PlayerProfile = {
   phoneNumber: string;
   bio: string;
   imageId: string | null;
+  /** Non-null when the player has an active or scheduled unavailability period. */
   unavailableFrom: Date | null;
+  /** Non-null for bounded unavailability; null means indefinite. Only meaningful when unavailableFrom is set. */
   unavailableUntil: Date | null;
+  /** Empty string when not unavailable. Only meaningful when unavailableFrom is set. */
   unavailableReason: string;
 };
 
@@ -234,27 +237,29 @@ export async function setPlayerUnavailability(
   sql: Sql,
   playerId: number,
   { from, until, reason }: { from: Date; until: Date | null; reason: string },
-): Promise<void> {
-  await sql`
+): Promise<number> {
+  const result = await sql`
     UPDATE player
     SET unavailable_from = ${from},
         unavailable_until = ${until},
         unavailable_reason = ${reason}
     WHERE id = ${playerId}
   `;
+  return result.count;
 }
 
 export async function cancelPlayerUnavailability(
   sql: Sql,
   playerId: number,
-): Promise<void> {
-  await sql`
+): Promise<number> {
+  const result = await sql`
     UPDATE player
     SET unavailable_from = NULL,
         unavailable_until = NULL,
         unavailable_reason = ''
     WHERE id = ${playerId}
   `;
+  return result.count;
 }
 
 export async function isPlayerUnavailable(

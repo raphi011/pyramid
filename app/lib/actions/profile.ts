@@ -106,12 +106,15 @@ export async function updateProfileImageAction(
 
 // ── Unavailability ──────────────────────────────────────
 
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
 const setUnavailabilitySchema = z.object({
-  unavailableFrom: z.string().min(1),
+  unavailableFrom: z.string().min(1).regex(datePattern),
   unavailableUntil: z
     .string()
     .default("")
-    .transform((v) => v.trim() || null),
+    .transform((v) => v.trim() || null)
+    .pipe(z.string().regex(datePattern).nullable()),
   unavailableReason: z
     .string()
     .default("")
@@ -133,13 +136,14 @@ export async function setUnavailabilityAction(
     return { error: "profile.error.notAuthenticated" };
   }
 
-  const clubs = await getPlayerClubs(sql, player.id);
-
   try {
     await sql.begin(async (tx) => {
+      const clubs = await getPlayerClubs(tx, player.id);
       await setUnavailability(tx, player.id, clubs, {
-        from: new Date(unavailableFrom),
-        until: unavailableUntil ? new Date(unavailableUntil) : null,
+        from: new Date(unavailableFrom + "T00:00:00"),
+        until: unavailableUntil
+          ? new Date(unavailableUntil + "T00:00:00")
+          : null,
         reason: unavailableReason,
       });
     });
@@ -153,7 +157,7 @@ export async function setUnavailabilityAction(
     if (e instanceof HasOpenChallengeError) {
       return { error: "profile.error.hasOpenChallenge" };
     }
-    console.error("setUnavailabilityAction failed:", e);
+    console.error(`setUnavailabilityAction failed for player ${player.id}:`, e);
     return { error: "profile.error.serverError" };
   }
 
@@ -169,17 +173,19 @@ export async function cancelUnavailabilityAction(): Promise<ProfileResult> {
     return { error: "profile.error.notAuthenticated" };
   }
 
-  const clubs = await getPlayerClubs(sql, player.id);
-
   try {
     await sql.begin(async (tx) => {
+      const clubs = await getPlayerClubs(tx, player.id);
       await cancelUnavailability(tx, player.id, clubs);
     });
   } catch (e) {
     if (e instanceof NotUnavailableError) {
       return { error: "profile.error.notUnavailable" };
     }
-    console.error("cancelUnavailabilityAction failed:", e);
+    console.error(
+      `cancelUnavailabilityAction failed for player ${player.id}:`,
+      e,
+    );
     return { error: "profile.error.serverError" };
   }
 

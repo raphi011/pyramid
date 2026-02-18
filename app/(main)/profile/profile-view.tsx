@@ -437,20 +437,28 @@ function ProfileView({
             value={unavailUntil ? unavailUntil.toISOString().split("T")[0] : ""}
           />
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label
+              htmlFor="unavail-from-picker"
+              className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               {t("unavailableFromLabel")}
             </label>
             <DateTimePicker
+              id="unavail-from-picker"
               value={unavailFrom}
               onChange={setUnavailFrom}
               className="w-full"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label
+              htmlFor="unavail-until-picker"
+              className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               {t("unavailableUntilLabel")}
             </label>
             <DateTimePicker
+              id="unavail-until-picker"
               value={unavailUntil}
               onChange={setUnavailUntil}
               className="w-full"
