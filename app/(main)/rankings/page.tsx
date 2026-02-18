@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Rangliste" };
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import {
-  getActiveSeasons,
+  getClubSeasons,
   getSeasonById,
   getStandingsWithPlayers,
   getTeamWinsLosses,
@@ -40,7 +40,7 @@ export default async function RankingsPage({
   const clubId = clubs[0].clubId;
   const clubName = clubs[0].clubName;
 
-  const seasons = await getActiveSeasons(sql, clubId);
+  const seasons = await getClubSeasons(sql, clubId);
 
   if (seasons.length === 0) {
     return (
@@ -88,6 +88,7 @@ export default async function RankingsPage({
 
   const { players, previousResults } = standingsData;
   const currentResults = players.map((p) => p.teamId);
+  const isArchived = season.status === "ended";
 
   // Find current player's team and rank
   const currentTeamId = await getPlayerTeamId(sql, player.id, season.id);
@@ -99,8 +100,9 @@ export default async function RankingsPage({
   // Map to component shapes
   const pyramidPlayers = players.map((p) => {
     const wl = winsLossesMap.get(p.teamId) ?? { wins: 0, losses: 0 };
-    const variant =
-      p.teamId === currentTeamId
+    const variant = isArchived
+      ? ("default" as const)
+      : p.teamId === currentTeamId
         ? ("current" as const)
         : unavailableTeams.has(p.teamId)
           ? ("unavailable" as const)
@@ -131,15 +133,16 @@ export default async function RankingsPage({
   const standingsPlayers = players.map((p) => {
     const wl = winsLossesMap.get(p.teamId) ?? { wins: 0, losses: 0 };
     const movement = computeMovement(p.teamId, currentResults, previousResults);
-    const challengeable =
-      currentPlayerRank !== null &&
-      currentTeamId !== null &&
-      canChallenge(currentPlayerRank, p.rank) &&
-      p.teamId !== currentTeamId &&
-      !openChallengeTeams.has(p.teamId) &&
-      !openChallengeTeams.has(currentTeamId) &&
-      !unavailableTeams.has(p.teamId) &&
-      !unavailableTeams.has(currentTeamId);
+    const challengeable = isArchived
+      ? false
+      : currentPlayerRank !== null &&
+        currentTeamId !== null &&
+        canChallenge(currentPlayerRank, p.rank) &&
+        p.teamId !== currentTeamId &&
+        !openChallengeTeams.has(p.teamId) &&
+        !openChallengeTeams.has(currentTeamId) &&
+        !unavailableTeams.has(p.teamId) &&
+        !unavailableTeams.has(currentTeamId);
 
     return {
       id: p.teamId,
@@ -188,7 +191,11 @@ export default async function RankingsPage({
 
   return (
     <RankingsView
-      seasons={seasons.map((s) => ({ id: s.id, name: s.name }))}
+      seasons={seasons.map((s) => ({
+        id: s.id,
+        name: s.name,
+        status: s.status,
+      }))}
       currentSeasonId={season.id}
       clubName={clubName}
       clubId={clubId}
@@ -198,6 +205,7 @@ export default async function RankingsPage({
       currentTeamId={currentTeamId}
       openEnrollment={season.openEnrollment}
       isIndividual={season.maxTeamSize === 1}
+      isArchived={isArchived}
     />
   );
 }

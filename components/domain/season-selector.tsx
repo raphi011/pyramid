@@ -37,7 +37,9 @@ function SeasonSelector({
         <option key={season.id} value={season.id.toString()}>
           {season.name}
           {season.status === "draft" ? ` ${t("draft")}` : ""}
-          {season.archived ? ` ${t("archived")}` : ""}
+          {season.archived || season.status === "ended"
+            ? ` ${t("archived")}`
+            : ""}
         </option>
       ))}
     </Select>

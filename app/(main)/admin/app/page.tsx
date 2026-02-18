@@ -5,6 +5,7 @@ import { getAppStats, getAdminClubs, getAppAdmins } from "@/app/lib/db/admin";
 import { AppAdminView } from "./app-admin-view";
 import {
   toggleClubDisabledAction,
+  createClubAction,
   addAppAdminAction,
   removeAppAdminAction,
 } from "./actions";
@@ -31,6 +32,7 @@ export default async function AppAdminPage() {
       clubs={clubs}
       appAdmins={appAdmins}
       toggleClubAction={toggleClubDisabledAction}
+      createClubAction={createClubAction}
       addAdminAction={addAppAdminAction}
       removeAdminAction={removeAppAdminAction}
     />

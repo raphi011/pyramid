@@ -5,12 +5,19 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
 import { requireAppAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
+import { createClub, joinClub } from "@/app/lib/db/club";
+import { getOrCreatePlayer } from "@/app/lib/db/player";
 import type { ActionResult } from "@/app/lib/action-result";
 
 // ── Schemas ─────────────────────────────────────────────
 
 const toggleClubDisabledSchema = z.object({
   clubId: z.coerce.number().int().positive(),
+});
+
+const createClubSchema = z.object({
+  name: z.string().trim().min(1),
+  adminEmail: z.string().trim().toLowerCase().email(),
 });
 
 const addAppAdminSchema = z.object({
@@ -22,6 +29,37 @@ const removeAppAdminSchema = z.object({
 });
 
 // ── Actions ─────────────────────────────────────────────
+
+export async function createClubAction(
+  formData: FormData,
+): Promise<ActionResult> {
+  const parsed = parseFormData(createClubSchema, formData);
+  if (!parsed.success) {
+    return { error: "appAdmin.error.invalidInput" };
+  }
+  const { name, adminEmail } = parsed.data;
+
+  const auth = await requireAppAdmin("appAdmin.error.unauthorized");
+  if (auth.error) return { error: auth.error };
+
+  try {
+    await sql.begin(async (tx) => {
+      const club = await createClub(tx, { name });
+      const player = await getOrCreatePlayer(tx, {
+        email: adminEmail,
+        firstName: "",
+        lastName: "",
+      });
+      await joinClub(tx, player.id, club.id, "admin");
+    });
+  } catch (error) {
+    console.error("[createClubAction] Failed:", { name, adminEmail, error });
+    return { error: "appAdmin.error.clubCreationFailed" };
+  }
+
+  revalidatePath("/admin/app");
+  return { success: true };
+}
 
 export async function toggleClubDisabledAction(
   formData: FormData,
