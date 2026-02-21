@@ -21,24 +21,35 @@ export default meta;
 const mockClubs = [
   {
     id: 1,
+    slug: "tc-musterstadt",
     name: "TC Musterstadt",
     role: "player" as const,
     seasons: [
-      { id: 1, name: "Sommer 2026", status: "active" },
-      { id: 2, name: "Winter 2025/26", status: "ended" },
+      { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
+      {
+        id: 2,
+        slug: "winter-2025-26",
+        name: "Winter 2025/26",
+        status: "ended",
+      },
     ],
   },
   {
     id: 2,
+    slug: "sc-gruenwald",
     name: "SC Grünwald",
     role: "player" as const,
-    seasons: [{ id: 3, name: "Herbst 2026", status: "active" }],
+    seasons: [
+      { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
+    ],
   },
 ];
 
 function MobileNavDefault() {
   const [open, setOpen] = useState(true);
-  const [active, setActive] = useState("/rankings");
+  const [active, setActive] = useState(
+    "/club/tc-musterstadt/season/sommer-2026/rankings",
+  );
   const [expanded, setExpanded] = useState(new Set([1, 2]));
 
   return (
@@ -66,7 +77,6 @@ function MobileNavDefault() {
           })
         }
         activeHref={active}
-        activeSeasonId={1}
         unreadCount={3}
         onNavigate={(href) => setActive(href)}
         profile={{
@@ -138,7 +148,6 @@ function MobileNavWithAdmin() {
           })
         }
         activeHref="/feed"
-        activeSeasonId={null}
         unreadCount={3}
         onNavigate={() => {}}
         profile={{
@@ -181,8 +190,7 @@ function MobileNavSingleClub() {
             return next;
           })
         }
-        activeHref="/rankings"
-        activeSeasonId={1}
+        activeHref="/club/tc-musterstadt/season/sommer-2026/rankings"
         unreadCount={0}
         onNavigate={() => {}}
         profile={{

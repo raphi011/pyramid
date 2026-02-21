@@ -17,7 +17,7 @@ export default async function AppAdminPage() {
   }
 
   if (!player.isAppAdmin) {
-    redirect("/rankings");
+    redirect("/feed");
   }
 
   const [stats, clubs, appAdmins] = await Promise.all([

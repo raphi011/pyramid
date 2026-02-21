@@ -16,13 +16,11 @@ type PageWrapperProps = {
 
 type Club = {
   id: number;
+  slug: string;
   name: string;
   role: string;
-  seasons: { id: number; name: string; status: string }[];
+  seasons: { id: number; slug: string; name: string; status: string }[];
 };
-
-const mockSearchParams =
-  new URLSearchParams() as unknown as import("next/navigation").ReadonlyURLSearchParams;
 
 export function PageWrapper({
   activeHref,
@@ -36,11 +34,17 @@ export function PageWrapper({
   const clubs = useMemo((): [Club, ...Club[]] => {
     const club1: Club = {
       id: 1,
+      slug: "tc-musterstadt",
       name: "TC Musterstadt",
       role: isAdmin ? "admin" : "player",
       seasons: [
-        { id: 1, name: "Sommer 2026", status: "active" },
-        { id: 2, name: "Winter 2025/26", status: "ended" },
+        { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
+        {
+          id: 2,
+          slug: "winter-2025-26",
+          name: "Winter 2025/26",
+          status: "ended",
+        },
       ],
     };
 
@@ -48,9 +52,12 @@ export function PageWrapper({
 
     const club2: Club = {
       id: 2,
+      slug: "sc-gruenwald",
       name: "SC Grünwald",
       role: "player",
-      seasons: [{ id: 3, name: "Herbst 2026", status: "active" }],
+      seasons: [
+        { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
+      ],
     };
 
     return [club1, club2];
@@ -64,7 +71,6 @@ export function PageWrapper({
         href: "/profile",
       }}
       activeHref={active}
-      activeSearchParams={mockSearchParams}
       onNavigate={setActive}
       unreadCount={3}
       fab={{

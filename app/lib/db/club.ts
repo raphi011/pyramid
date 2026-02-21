@@ -1,5 +1,7 @@
 import { generateInviteCode } from "../crypto";
+import { slugify } from "../slug";
 import type { Sql } from "../db";
+import { isUniqueViolation, SlugConflictError } from "./errors";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -8,6 +10,7 @@ export type ClubRole = "player" | "admin";
 export type Club = {
   id: number;
   name: string;
+  slug: string;
   inviteCode: string;
   url: string;
   phoneNumber: string;
@@ -22,6 +25,7 @@ export type Club = {
 export type ClubMembership = {
   clubId: number;
   clubName: string;
+  clubSlug: string;
   role: ClubRole;
 };
 
@@ -33,7 +37,7 @@ export async function getClubByInviteCode(
 ): Promise<Club | null> {
   const rows = await sql`
     SELECT
-      id, name, invite_code AS "inviteCode",
+      id, name, slug, invite_code AS "inviteCode",
       url, phone_number AS "phoneNumber",
       address, city, zip, country,
       image_id::text AS "imageId",
@@ -48,7 +52,7 @@ export async function getClubByInviteCode(
 export async function getClubById(sql: Sql, id: number): Promise<Club | null> {
   const rows = await sql`
     SELECT
-      id, name, invite_code AS "inviteCode",
+      id, name, slug, invite_code AS "inviteCode",
       url, phone_number AS "phoneNumber",
       address, city, zip, country,
       image_id::text AS "imageId",
@@ -60,12 +64,30 @@ export async function getClubById(sql: Sql, id: number): Promise<Club | null> {
   return rows.length > 0 ? (rows[0] as Club) : null;
 }
 
+export async function getClubBySlug(
+  sql: Sql,
+  slug: string,
+): Promise<Club | null> {
+  const rows = await sql`
+    SELECT
+      id, name, slug, invite_code AS "inviteCode",
+      url, phone_number AS "phoneNumber",
+      address, city, zip, country,
+      image_id::text AS "imageId",
+      is_disabled AS "isDisabled"
+    FROM clubs
+    WHERE slug = ${slug}
+  `;
+
+  return rows.length > 0 ? (rows[0] as Club) : null;
+}
+
 export async function getPlayerClubs(
   sql: Sql,
   playerId: number,
 ): Promise<ClubMembership[]> {
   const rows = await sql<ClubMembership[]>`
-    SELECT c.id AS "clubId", c.name AS "clubName", cm.role
+    SELECT c.id AS "clubId", c.name AS "clubName", c.slug AS "clubSlug", cm.role
     FROM club_members cm
     JOIN clubs c ON c.id = cm.club_id
     WHERE cm.player_id = ${playerId}
@@ -98,6 +120,14 @@ export async function isClubMember(
   `;
 
   return rows.length > 0;
+}
+
+export async function getClubSlug(
+  sql: Sql,
+  clubId: number,
+): Promise<string | null> {
+  const rows = await sql`SELECT slug FROM clubs WHERE id = ${clubId}`;
+  return rows.length > 0 ? (rows[0].slug as string) : null;
 }
 
 // ── Club members ──────────────────────────────────────
@@ -143,16 +173,22 @@ export async function getClubMembers(
 export async function createClub(
   sql: Sql,
   { name, inviteCode }: { name: string; inviteCode?: string },
-): Promise<{ id: number; inviteCode: string }> {
+): Promise<{ id: number; slug: string; inviteCode: string }> {
   const code = inviteCode ?? generateInviteCode();
+  const slug = slugify(name);
 
-  const [row] = await sql`
-    INSERT INTO clubs (name, invite_code, is_disabled, created)
-    VALUES (${name}, ${code}, false, NOW())
-    RETURNING id
-  `;
+  try {
+    const [row] = await sql`
+      INSERT INTO clubs (name, slug, invite_code, is_disabled, created)
+      VALUES (${name}, ${slug}, ${code}, false, NOW())
+      RETURNING id
+    `;
 
-  return { id: row.id as number, inviteCode: code };
+    return { id: row.id as number, slug, inviteCode: code };
+  } catch (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError();
+    throw error;
+  }
 }
 
 // ── Join club ─────────────────────────────────────────
@@ -190,22 +226,30 @@ export async function updateClub(
   sql: Sql,
   clubId: number,
   data: UpdateClubData,
-): Promise<number> {
-  const result = await sql`
-    UPDATE clubs
-    SET
-      name = ${data.name},
-      url = ${data.url},
-      phone_number = ${data.phoneNumber},
-      address = ${data.address},
-      city = ${data.city},
-      zip = ${data.zip},
-      country = ${data.country},
-      image_id = ${data.imageId}
-    WHERE id = ${clubId}
-  `;
+): Promise<{ count: number; slug: string }> {
+  const slug = slugify(data.name);
 
-  return result.count;
+  try {
+    const result = await sql`
+      UPDATE clubs
+      SET
+        name = ${data.name},
+        slug = ${slug},
+        url = ${data.url},
+        phone_number = ${data.phoneNumber},
+        address = ${data.address},
+        city = ${data.city},
+        zip = ${data.zip},
+        country = ${data.country},
+        image_id = ${data.imageId}
+      WHERE id = ${clubId}
+    `;
+
+    return { count: result.count, slug };
+  } catch (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError();
+    throw error;
+  }
 }
 
 export async function getClubImageId(

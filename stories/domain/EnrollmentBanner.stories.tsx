@@ -22,6 +22,8 @@ export const CanEnroll = meta.story({
   args: {
     seasonId: 1,
     clubId: 1,
+    clubSlug: "tc-musterstadt",
+    seasonSlug: "sommer-2026",
     canEnroll: true,
   },
   play: async ({ canvasElement }) => {
@@ -55,6 +57,8 @@ export const EnrollmentClosed = meta.story({
   args: {
     seasonId: 1,
     clubId: 1,
+    clubSlug: "tc-musterstadt",
+    seasonSlug: "sommer-2026",
     canEnroll: false,
   },
   play: async ({ canvasElement }) => {

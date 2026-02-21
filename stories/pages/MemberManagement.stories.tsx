@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { MemberManagementView } from "@/app/(main)/admin/club/[id]/members/member-management-view";
+import { MemberManagementView } from "@/app/(main)/admin/club/[slug]/members/member-management-view";
 import type { ClubMember } from "@/app/lib/db/admin";
 
 const meta = preview.meta({

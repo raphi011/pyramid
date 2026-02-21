@@ -1,8 +1,14 @@
 import type postgres from "postgres";
 // Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../db";
+import { slugify } from "../slug";
 
 type Tx = postgres.TransactionSql;
+
+let seedCounter = 0;
+function uniqueSuffix() {
+  return `${++seedCounter}-${Math.random().toString(36).slice(2, 6)}`;
+}
 
 // ── Player ────────────────────────────────────────────
 
@@ -25,14 +31,15 @@ export async function seedPlayer(
 export async function seedClub(
   tx: Tx,
   {
-    name = "Test Club",
+    name = `Test Club ${uniqueSuffix()}`,
     inviteCode = `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     isDisabled = false,
   } = {},
 ): Promise<number> {
+  const slug = slugify(name);
   const [row] = await tx`
-    INSERT INTO clubs (name, invite_code, is_disabled, created)
-    VALUES (${name}, ${inviteCode}, ${isDisabled}, NOW())
+    INSERT INTO clubs (name, slug, invite_code, is_disabled, created)
+    VALUES (${name}, ${slug}, ${inviteCode}, ${isDisabled}, NOW())
     RETURNING id
   `;
   return row.id as number;
@@ -58,7 +65,7 @@ export async function seedSeason(
   tx: Tx,
   clubId: number,
   {
-    name = "Test Season",
+    name = `Test Season ${uniqueSuffix()}`,
     status = "active",
     minTeamSize = 1,
     maxTeamSize = 1,
@@ -77,9 +84,10 @@ export async function seedSeason(
     inviteCode?: string;
   } = {},
 ): Promise<number> {
+  const slug = slugify(name);
   const [row] = await tx`
-    INSERT INTO seasons (club_id, name, status, min_team_size, max_team_size, match_deadline_days, open_enrollment, visibility, invite_code, created)
-    VALUES (${clubId}, ${name}, ${status}, ${minTeamSize}, ${maxTeamSize}, ${matchDeadlineDays}, ${openEnrollment}, ${visibility}, ${inviteCode}, NOW())
+    INSERT INTO seasons (club_id, name, slug, status, min_team_size, max_team_size, match_deadline_days, open_enrollment, visibility, invite_code, created)
+    VALUES (${clubId}, ${name}, ${slug}, ${status}, ${minTeamSize}, ${maxTeamSize}, ${matchDeadlineDays}, ${openEnrollment}, ${visibility}, ${inviteCode}, NOW())
     RETURNING id
   `;
   return row.id as number;

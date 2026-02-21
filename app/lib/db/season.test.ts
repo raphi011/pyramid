@@ -12,6 +12,8 @@ import {
 import {
   getActiveSeasons,
   getSeasonById,
+  getSeasonBySlug,
+  getSeasonSlug,
   getLatestStandings,
   isPlayerEnrolledInSeason,
   isIndividualSeason,
@@ -25,7 +27,9 @@ import {
   getRankHistory,
   getPlayerSeasonTeams,
   getSeasonByInviteCode,
+  createSeason,
 } from "./season";
+import { SlugConflictError } from "./errors";
 const db = withTestDb();
 
 afterAll(() => db.cleanup());
@@ -764,6 +768,96 @@ describe("getSeasonByInviteCode", () => {
       await seedSeason(tx, clubId, { inviteCode: "" });
       const result = await getSeasonByInviteCode(tx, "");
       expect(result).toBeNull();
+    });
+  });
+});
+
+// ── getSeasonBySlug ─────────────────────────────────
+
+describe("getSeasonBySlug", () => {
+  it("returns season when slug matches within club", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId, { name: "Spring 2026" });
+      const season = await getSeasonBySlug(tx, clubId, "spring-2026");
+      expect(season).toEqual(
+        expect.objectContaining({
+          id: seasonId,
+          name: "Spring 2026",
+          slug: "spring-2026",
+        }),
+      );
+    });
+  });
+
+  it("returns null when slug not found", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const season = await getSeasonBySlug(tx, clubId, "nonexistent");
+      expect(season).toBeNull();
+    });
+  });
+
+  it("isolates slugs across clubs", async () => {
+    await db.withinTransaction(async (tx) => {
+      const club1 = await seedClub(tx);
+      const club2 = await seedClub(tx);
+      const s1 = await seedSeason(tx, club1, { name: "Same Name" });
+      await seedSeason(tx, club2, { name: "Same Name" });
+
+      const season = await getSeasonBySlug(tx, club1, "same-name");
+      expect(season).not.toBeNull();
+      expect(season!.id).toBe(s1);
+      expect(season!.clubId).toBe(club1);
+    });
+  });
+});
+
+// ── getSeasonSlug ───────────────────────────────────
+
+describe("getSeasonSlug", () => {
+  it("returns slug when season exists", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const seasonId = await seedSeason(tx, clubId, { name: "Slug Season" });
+      const slug = await getSeasonSlug(tx, seasonId);
+      expect(slug).toBe("slug-season");
+    });
+  });
+
+  it("returns null when season does not exist", async () => {
+    await db.withinTransaction(async (tx) => {
+      const slug = await getSeasonSlug(tx, 999999);
+      expect(slug).toBeNull();
+    });
+  });
+});
+
+// ── createSeason slug collision ─────────────────────
+
+describe("createSeason", () => {
+  it("throws SlugConflictError on duplicate slug within club", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx);
+      const playerId = await seedPlayer(tx, "cs-dup@example.com");
+      await seedClubMember(tx, playerId, clubId);
+
+      const baseOpts = {
+        name: "Duplicate Season",
+        type: "individual" as const,
+        teamSize: 1,
+        bestOf: 3,
+        matchDeadlineDays: 14,
+        reminderDays: 7,
+        requiresConfirmation: false,
+        openEnrollment: true,
+        startingRanks: "empty" as const,
+      };
+
+      await createSeason(tx, clubId, baseOpts);
+      await expect(createSeason(tx, clubId, baseOpts)).rejects.toThrow(
+        SlugConflictError,
+      );
     });
   });
 });

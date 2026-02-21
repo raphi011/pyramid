@@ -19,37 +19,45 @@ const meta = preview.meta({
 
 export default meta;
 
-const mockSearchParams =
-  new URLSearchParams() as unknown as import("next/navigation").ReadonlyURLSearchParams;
-
 const mockClubs: [
   {
     id: number;
+    slug: string;
     name: string;
     role: string;
-    seasons: { id: number; name: string; status: string }[];
+    seasons: { id: number; slug: string; name: string; status: string }[];
   },
   ...{
     id: number;
+    slug: string;
     name: string;
     role: string;
-    seasons: { id: number; name: string; status: string }[];
+    seasons: { id: number; slug: string; name: string; status: string }[];
   }[],
 ] = [
   {
     id: 1,
+    slug: "tc-musterstadt",
     name: "TC Musterstadt",
     role: "player",
     seasons: [
-      { id: 1, name: "Sommer 2026", status: "active" },
-      { id: 2, name: "Winter 2025/26", status: "ended" },
+      { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
+      {
+        id: 2,
+        slug: "winter-2025-26",
+        name: "Winter 2025/26",
+        status: "ended",
+      },
     ],
   },
   {
     id: 2,
+    slug: "sc-gruenwald",
     name: "SC Grünwald",
     role: "player",
-    seasons: [{ id: 3, name: "Herbst 2026", status: "active" }],
+    seasons: [
+      { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
+    ],
   },
 ];
 
@@ -62,12 +70,13 @@ function AppShellDemo() {
   const t = useTranslations("ranking");
   const tChallenge = useTranslations("challenge");
   const tNav = useTranslations("nav");
-  const [active, setActive] = useState("/rankings");
+  const [active, setActive] = useState(
+    "/club/tc-musterstadt/season/sommer-2026/rankings",
+  );
   return (
     <AppShell
       clubs={mockClubs}
       activeHref={active}
-      activeSearchParams={mockSearchParams}
       onNavigate={setActive}
       unreadCount={3}
       fab={{
@@ -128,8 +137,7 @@ function AppShellWithMessages() {
   return (
     <AppShell
       clubs={mockClubs}
-      activeHref="/rankings"
-      activeSearchParams={mockSearchParams}
+      activeHref="/club/tc-musterstadt/season/sommer-2026/rankings"
       unreadCount={3}
       messages={messages}
       onDismissMessage={(id) =>
@@ -167,7 +175,6 @@ function AppShellWithAdmin() {
     <AppShell
       clubs={adminClubs}
       activeHref="/admin/club/1"
-      activeSearchParams={mockSearchParams}
       unreadCount={0}
       fab={{
         icon: <PlusIcon />,

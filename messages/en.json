@@ -448,6 +448,7 @@
       "invalidUrl": "Please enter a valid URL.",
       "unauthorized": "You don't have permission to change these settings.",
       "notFound": "Club not found.",
+      "nameTaken": "A club with this name already exists.",
       "serverError": "An error occurred. Please try again."
     }
   },
@@ -486,6 +487,7 @@
       "unauthorized": "Unauthorized.",
       "missingSourceSeason": "Please select a source season.",
       "invalidSourceSeason": "The selected source season is invalid.",
+      "nameTaken": "A season with this name already exists in this club.",
       "serverError": "An error occurred. Please try again."
     }
   },
@@ -534,6 +536,7 @@
       "seasonNotFound": "Season not found.",
       "seasonNotDraft": "Season cannot be started (not in draft status).",
       "seasonNotActive": "Season cannot be ended (not active).",
+      "nameTaken": "A season with this name already exists in this club.",
       "serverError": "An error occurred. Please try again."
     }
   },

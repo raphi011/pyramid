@@ -30,8 +30,14 @@ type FabAction = {
   variant?: "default" | "active";
 };
 
-type NavSeason = { id: number; name: string; status: string };
-type NavClub = { id: number; name: string; role: string; seasons: NavSeason[] };
+type NavSeason = { id: number; name: string; slug: string; status: string };
+type NavClub = {
+  id: number;
+  name: string;
+  slug: string;
+  role: string;
+  seasons: NavSeason[];
+};
 
 type SidebarNavProps = {
   clubs: NavClub[];
@@ -39,7 +45,6 @@ type SidebarNavProps = {
   onToggleClub: (clubId: number) => void;
   profile?: ProfileInfo;
   activeHref: string;
-  activeSeasonId: number | null;
   unreadCount: number;
   onNavigate?: (href: string) => void;
   fab?: FabAction;
@@ -52,7 +57,6 @@ function SidebarNav({
   onToggleClub,
   profile,
   activeHref,
-  activeSeasonId,
   unreadCount,
   onNavigate,
   fab,
@@ -107,7 +111,6 @@ function SidebarNav({
             expanded={expandedClubIds.has(club.id)}
             onToggle={() => onToggleClub(club.id)}
             activeHref={activeHref}
-            activeSeasonId={activeSeasonId}
             onNavigate={onNavigate}
           />
         ))}

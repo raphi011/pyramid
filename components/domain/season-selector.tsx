@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 type Season = {
   id: string | number;
+  slug: string;
   name: string;
   status: "draft" | "active" | "ended";
 };
@@ -33,7 +34,7 @@ function SeasonSelector({
       className={cn("w-48", className)}
     >
       {seasons.map((season) => (
-        <option key={season.id} value={season.id.toString()}>
+        <option key={season.id} value={season.slug}>
           {season.name}
           {season.status === "draft" ? ` ${t("draft")}` : ""}
           {season.status === "ended" ? ` ${t("archived")}` : ""}

@@ -18,24 +18,35 @@ export default meta;
 const mockClubs = [
   {
     id: 1,
+    slug: "tc-musterstadt",
     name: "TC Musterstadt",
     role: "player",
     seasons: [
-      { id: 1, name: "Sommer 2026", status: "active" },
-      { id: 2, name: "Winter 2025/26", status: "ended" },
+      { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
+      {
+        id: 2,
+        slug: "winter-2025-26",
+        name: "Winter 2025/26",
+        status: "ended",
+      },
     ],
   },
   {
     id: 2,
+    slug: "sc-gruenwald",
     name: "SC Grünwald",
     role: "player",
-    seasons: [{ id: 3, name: "Herbst 2026", status: "active" }],
+    seasons: [
+      { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
+    ],
   },
 ];
 
 function SidebarDemo() {
   const t = useTranslations("nav");
-  const [active, setActive] = useState("/rankings");
+  const [active, setActive] = useState(
+    "/club/tc-musterstadt/season/sommer-2026/rankings",
+  );
   const [expanded, setExpanded] = useState(new Set([1, 2]));
   return (
     <div className="h-[600px]">
@@ -51,7 +62,6 @@ function SidebarDemo() {
           })
         }
         activeHref={active}
-        activeSeasonId={1}
         unreadCount={3}
         onNavigate={setActive}
         fab={{
@@ -83,8 +93,7 @@ function SidebarWithAdmin() {
             return next;
           })
         }
-        activeHref="/admin/club/1"
-        activeSeasonId={null}
+        activeHref="/admin/club/tc-musterstadt"
         unreadCount={0}
       />
     </div>

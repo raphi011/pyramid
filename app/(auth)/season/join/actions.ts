@@ -225,7 +225,7 @@ export async function joinSeasonAction(
   }
 
   // redirect() throws — must be outside try/catch
-  redirect("/rankings");
+  redirect("/feed");
 }
 
 /** Unauthenticated user: find or create player (upsert), then send magic link */

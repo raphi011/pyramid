@@ -74,11 +74,11 @@ export default async function MainLayout({
   // Build clubs with seasons and roles for navigation
   const seasonsByClub = new Map<
     number,
-    { id: number; name: string; status: string }[]
+    { id: number; name: string; slug: string; status: string }[]
   >();
   for (const s of navSeasons) {
     const arr = seasonsByClub.get(s.clubId) ?? [];
-    arr.push({ id: s.id, name: s.name, status: s.status });
+    arr.push({ id: s.id, name: s.name, slug: s.slug, status: s.status });
     seasonsByClub.set(s.clubId, arr);
   }
 
@@ -86,6 +86,7 @@ export default async function MainLayout({
     clubs.map((c) => ({
       id: c.clubId,
       name: c.clubName,
+      slug: c.clubSlug,
       role: c.role,
       seasons: seasonsByClub.get(c.clubId) ?? [],
     })),

@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent, fn } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { AnnouncementsView } from "@/app/(main)/admin/club/[id]/announcements/announcements-view";
+import { AnnouncementsView } from "@/app/(main)/admin/club/[slug]/announcements/announcements-view";
 import type { PastAnnouncement } from "@/app/lib/db/admin";
 
 const meta = preview.meta({

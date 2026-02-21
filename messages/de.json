@@ -448,6 +448,7 @@
       "invalidUrl": "Bitte gib eine g\u00fcltige URL ein.",
       "unauthorized": "Du hast keine Berechtigung, diese Einstellungen zu \u00e4ndern.",
       "notFound": "Club nicht gefunden.",
+      "nameTaken": "Ein Club mit diesem Namen existiert bereits.",
       "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
@@ -486,6 +487,7 @@
       "unauthorized": "Keine Berechtigung.",
       "missingSourceSeason": "Bitte w\u00e4hle eine Quell-Saison aus.",
       "invalidSourceSeason": "Die gew\u00e4hlte Quell-Saison ist ung\u00fcltig.",
+      "nameTaken": "Eine Saison mit diesem Namen existiert bereits in diesem Club.",
       "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
@@ -534,6 +536,7 @@
       "seasonNotFound": "Saison nicht gefunden.",
       "seasonNotDraft": "Die Saison kann nicht gestartet werden (nicht im Entwurf-Status).",
       "seasonNotActive": "Die Saison kann nicht beendet werden (nicht aktiv).",
+      "nameTaken": "Eine Saison mit diesem Namen existiert bereits in diesem Club.",
       "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },

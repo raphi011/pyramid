@@ -133,7 +133,7 @@ export async function proposeDateAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -188,7 +188,7 @@ export async function acceptDateAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -228,7 +228,7 @@ export async function declineDateAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -268,7 +268,7 @@ export async function removeDateProposalAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -320,7 +320,7 @@ export async function enterResultAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -364,7 +364,7 @@ export async function confirmResultAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -413,7 +413,7 @@ export async function withdrawAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -456,7 +456,7 @@ export async function forfeitAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -520,7 +520,7 @@ export async function disputeAction(
   }
 
   revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }

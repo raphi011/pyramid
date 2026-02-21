@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { CreateSeasonView } from "@/app/(main)/admin/club/[id]/season/new/create-season-view";
+import { CreateSeasonView } from "@/app/(main)/admin/club/[slug]/season/new/create-season-view";
 import type { SeasonMember, PreviousSeason } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -45,6 +45,7 @@ export const Default = meta.story({
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <CreateSeasonView
           clubId={1}
+          clubSlug="tc-musterstadt"
           members={members}
           previousSeasons={previousSeasons}
         />
@@ -83,6 +84,7 @@ export const TeamSeason = meta.story({
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <CreateSeasonView
           clubId={1}
+          clubSlug="tc-musterstadt"
           members={members}
           previousSeasons={previousSeasons}
         />
@@ -110,6 +112,7 @@ export const WithPreviousSeasons = meta.story({
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <CreateSeasonView
           clubId={1}
+          clubSlug="tc-musterstadt"
           members={members}
           previousSeasons={previousSeasons}
         />
@@ -141,7 +144,12 @@ export const NoPreviousSeasons = meta.story({
   render: function NoPrevStory() {
     return (
       <PageWrapper activeHref="/admin/club/1" isAdmin>
-        <CreateSeasonView clubId={1} members={members} previousSeasons={[]} />
+        <CreateSeasonView
+          clubId={1}
+          clubSlug="tc-musterstadt"
+          members={members}
+          previousSeasons={[]}
+        />
       </PageWrapper>
     );
   },

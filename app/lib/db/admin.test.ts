@@ -179,6 +179,7 @@ describe("getActiveSeasonsWithStats", () => {
       expect(seasons).toHaveLength(1);
       expect(seasons[0]).toEqual({
         id: seasonId,
+        slug: "spring-2026",
         name: "Spring 2026",
         teamCount: 3,
         openChallengeCount: 2, // recent + overdue
