@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = [
   "/season",
   "/api/auth",
   "/api/images",
+  "/api/health",
 ];
 
 export async function proxy(request: NextRequest) {
