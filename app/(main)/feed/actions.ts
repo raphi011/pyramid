@@ -1,10 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
-import { getFeedEvents, getEventReadWatermarks } from "@/app/lib/db/event";
+import {
+  getTimelineEvents,
+  getEventReadWatermarks,
+  markAsRead,
+} from "@/app/lib/db/event";
 import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
 import type { TimelineEvent } from "@/components/domain/event-timeline";
 
@@ -21,21 +26,23 @@ export async function loadMoreFeedEventsAction(
   const player = await getCurrentPlayer();
   if (!player) return { error: "feed.error.serverError" };
 
-  const clubs = await getPlayerClubs(sql, player.id);
-  const playerClubIds = new Set(clubs.map((c) => c.clubId));
-  const validClubIds = clubIds.filter((id) => playerClubIds.has(id));
-
-  if (validClubIds.length === 0) {
-    return { events: [], hasMore: false, cursor: null };
-  }
-
   const parsed = parseCursor(cursor);
   if (!parsed) return { error: "feed.error.serverError" };
 
   try {
+    const clubs = await getPlayerClubs(sql, player.id);
+    const playerClubIds = new Set(clubs.map((c) => c.clubId));
+    const validClubIds = clubIds.filter((id) => playerClubIds.has(id));
+
+    if (validClubIds.length === 0) {
+      return { events: [], hasMore: false, cursor: null };
+    }
+
+    const allClubIds = clubs.map((c) => c.clubId);
+
     const [rows, watermarks, t] = await Promise.all([
-      getFeedEvents(sql, validClubIds, parsed, PAGE_SIZE + 1),
-      getEventReadWatermarks(sql, player.id, validClubIds),
+      getTimelineEvents(sql, player.id, validClubIds, parsed, PAGE_SIZE + 1),
+      getEventReadWatermarks(sql, player.id, allClubIds),
       getTranslations("feed"),
     ]);
     const hasMore = rows.length > PAGE_SIZE;
@@ -63,24 +70,22 @@ export async function loadFeedForClubAction(
   const player = await getCurrentPlayer();
   if (!player) return { error: "feed.error.serverError" };
 
-  const clubs = await getPlayerClubs(sql, player.id);
-  const playerClubIds = new Set(clubs.map((c) => c.clubId));
-
-  const validClubIds =
-    clubId === 0
-      ? clubs.map((c) => c.clubId)
-      : playerClubIds.has(clubId)
-        ? [clubId]
-        : [];
-
-  if (validClubIds.length === 0) {
-    return { events: [], hasMore: false, cursor: null };
-  }
-
   try {
+    const clubs = await getPlayerClubs(sql, player.id);
+    const allClubIds = clubs.map((c) => c.clubId);
+
+    let effectiveClubIds: number[];
+    if (clubId === 0) {
+      effectiveClubIds = allClubIds;
+    } else if (clubs.some((c) => c.clubId === clubId)) {
+      effectiveClubIds = [clubId];
+    } else {
+      return { events: [], hasMore: false, cursor: null };
+    }
+
     const [rows, watermarks, t] = await Promise.all([
-      getFeedEvents(sql, validClubIds, null, PAGE_SIZE + 1),
-      getEventReadWatermarks(sql, player.id, validClubIds),
+      getTimelineEvents(sql, player.id, effectiveClubIds, null, PAGE_SIZE + 1),
+      getEventReadWatermarks(sql, player.id, allClubIds),
       getTranslations("feed"),
     ]);
     const hasMore = rows.length > PAGE_SIZE;
@@ -98,6 +103,27 @@ export async function loadFeedForClubAction(
     return { events, hasMore, cursor: nextCursor };
   } catch (e) {
     console.error("loadFeedForClubAction failed:", e);
+    return { error: "feed.error.serverError" };
+  }
+}
+
+export async function markAllReadAction(): Promise<
+  { success: true } | { error: string }
+> {
+  const player = await getCurrentPlayer();
+  if (!player) return { error: "feed.error.serverError" };
+
+  try {
+    const clubs = await getPlayerClubs(sql, player.id);
+    const clubIds = clubs.map((c) => c.clubId);
+
+    await markAsRead(sql, player.id, clubIds);
+
+    revalidatePath("/feed");
+
+    return { success: true };
+  } catch (e) {
+    console.error("markAllReadAction failed:", e);
     return { error: "feed.error.serverError" };
   }
 }

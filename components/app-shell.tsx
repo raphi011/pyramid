@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Bars3Icon, BellIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
@@ -8,18 +9,17 @@ import { MobileNav } from "@/components/mobile-nav";
 import { FloatingFab } from "@/components/floating-fab";
 import {
   SidebarNav,
-  type SidebarItem,
   type ProfileInfo,
+  type NavClub,
 } from "@/components/sidebar-nav";
 import { AdminBanner, type AdminMessage } from "@/components/admin-banner";
 
 type AppShellProps = {
   children: React.ReactNode;
-  sidebarItems: SidebarItem[];
-  mobileNavItems: SidebarItem[];
-  adminItems?: SidebarItem[];
+  clubs: [NavClub, ...NavClub[]];
   profile?: ProfileInfo;
   activeHref: string;
+  activeSearchParams: ReadonlyURLSearchParams;
   onNavigate?: (href: string) => void;
   fab?: {
     icon: React.ReactNode;
@@ -30,32 +30,68 @@ type AppShellProps = {
   };
   messages?: AdminMessage[];
   onDismissMessage?: (id: string) => void;
-  clubSwitcher?: React.ReactNode;
-  activeClubName: string;
-  activeClubId: number;
   unreadCount: number;
   className?: string;
 };
 
+const STORAGE_KEY = "pyramid:nav:clubs";
+
 function AppShell({
   children,
-  sidebarItems,
-  mobileNavItems,
-  adminItems,
+  clubs,
   profile,
   activeHref,
+  activeSearchParams,
   onNavigate,
   fab,
   messages,
   onDismissMessage,
-  clubSwitcher,
-  activeClubName,
-  activeClubId,
   unreadCount,
   className,
 }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const tNav = useTranslations("nav");
+
+  // Derive active season from search params
+  const seasonParam = activeSearchParams.get("season");
+  const activeSeasonId = seasonParam ? parseInt(seasonParam, 10) || null : null;
+
+  // Expanded club IDs — persisted to localStorage.
+  // SSR falls back to "all expanded" since window is undefined; any client-side
+  // hydration mismatch is benign (purely visual accordion state).
+  const [expandedClubIds, setExpandedClubIds] = useState<Set<number>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as number[];
+          if (Array.isArray(parsed)) {
+            return new Set(parsed);
+          }
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    return new Set(clubs.map((c) => c.id));
+  });
+
+  const handleToggleClub = useCallback((clubId: number) => {
+    setExpandedClubIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(clubId)) {
+        next.delete(clubId);
+      } else {
+        next.add(clubId);
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <div
@@ -64,12 +100,14 @@ function AppShell({
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-60">
         <SidebarNav
-          items={sidebarItems}
-          adminItems={adminItems}
+          clubs={clubs}
+          expandedClubIds={expandedClubIds}
+          onToggleClub={handleToggleClub}
           profile={profile}
           activeHref={activeHref}
+          activeSeasonId={activeSeasonId}
+          unreadCount={unreadCount}
           onNavigate={onNavigate}
-          clubSwitcher={clubSwitcher}
           fab={fab}
         />
       </div>
@@ -92,24 +130,17 @@ function AppShell({
           <Bars3Icon className="size-6" />
         </button>
 
-        {/* Club name */}
-        <button
-          onClick={() => onNavigate?.(`/club/${activeClubId}`)}
-          className="min-w-0 flex-1 px-2"
-        >
-          <span className="block truncate text-center text-base font-bold text-slate-900 dark:text-white">
-            {activeClubName}
-          </span>
-        </button>
+        {/* App title */}
+        <span className="text-base font-bold text-slate-900 dark:text-white">
+          Pyramid
+        </span>
 
         {/* Notification bell */}
         <button
-          onClick={() => onNavigate?.("/notifications")}
+          onClick={() => onNavigate?.("/feed")}
           className="relative flex size-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-300"
           aria-label={
-            unreadCount > 0
-              ? tNav("notifications") + ` (${unreadCount})`
-              : tNav("notifications")
+            unreadCount > 0 ? tNav("news") + ` (${unreadCount})` : tNav("news")
           }
         >
           <BellIcon className="size-6" />
@@ -144,12 +175,14 @@ function AppShell({
       <MobileNav
         open={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        items={mobileNavItems}
-        adminItems={adminItems}
+        clubs={clubs}
+        expandedClubIds={expandedClubIds}
+        onToggleClub={handleToggleClub}
         profile={profile}
         activeHref={activeHref}
+        activeSeasonId={activeSeasonId}
+        unreadCount={unreadCount}
         onNavigate={onNavigate}
-        clubSwitcher={clubSwitcher}
       />
 
       {/* Floating FAB (mobile only) */}

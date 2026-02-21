@@ -738,12 +738,60 @@ export async function getPlayerSeasonTeams(
   }));
 }
 
-// ── Invite code queries ─────────────────────────
-
 export type SeasonWithClub = Season & {
   clubName: string;
   clubImageId: string | null;
 };
+
+// ── Navigation queries ────────────────────────
+
+export type NavigationSeason = {
+  id: number;
+  clubId: number;
+  name: string;
+  status: SeasonStatus;
+};
+
+export async function getNavigationSeasons(
+  sql: Sql,
+  playerId: number,
+  clubIds: number[],
+): Promise<NavigationSeason[]> {
+  if (clubIds.length === 0) return [];
+
+  const rows = await sql`
+    SELECT
+      s.id,
+      s.club_id AS "clubId",
+      s.name,
+      s.status
+    FROM seasons s
+    WHERE s.club_id = ANY(${clubIds})
+      AND s.status != 'draft'
+      AND (
+        s.visibility = 'club'
+        OR EXISTS (
+          SELECT 1
+          FROM teams t
+          JOIN team_players tp ON tp.team_id = t.id
+          WHERE t.season_id = s.id AND tp.player_id = ${playerId}
+        )
+      )
+    ORDER BY
+      s.club_id,
+      CASE WHEN s.status = 'active' THEN 0 ELSE 1 END,
+      s.ended_at DESC NULLS LAST
+  `;
+
+  return rows.map((row) => ({
+    id: row.id as number,
+    clubId: row.clubId as number,
+    name: row.name as string,
+    status: row.status as SeasonStatus,
+  }));
+}
+
+// ── Invite code queries ─────────────────────────
 
 export async function getSeasonByInviteCode(
   sql: Sql,

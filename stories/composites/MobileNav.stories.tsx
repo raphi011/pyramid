@@ -3,15 +3,6 @@
 import { useState } from "react";
 import preview from "#.storybook/preview";
 import { within, userEvent, expect } from "storybook/test";
-import { useTranslations } from "next-intl";
-import {
-  TrophyIcon,
-  BellIcon,
-  BellAlertIcon,
-  BoltIcon,
-  Cog6ToothIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
 import { MobileNav } from "@/components/mobile-nav";
 import { mobileViewport } from "../viewports";
 
@@ -27,40 +18,28 @@ const meta = preview.meta({
 
 export default meta;
 
-function useMobileNavItems(unreadCount = 0) {
-  const t = useTranslations("nav");
-  return {
-    items: [
-      {
-        icon: <BellIcon />,
-        label: t("news"),
-        href: "/feed",
-        badge: unreadCount,
-      },
-      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-      { icon: <BoltIcon />, label: t("matches"), href: "/matches" },
-      {
-        icon: <BellAlertIcon />,
-        label: t("notifications"),
-        href: "/notifications",
-        badge: unreadCount,
-      },
-      { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+const mockClubs = [
+  {
+    id: 1,
+    name: "TC Musterstadt",
+    role: "player" as const,
+    seasons: [
+      { id: 1, name: "Sommer 2026", status: "active" },
+      { id: 2, name: "Winter 2025/26", status: "ended" },
     ],
-    adminItems: [
-      {
-        icon: <ShieldCheckIcon />,
-        label: t("manageClub"),
-        href: "/admin/club/1",
-      },
-    ],
-  };
-}
+  },
+  {
+    id: 2,
+    name: "SC Grünwald",
+    role: "player" as const,
+    seasons: [{ id: 3, name: "Herbst 2026", status: "active" }],
+  },
+];
 
 function MobileNavDefault() {
-  const { items } = useMobileNavItems();
   const [open, setOpen] = useState(true);
   const [active, setActive] = useState("/rankings");
+  const [expanded, setExpanded] = useState(new Set([1, 2]));
 
   return (
     <div className="relative h-[667px] bg-slate-50 dark:bg-slate-950">
@@ -76,14 +55,20 @@ function MobileNavDefault() {
       <MobileNav
         open={open}
         onClose={() => setOpen(false)}
-        items={items}
-        activeHref={active}
-        onNavigate={(href) => setActive(href)}
-        clubSwitcher={
-          <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            TC Musterstadt
-          </div>
+        clubs={mockClubs}
+        expandedClubIds={expanded}
+        onToggleClub={(id) =>
+          setExpanded((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+          })
         }
+        activeHref={active}
+        activeSeasonId={1}
+        unreadCount={3}
+        onNavigate={(href) => setActive(href)}
         profile={{
           name: "Max Mustermann",
           href: "/profile",
@@ -99,9 +84,12 @@ export const Default = meta.story({
     const canvas = within(canvasElement);
     const body = within(document.body);
 
-    // Dialog starts open — verify nav items visible
-    await expect(await body.findByText("Rangliste")).toBeInTheDocument();
-    await expect(body.getByText("Neuigkeiten")).toBeInTheDocument();
+    // Dialog starts open — verify club section visible (Avatar sr-only span also renders the name)
+    const clubNames = await body.findAllByText("TC Musterstadt");
+    await expect(clubNames.length).toBeGreaterThanOrEqual(1);
+    await expect(
+      body.getAllByText("Sommer 2026").length,
+    ).toBeGreaterThanOrEqual(1);
 
     // Click close button
     await userEvent.click(body.getByRole("button", { name: "Menü schließen" }));
@@ -109,7 +97,7 @@ export const Default = meta.story({
     // Re-open
     await userEvent.click(canvas.getByText("Open Menu"));
 
-    // Navigate to feed
+    // Navigate to feed via News link
     await userEvent.click(await body.findByText("Neuigkeiten"));
 
     // Active route should update
@@ -118,8 +106,13 @@ export const Default = meta.story({
 });
 
 function MobileNavWithAdmin() {
-  const { items, adminItems } = useMobileNavItems(3);
   const [open, setOpen] = useState(true);
+  const [expanded, setExpanded] = useState(new Set([1, 2]));
+
+  const adminClubs = [
+    { ...mockClubs[0], role: "admin" as const },
+    mockClubs[1],
+  ];
 
   return (
     <div className="relative h-[667px] bg-slate-50 dark:bg-slate-950">
@@ -134,15 +127,20 @@ function MobileNavWithAdmin() {
       <MobileNav
         open={open}
         onClose={() => setOpen(false)}
-        items={items}
-        adminItems={adminItems}
-        activeHref="/feed"
-        onNavigate={() => {}}
-        clubSwitcher={
-          <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            TC Musterstadt
-          </div>
+        clubs={adminClubs}
+        expandedClubIds={expanded}
+        onToggleClub={(id) =>
+          setExpanded((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+          })
         }
+        activeHref="/feed"
+        activeSeasonId={null}
+        unreadCount={3}
+        onNavigate={() => {}}
         profile={{
           name: "Anna Admin",
           href: "/profile",
@@ -156,47 +154,9 @@ export const WithAdminItems = meta.story({
   render: () => <MobileNavWithAdmin />,
 });
 
-function MobileNavWithBadge() {
-  const { items } = useMobileNavItems(5);
-  const [open, setOpen] = useState(true);
-
-  return (
-    <div className="relative h-[667px] bg-slate-50 dark:bg-slate-950">
-      <div className="p-4">
-        <button
-          onClick={() => setOpen(true)}
-          className="rounded-xl bg-court-500 px-4 py-2 text-sm font-medium text-white"
-        >
-          Open Menu
-        </button>
-      </div>
-      <MobileNav
-        open={open}
-        onClose={() => setOpen(false)}
-        items={items}
-        activeHref="/rankings"
-        onNavigate={() => {}}
-        clubSwitcher={
-          <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            TC Musterstadt
-          </div>
-        }
-        profile={{
-          name: "Max Mustermann",
-          href: "/profile",
-        }}
-      />
-    </div>
-  );
-}
-
-export const WithUnreadBadge = meta.story({
-  render: () => <MobileNavWithBadge />,
-});
-
 function MobileNavSingleClub() {
-  const { items } = useMobileNavItems();
   const [open, setOpen] = useState(true);
+  const [expanded, setExpanded] = useState(new Set([1]));
 
   return (
     <div className="relative h-[667px] bg-slate-50 dark:bg-slate-950">
@@ -211,8 +171,19 @@ function MobileNavSingleClub() {
       <MobileNav
         open={open}
         onClose={() => setOpen(false)}
-        items={items}
+        clubs={[mockClubs[0]]}
+        expandedClubIds={expanded}
+        onToggleClub={(id) =>
+          setExpanded((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+          })
+        }
         activeHref="/rankings"
+        activeSeasonId={1}
+        unreadCount={0}
         onNavigate={() => {}}
         profile={{
           name: "Max Mustermann",

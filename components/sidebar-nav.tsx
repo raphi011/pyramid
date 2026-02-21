@@ -1,8 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { BellIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { PyramidLogo } from "@/components/pyramid-logo";
+import { ClubNavSection } from "@/components/club-nav-section";
 import { cn } from "@/lib/utils";
 
 type SidebarItem = {
@@ -26,28 +30,35 @@ type FabAction = {
   variant?: "default" | "active";
 };
 
+type NavSeason = { id: number; name: string; status: string };
+type NavClub = { id: number; name: string; role: string; seasons: NavSeason[] };
+
 type SidebarNavProps = {
-  items: SidebarItem[];
-  adminItems?: SidebarItem[];
+  clubs: NavClub[];
+  expandedClubIds: Set<number>;
+  onToggleClub: (clubId: number) => void;
   profile?: ProfileInfo;
   activeHref: string;
+  activeSeasonId: number | null;
+  unreadCount: number;
   onNavigate?: (href: string) => void;
-  clubSwitcher?: React.ReactNode;
   fab?: FabAction;
   className?: string;
 };
 
 function SidebarNav({
-  items,
-  adminItems,
+  clubs,
+  expandedClubIds,
+  onToggleClub,
   profile,
   activeHref,
+  activeSeasonId,
+  unreadCount,
   onNavigate,
-  clubSwitcher,
   fab,
   className,
 }: SidebarNavProps) {
-  const tCommon = useTranslations("common");
+  const t = useTranslations("nav");
 
   return (
     <nav
@@ -58,42 +69,50 @@ function SidebarNav({
         className,
       )}
     >
-      <div className="flex items-center gap-4 px-6 pt-4 pb-6">
+      {/* Logo */}
+      <Link
+        href="/"
+        className="flex items-center gap-4 px-6 pt-4 pb-4 transition-opacity hover:opacity-80"
+      >
         <div className="flex size-5 items-center justify-center">
           <PyramidLogo size="sm" />
         </div>
         <span className="text-base font-bold text-slate-900 dark:text-white">
           Pyramid
         </span>
+      </Link>
+
+      {/* News link */}
+      <div className="px-3">
+        <NavButton
+          item={{
+            icon: <BellIcon />,
+            label: t("news"),
+            href: "/feed",
+            badge: unreadCount,
+          }}
+          active={activeHref === "/feed"}
+          onNavigate={onNavigate}
+        />
       </div>
 
-      <div className="flex-1 space-y-1 px-3 py-2">
-        {items.map((item) => (
-          <NavButton
-            key={item.href}
-            item={item}
-            active={activeHref === item.href}
+      <Separator className="mx-3 my-2" />
+
+      {/* Club sections */}
+      <div className="flex-1 space-y-1 overflow-y-auto px-3">
+        {clubs.map((club) => (
+          <ClubNavSection
+            key={club.id}
+            club={club}
+            expanded={expandedClubIds.has(club.id)}
+            onToggle={() => onToggleClub(club.id)}
+            activeHref={activeHref}
+            activeSeasonId={activeSeasonId}
             onNavigate={onNavigate}
           />
         ))}
 
-        {adminItems && adminItems.length > 0 && (
-          <>
-            <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
-            <p className="px-3 pb-1 pt-2 text-xs font-medium tracking-wide text-slate-500">
-              {tCommon("admin")}
-            </p>
-            {adminItems.map((item) => (
-              <NavButton
-                key={item.href}
-                item={item}
-                active={activeHref === item.href}
-                onNavigate={onNavigate}
-              />
-            ))}
-          </>
-        )}
-
+        {/* FAB */}
         {fab && (
           <div className="pt-2">
             <button
@@ -117,25 +136,29 @@ function SidebarNav({
         )}
       </div>
 
+      {/* Bottom: Settings + Profile */}
       <div className="px-3">
-        <div className="h-px bg-slate-200 dark:bg-slate-800" />
-        {clubSwitcher && <div className="pt-3">{clubSwitcher}</div>}
+        <Separator />
+
+        <div className="py-2">
+          <NavButton
+            item={{
+              icon: <Cog6ToothIcon />,
+              label: t("settings"),
+              href: "/settings",
+            }}
+            active={activeHref === "/settings"}
+            onNavigate={onNavigate}
+          />
+        </div>
+
         {profile && (
-          <div className="py-3">
-            <button
-              onClick={() => onNavigate?.(profile.href)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
-                "transition-colors duration-150",
-                activeHref === profile.href
-                  ? "bg-court-50 text-court-700 dark:bg-court-950 dark:text-court-400"
-                  : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
-              )}
-              aria-current={activeHref === profile.href ? "page" : undefined}
-            >
-              <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
-              <span>{profile.name}</span>
-            </button>
+          <div className="pb-3">
+            <ProfileButton
+              profile={profile}
+              active={activeHref === profile.href}
+              onNavigate={onNavigate}
+            />
           </div>
         )}
       </div>
@@ -176,5 +199,32 @@ function NavButton({
   );
 }
 
-export { SidebarNav, NavButton };
-export type { SidebarNavProps, SidebarItem, ProfileInfo };
+function ProfileButton({
+  profile,
+  active,
+  onNavigate,
+}: {
+  profile: ProfileInfo;
+  active: boolean;
+  onNavigate?: (href: string) => void;
+}) {
+  return (
+    <button
+      onClick={() => onNavigate?.(profile.href)}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+        "transition-colors duration-150",
+        active
+          ? "bg-court-50 text-court-700 dark:bg-court-950 dark:text-court-400"
+          : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
+      )}
+      aria-current={active ? "page" : undefined}
+    >
+      <Avatar name={profile.name} src={profile.avatarSrc} size="sm" />
+      <span>{profile.name}</span>
+    </button>
+  );
+}
+
+export { SidebarNav, NavButton, ProfileButton };
+export type { SidebarNavProps, SidebarItem, ProfileInfo, NavSeason, NavClub };

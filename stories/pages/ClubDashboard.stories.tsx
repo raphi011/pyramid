@@ -92,9 +92,10 @@ export const Default = meta.story({
     await expect(statsArea.getByText("3")).toBeInTheDocument();
     await expect(statsArea.getByText("12")).toBeInTheDocument();
 
-    // Seasons are listed
-    await expect(canvas.getByText("Sommer 2026")).toBeInTheDocument();
-    await expect(canvas.getByText("Doppel Sommer 2026")).toBeInTheDocument();
+    // Seasons are listed (scope to main to avoid sidebar nav duplicates)
+    const main = within(canvasElement.querySelector("main")! as HTMLElement);
+    await expect(main.getByText("Sommer 2026")).toBeInTheDocument();
+    await expect(main.getByText("Doppel Sommer 2026")).toBeInTheDocument();
 
     // Overdue matches section should NOT be present
     await expect(canvas.queryByText(/Felix Wagner/)).not.toBeInTheDocument();

@@ -115,63 +115,6 @@ function toEventRow(row: Record<string, unknown>): EventRow {
 
 // ── Queries ────────────────────────────────────────────
 
-export async function getFeedEvents(
-  sql: Sql,
-  clubIds: number[],
-  cursor: { created: Date; id: number } | null,
-  limit: number,
-): Promise<EventRow[]> {
-  if (clubIds.length === 0) return [];
-
-  const cursorClause = cursor
-    ? `AND (e.created, e.id) < ($2, $3) ORDER BY e.created DESC, e.id DESC LIMIT $4`
-    : `ORDER BY e.created DESC, e.id DESC LIMIT $2`;
-
-  const params = cursor
-    ? [clubIds, cursor.created, cursor.id, limit]
-    : [clubIds, limit];
-
-  const rows = await sql.unsafe(
-    `SELECT ${EVENT_SELECT}
-     ${EVENT_JOIN}
-     WHERE e.club_id = ANY($1)
-       AND e.target_player_id IS NULL
-       ${cursorClause}`,
-    params,
-  );
-
-  return rows.map(toEventRow);
-}
-
-export async function getNotifications(
-  sql: Sql,
-  playerId: number,
-  clubIds: number[],
-  cursor: { created: Date; id: number } | null,
-  limit: number,
-): Promise<EventRow[]> {
-  if (clubIds.length === 0) return [];
-
-  const cursorClause = cursor
-    ? `AND (e.created, e.id) < ($3, $4) ORDER BY e.created DESC, e.id DESC LIMIT $5`
-    : `ORDER BY e.created DESC, e.id DESC LIMIT $3`;
-
-  const params = cursor
-    ? [playerId, clubIds, cursor.created, cursor.id, limit]
-    : [playerId, clubIds, limit];
-
-  const rows = await sql.unsafe(
-    `SELECT ${EVENT_SELECT}
-     ${EVENT_JOIN}
-     WHERE e.target_player_id = $1
-       AND e.club_id = ANY($2)
-       ${cursorClause}`,
-    params,
-  );
-
-  return rows.map(toEventRow);
-}
-
 export async function getUnreadCount(
   sql: Sql,
   playerId: number,
@@ -212,6 +155,36 @@ export async function getEventReadWatermarks(
     map.set(row.clubId as number, row.lastReadAt as Date);
   }
   return map;
+}
+
+export async function getTimelineEvents(
+  sql: Sql,
+  playerId: number,
+  clubIds: number[],
+  cursor: { created: Date; id: number } | null,
+  limit: number,
+): Promise<EventRow[]> {
+  if (clubIds.length === 0) return [];
+
+  const cursorClause = cursor
+    ? `AND (e.created, e.id) < ($3, $4) ORDER BY e.created DESC, e.id DESC LIMIT $5`
+    : `ORDER BY e.created DESC, e.id DESC LIMIT $3`;
+
+  const params = cursor
+    ? [playerId, clubIds, cursor.created, cursor.id, limit]
+    : [playerId, clubIds, limit];
+
+  const rows = await sql.unsafe(
+    `SELECT ${EVENT_SELECT}
+     ${EVENT_JOIN}
+     WHERE e.club_id = ANY($2)
+       AND (e.target_player_id IS NULL OR e.target_player_id = $1)
+       AND e.player_id IS DISTINCT FROM $1
+       ${cursorClause}`,
+    params,
+  );
+
+  return rows.map(toEventRow);
 }
 
 export async function getMatchEvents(

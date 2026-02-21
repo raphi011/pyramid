@@ -37,8 +37,25 @@ export default async function RankingsPage({
   const clubs = await getPlayerClubs(sql, player.id);
   if (clubs.length === 0) redirect("/join");
 
-  const clubId = clubs[0].clubId;
-  const clubName = clubs[0].clubName;
+  const playerClubIds = new Set(clubs.map((c) => c.clubId));
+
+  // Resolve club from season param, or fall back to first club
+  let clubId = clubs[0].clubId;
+  let season: Season | null = null;
+
+  if (seasonParam) {
+    const seasonId = parseInt(seasonParam, 10);
+    if (!Number.isNaN(seasonId) && seasonId > 0) {
+      const s = await getSeasonById(sql, seasonId);
+      if (s && playerClubIds.has(s.clubId)) {
+        season = s;
+        clubId = s.clubId;
+      }
+    }
+  }
+
+  const clubName =
+    clubs.find((c) => c.clubId === clubId)?.clubName ?? clubs[0].clubName;
 
   const seasons = await getClubSeasons(sql, clubId);
 
@@ -60,15 +77,8 @@ export default async function RankingsPage({
     );
   }
 
-  // Resolve selected season (from URL param or default to first)
-  let season: Season | null = null;
-  if (seasonParam) {
-    const seasonId = parseInt(seasonParam, 10);
-    if (!Number.isNaN(seasonId) && seasonId > 0) {
-      season = await getSeasonById(sql, seasonId);
-    }
-  }
-  if (!season || season.clubId !== clubId) {
+  // If no valid season from param, default to first
+  if (!season) {
     season = seasons[0];
   }
 

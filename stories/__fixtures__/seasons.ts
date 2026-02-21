@@ -1,5 +1,6 @@
 import type { Season } from "@/components/domain/season-selector";
-import type { Club } from "@/components/club-switcher";
+
+type Club = { id: string; name: string };
 
 export const clubs: Club[] = [
   { id: "c1", name: "TC Musterstadt" },
