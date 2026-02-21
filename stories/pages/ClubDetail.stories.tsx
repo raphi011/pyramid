@@ -2,7 +2,7 @@
 
 import preview from "#.storybook/preview";
 import { PageWrapper } from "./_page-wrapper";
-import { ClubDetailView } from "@/app/(main)/club/[id]/club-detail-view";
+import { ClubDetailView } from "@/app/(main)/club/[slug]/club-detail-view";
 
 const meta = preview.meta({
   title: "Pages/ClubDetail",
@@ -107,6 +107,7 @@ const members = [
 const seasons = [
   {
     id: 1,
+    slug: "sommer-2026",
     name: "Sommer 2026",
     status: "active" as const,
     playerCount: 18,
@@ -117,6 +118,7 @@ const seasons = [
   },
   {
     id: 2,
+    slug: "doppel-sommer-2026",
     name: "Doppel Sommer 2026",
     status: "active" as const,
     playerCount: 12,
@@ -127,6 +129,7 @@ const seasons = [
   },
   {
     id: 3,
+    slug: "herbst-2026",
     name: "Herbst 2026",
     status: "active" as const,
     playerCount: 5,
@@ -137,6 +140,7 @@ const seasons = [
   },
   {
     id: 4,
+    slug: "winter-2025-26",
     name: "Winter 2025/26",
     status: "ended" as const,
     playerCount: 20,
@@ -147,6 +151,7 @@ const seasons = [
   },
   {
     id: 5,
+    slug: "sommer-2025",
     name: "Sommer 2025",
     status: "ended" as const,
     playerCount: 16,
@@ -168,6 +173,7 @@ function ClubDetailPage(props: {
   return (
     <PageWrapper activeHref="/club">
       <ClubDetailView
+        clubSlug="tc-musterstadt"
         club={props.club ?? fullClub}
         memberCount={props.memberCount ?? (props.members ?? members).length}
         seasons={props.seasons ?? seasons}

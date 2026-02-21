@@ -196,7 +196,7 @@ const mockCompletedEvents: TimelineEvent[] = [
 export const Challenged = meta.story({
   render: function ChallengedStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch()}
           proposals={mockProposals}
@@ -216,7 +216,7 @@ export const Challenged = meta.story({
 export const DateSet = meta.story({
   render: function DateSetStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch({
             status: "date_set",
@@ -242,7 +242,7 @@ export const DateSet = meta.story({
 export const PendingConfirmation = meta.story({
   render: function PendingConfirmationStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch({
             status: "pending_confirmation",
@@ -269,7 +269,7 @@ export const PendingConfirmation = meta.story({
 export const PendingConfirmationAsEnterer = meta.story({
   render: function PendingConfirmationAsEntererStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch({
             status: "pending_confirmation",
@@ -296,7 +296,7 @@ export const PendingConfirmationAsEnterer = meta.story({
 export const Completed = meta.story({
   render: function CompletedStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch({
             status: "completed",
@@ -324,7 +324,7 @@ export const Completed = meta.story({
 export const WithDateProposals = meta.story({
   render: function WithDateProposalsStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch()}
           proposals={mockProposals}
@@ -344,7 +344,7 @@ export const WithDateProposals = meta.story({
 export const AsSpectator = meta.story({
   render: function AsSpectatorStory() {
     return (
-      <PageWrapper activeHref="/rankings">
+      <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
         <MatchDetailView
           match={makeMatch({
             status: "date_set",

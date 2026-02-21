@@ -10,13 +10,19 @@ import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { NavButton, type NavSeason } from "@/components/sidebar-nav";
 import { cn } from "@/lib/utils";
+import { routes } from "@/app/lib/routes";
 
 type ClubNavSectionProps = {
-  club: { id: number; name: string; role: string; seasons: NavSeason[] };
+  club: {
+    id: number;
+    name: string;
+    slug: string;
+    role: string;
+    seasons: NavSeason[];
+  };
   expanded: boolean;
   onToggle: () => void;
   activeHref: string;
-  activeSeasonId: number | null;
   onNavigate?: (href: string) => void;
 };
 
@@ -25,13 +31,12 @@ function ClubNavSection({
   expanded,
   onToggle,
   activeHref,
-  activeSeasonId,
   onNavigate,
 }: ClubNavSectionProps) {
   const t = useTranslations("nav");
 
-  const clubOverviewHref = `/club/${club.id}`;
-  const adminHref = `/admin/club/${club.id}`;
+  const clubOverviewHref = routes.club(club.slug);
+  const adminHref = routes.admin.club(club.slug);
 
   return (
     <div>
@@ -75,11 +80,9 @@ function ClubNavSection({
               item={{
                 icon: <TrophyIcon />,
                 label: season.name,
-                href: `/rankings?season=${season.id}`,
+                href: routes.rankings(club.slug, season.slug),
               }}
-              active={
-                activeHref === "/rankings" && activeSeasonId === season.id
-              }
+              active={activeHref === routes.rankings(club.slug, season.slug)}
               onNavigate={onNavigate}
             />
           ))}

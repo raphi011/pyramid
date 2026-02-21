@@ -15,7 +15,7 @@ export default async function MainNotFound() {
           description={t("description")}
         />
         <Link
-          href="/rankings"
+          href="/feed"
           className="mt-4 text-sm font-medium text-court-600 hover:text-court-700 dark:text-court-400 dark:hover:text-court-300"
         >
           {t("backHome")}

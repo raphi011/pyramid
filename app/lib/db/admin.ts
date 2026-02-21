@@ -15,6 +15,7 @@ export type ClubStats = {
 export type AdminSeasonSummary = {
   id: number;
   name: string;
+  slug: string;
   teamCount: number;
   openChallengeCount: number;
   overdueMatchCount: number;
@@ -47,6 +48,7 @@ export type SeasonStatus = "draft" | "active" | "ended";
 export type SeasonDetail = {
   id: number;
   name: string;
+  slug: string;
   status: SeasonStatus;
   bestOf: BestOf;
   matchDeadlineDays: number;
@@ -147,6 +149,7 @@ export async function getActiveSeasonsWithStats(
     SELECT
       s.id,
       s.name,
+      s.slug,
       (SELECT COUNT(*)::int FROM teams t
        WHERE t.season_id = s.id AND t.opted_out = false)
         AS "teamCount",
@@ -267,6 +270,7 @@ export async function getSeasonDetail(
     SELECT
       id,
       name,
+      slug,
       status,
       best_of AS "bestOf",
       match_deadline_days AS "matchDeadlineDays",

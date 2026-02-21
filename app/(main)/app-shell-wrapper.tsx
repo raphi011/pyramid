@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PlusIcon, BoltIcon } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/app-shell";
@@ -25,13 +25,11 @@ export function AppShellWrapper({
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   return (
     <AppShell
       clubs={clubs}
       activeHref={pathname}
-      activeSearchParams={searchParams}
       unreadCount={unreadCount}
       profile={{
         name: fullName(player.firstName, player.lastName),
@@ -46,11 +44,13 @@ export function AppShellWrapper({
               onClick: () => router.push(`/matches/${activeMatchId}`),
               variant: "active",
             }
-          : {
-              icon: <PlusIcon />,
-              label: t("challenge"),
-              onClick: () => router.push("/rankings?challenge=true"),
-            }
+          : pathname.endsWith("/rankings")
+            ? {
+                icon: <PlusIcon />,
+                label: t("challenge"),
+                onClick: () => router.push(`${pathname}?challenge=true`),
+              }
+            : undefined
       }
     >
       {children}

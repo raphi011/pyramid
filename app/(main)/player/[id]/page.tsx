@@ -77,7 +77,6 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   let challengeEligible = false;
   let seasonId: number | null = null;
   let targetTeamId: number | null = null;
-
   const seasons = await getActiveSeasons(sql, clubId);
 
   if (seasons.length > 0) {

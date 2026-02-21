@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { AdminDashboardView } from "@/app/(main)/admin/club/[id]/admin-dashboard-view";
+import { AdminDashboardView } from "@/app/(main)/admin/club/[slug]/admin-dashboard-view";
 import type {
   ClubStats,
   AdminSeasonSummary,
@@ -36,6 +36,7 @@ const stats: ClubStats = {
 const seasons: AdminSeasonSummary[] = [
   {
     id: 1,
+    slug: "sommer-2026",
     name: "Sommer 2026",
     teamCount: 24,
     openChallengeCount: 8,
@@ -43,6 +44,7 @@ const seasons: AdminSeasonSummary[] = [
   },
   {
     id: 2,
+    slug: "doppel-sommer-2026",
     name: "Doppel Sommer 2026",
     teamCount: 16,
     openChallengeCount: 4,
@@ -72,6 +74,7 @@ export const Default = meta.story({
     return (
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <AdminDashboardView
+          clubSlug="tc-musterstadt"
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
           appUrl="http://localhost:3000"
@@ -107,6 +110,7 @@ export const WithOverdueMatches = meta.story({
     return (
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <AdminDashboardView
+          clubSlug="tc-musterstadt"
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
           appUrl="http://localhost:3000"
@@ -138,6 +142,7 @@ export const EmptyClub = meta.story({
     return (
       <PageWrapper activeHref="/admin/club/1" isAdmin>
         <AdminDashboardView
+          clubSlug="tc-musterstadt"
           clubName="TC Musterstadt"
           inviteCode="TCMS-2026"
           appUrl="http://localhost:3000"

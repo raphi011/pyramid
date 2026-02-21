@@ -4,7 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
-import { isClubMember } from "@/app/lib/db/club";
+import { getClubSlug, isClubMember } from "@/app/lib/db/club";
 import {
   getSeasonById,
   isPlayerEnrolledInSeason,
@@ -14,6 +14,7 @@ import {
   createNewPlayerEvent,
 } from "@/app/lib/db/season";
 import { parseFormData } from "@/app/lib/action-utils";
+import { routes } from "@/app/lib/routes";
 import type { ActionResult } from "@/app/lib/action-result";
 
 class AlreadyEnrolledError extends Error {}
@@ -91,8 +92,9 @@ export async function enrollInSeasonAction(
     return { error: "error.serverError" };
   }
 
-  revalidatePath("/rankings");
-  revalidatePath("/club");
+  const clubSlug = await getClubSlug(sql, season.clubId);
+  revalidatePath(routes.rankings(clubSlug ?? "", season.slug));
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }

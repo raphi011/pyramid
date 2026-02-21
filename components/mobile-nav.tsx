@@ -29,7 +29,6 @@ type MobileNavProps = {
   onToggleClub: (clubId: number) => void;
   profile?: ProfileInfo;
   activeHref: string;
-  activeSeasonId: number | null;
   unreadCount: number;
   onNavigate?: (href: string) => void;
 };
@@ -42,7 +41,6 @@ function MobileNav({
   onToggleClub,
   profile,
   activeHref,
-  activeSeasonId,
   unreadCount,
   onNavigate,
 }: MobileNavProps) {
@@ -118,7 +116,6 @@ function MobileNav({
                   expanded={expandedClubIds.has(club.id)}
                   onToggle={() => onToggleClub(club.id)}
                   activeHref={activeHref}
-                  activeSeasonId={activeSeasonId}
                   onNavigate={handleNavigate}
                 />
               ))}

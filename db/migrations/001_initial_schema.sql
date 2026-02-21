@@ -22,7 +22,8 @@ CREATE TABLE images (
 -----------------------------------------------
 CREATE TABLE clubs (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL DEFAULT '',
     invite_code TEXT UNIQUE NOT NULL,
     url TEXT NOT NULL DEFAULT '',
     phone_number TEXT NOT NULL DEFAULT '',
@@ -34,6 +35,8 @@ CREATE TABLE clubs (
     is_disabled BOOL NOT NULL DEFAULT false,
     created TIMESTAMPTZ NOT NULL
 );
+
+CREATE UNIQUE INDEX clubs_slug_unique ON clubs (slug);
 
 -----------------------------------------------
 -- 2. player
@@ -76,6 +79,7 @@ CREATE TABLE seasons (
     id SERIAL PRIMARY KEY,
     club_id INT NOT NULL REFERENCES clubs(id),
     name TEXT NOT NULL,
+    slug TEXT NOT NULL DEFAULT '',
     min_team_size INT NOT NULL DEFAULT 1,
     max_team_size INT NOT NULL DEFAULT 1,
     best_of INT NOT NULL DEFAULT 3,
@@ -91,6 +95,9 @@ CREATE TABLE seasons (
     ended_at TIMESTAMPTZ,
     created TIMESTAMPTZ NOT NULL
 );
+
+ALTER TABLE seasons ADD CONSTRAINT seasons_club_id_name_unique UNIQUE (club_id, name);
+CREATE UNIQUE INDEX seasons_club_id_slug_unique ON seasons (club_id, slug);
 
 CREATE UNIQUE INDEX seasons_invite_code_unique
   ON seasons (invite_code) WHERE invite_code != '';

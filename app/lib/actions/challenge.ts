@@ -9,6 +9,7 @@ import {
   getPlayerTeamId,
   getStandingsWithPlayers,
 } from "@/app/lib/db/season";
+import { getClubSlug } from "@/app/lib/db/club";
 import { ChallengeConflictError } from "@/app/lib/db/match";
 import {
   challengeTeam,
@@ -16,6 +17,7 @@ import {
   UnavailableTeamError,
 } from "@/app/lib/domain/challenge";
 import { parseFormData } from "@/app/lib/action-utils";
+import { routes } from "@/app/lib/routes";
 
 const createChallengeSchema = z.object({
   seasonId: z.coerce.number().int().positive(),
@@ -72,7 +74,8 @@ export async function createChallengeAction(
       });
     });
 
-    revalidatePath("/rankings");
+    const clubSlug = await getClubSlug(sql, season.clubId);
+    revalidatePath(routes.rankings(clubSlug ?? "", season.slug));
 
     return { success: true, matchId };
   } catch (e) {

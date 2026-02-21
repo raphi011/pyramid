@@ -99,7 +99,7 @@ export async function updateProfileImageAction(
   }
 
   revalidatePath("/profile");
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -162,7 +162,7 @@ export async function setUnavailabilityAction(
   }
 
   revalidatePath("/profile");
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }
@@ -190,7 +190,7 @@ export async function cancelUnavailabilityAction(): Promise<ProfileResult> {
   }
 
   revalidatePath("/profile");
-  revalidatePath("/rankings");
+  revalidatePath("/club", "layout");
 
   return { success: true };
 }

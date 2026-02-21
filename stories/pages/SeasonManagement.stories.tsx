@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { SeasonManagementView } from "@/app/(main)/admin/club/[id]/season/[seasonId]/season-management-view";
+import { SeasonManagementView } from "@/app/(main)/admin/club/[slug]/season/[seasonSlug]/season-management-view";
 import type { SeasonDetail } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -25,6 +25,7 @@ export default meta;
 
 const activeSeason: SeasonDetail = {
   id: 1,
+  slug: "sommer-2026",
   name: "Sommer 2026",
   status: "active",
   bestOf: 3,
@@ -66,6 +67,8 @@ export const ActiveSeason = meta.story({
           playerCount={18}
           optedOutCount={2}
           clubId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="sommer-2026"
           inviteCode={activeSeason.inviteCode}
           appUrl="http://localhost:3000"
         />
@@ -104,6 +107,8 @@ export const DraftSeason = meta.story({
           playerCount={24}
           optedOutCount={0}
           clubId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="herbst-2026"
           inviteCode={draftSeason.inviteCode}
           appUrl="http://localhost:3000"
         />
@@ -134,6 +139,8 @@ export const TeamSeason = meta.story({
           playerCount={16}
           optedOutCount={0}
           clubId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="doppel-sommer-2026"
           inviteCode={teamSeason.inviteCode}
           appUrl="http://localhost:3000"
         />
@@ -160,6 +167,8 @@ export const EndedSeason = meta.story({
           playerCount={18}
           optedOutCount={2}
           clubId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="winter-2025-26"
           inviteCode={endedSeason.inviteCode}
           appUrl="http://localhost:3000"
         />

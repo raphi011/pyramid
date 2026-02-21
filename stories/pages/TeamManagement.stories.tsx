@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { TeamManagementView } from "@/app/(main)/admin/club/[id]/season/[seasonId]/teams/team-management-view";
+import { TeamManagementView } from "@/app/(main)/admin/club/[slug]/season/[seasonSlug]/teams/team-management-view";
 import type { Team, TeamMember } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -65,6 +65,8 @@ export const Default = meta.story({
           unassignedPlayers={[]}
           clubId={1}
           seasonId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="doppel-sommer-2026"
         />
       </PageWrapper>
     );
@@ -116,6 +118,8 @@ export const WithUnassignedPlayers = meta.story({
           unassignedPlayers={unassignedPlayers}
           clubId={1}
           seasonId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="doppel-sommer-2026"
         />
       </PageWrapper>
     );
@@ -142,6 +146,8 @@ export const EmptyTeams = meta.story({
           unassignedPlayers={unassignedPlayers}
           clubId={1}
           seasonId={1}
+          clubSlug="tc-musterstadt"
+          seasonSlug="doppel-sommer-2026"
         />
       </PageWrapper>
     );

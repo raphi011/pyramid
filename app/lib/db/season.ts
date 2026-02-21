@@ -1,6 +1,8 @@
 import type postgres from "postgres";
 import { generateInviteCode } from "../crypto";
+import { slugify } from "../slug";
 import type { Sql } from "../db";
+import { isUniqueViolation, SlugConflictError } from "./errors";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -12,6 +14,7 @@ export type Season = {
   id: number;
   clubId: number;
   name: string;
+  slug: string;
   status: SeasonStatus;
   minTeamSize: number;
   maxTeamSize: number;
@@ -67,6 +70,7 @@ function toSeason(row: Record<string, unknown>): Season {
     id: row.id as number,
     clubId: row.clubId as number,
     name: row.name as string,
+    slug: row.slug as string,
     status: row.status as SeasonStatus,
     minTeamSize: row.minTeamSize as number,
     maxTeamSize: row.maxTeamSize as number,
@@ -83,6 +87,14 @@ function toSeason(row: Record<string, unknown>): Season {
   };
 }
 
+export async function getSeasonSlug(
+  sql: Sql,
+  seasonId: number,
+): Promise<string | null> {
+  const rows = await sql`SELECT slug FROM seasons WHERE id = ${seasonId}`;
+  return rows.length > 0 ? (rows[0].slug as string) : null;
+}
+
 // ── Queries ────────────────────────────────────────────
 
 export async function getActiveSeasons(
@@ -94,6 +106,7 @@ export async function getActiveSeasons(
       id,
       club_id AS "clubId",
       name,
+      slug,
       status,
       min_team_size AS "minTeamSize",
       max_team_size AS "maxTeamSize",
@@ -123,6 +136,7 @@ export async function getSeasonById(
       id,
       club_id AS "clubId",
       name,
+      slug,
       status,
       min_team_size AS "minTeamSize",
       max_team_size AS "maxTeamSize",
@@ -138,6 +152,37 @@ export async function getSeasonById(
       ended_at AS "endedAt"
     FROM seasons
     WHERE id = ${id}
+  `;
+
+  return rows.length > 0 ? toSeason(rows[0]) : null;
+}
+
+export async function getSeasonBySlug(
+  sql: Sql,
+  clubId: number,
+  slug: string,
+): Promise<Season | null> {
+  const rows = await sql`
+    SELECT
+      id,
+      club_id AS "clubId",
+      name,
+      slug,
+      status,
+      min_team_size AS "minTeamSize",
+      max_team_size AS "maxTeamSize",
+      best_of AS "bestOf",
+      match_deadline_days AS "matchDeadlineDays",
+      reminder_after_days AS "reminderAfterDays",
+      requires_result_confirmation AS "requiresResultConfirmation",
+      open_enrollment AS "openEnrollment",
+      visibility,
+      invite_code AS "inviteCode",
+      previous_season_id AS "previousSeasonId",
+      started_at AS "startedAt",
+      ended_at AS "endedAt"
+    FROM seasons
+    WHERE club_id = ${clubId} AND slug = ${slug}
   `;
 
   return rows.length > 0 ? toSeason(rows[0]) : null;
@@ -264,7 +309,7 @@ export async function createSeason(
   tx: postgres.TransactionSql,
   clubId: number,
   opts: CreateSeasonOpts,
-): Promise<{ seasonId: number; teamIds: number[] }> {
+): Promise<{ seasonId: number; seasonSlug: string; teamIds: number[] }> {
   const {
     name,
     type,
@@ -284,6 +329,7 @@ export async function createSeason(
   const minTeamSize = type === "team" ? teamSize : 1;
   const maxTeamSize = type === "team" ? teamSize : 1;
   const code = inviteCode ?? generateInviteCode();
+  const seasonSlug = slugify(name);
 
   // Verify fromSeasonId belongs to this club (IDOR prevention)
   if (startingRanks === "from_season" && fromSeasonId != null) {
@@ -296,22 +342,28 @@ export async function createSeason(
   }
 
   // 1. Insert season
-  const seasonRows = await tx`
-    INSERT INTO seasons (
-      club_id, name, min_team_size, max_team_size, best_of,
-      match_deadline_days, reminder_after_days,
-      requires_result_confirmation, open_enrollment,
-      invite_code, status, created
-    )
-    VALUES (
-      ${clubId}, ${name}, ${minTeamSize}, ${maxTeamSize}, ${bestOf},
-      ${matchDeadlineDays}, ${reminderDays},
-      ${requiresConfirmation}, ${openEnrollment},
-      ${code}, 'draft', NOW()
-    )
-    RETURNING id
-  `;
-  const seasonId = (seasonRows[0] as { id: number }).id;
+  let seasonId: number;
+  try {
+    const seasonRows = await tx`
+      INSERT INTO seasons (
+        club_id, name, slug, min_team_size, max_team_size, best_of,
+        match_deadline_days, reminder_after_days,
+        requires_result_confirmation, open_enrollment,
+        invite_code, status, created
+      )
+      VALUES (
+        ${clubId}, ${name}, ${seasonSlug}, ${minTeamSize}, ${maxTeamSize}, ${bestOf},
+        ${matchDeadlineDays}, ${reminderDays},
+        ${requiresConfirmation}, ${openEnrollment},
+        ${code}, 'draft', NOW()
+      )
+      RETURNING id
+    `;
+    seasonId = (seasonRows[0] as { id: number }).id;
+  } catch (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError();
+    throw error;
+  }
 
   // 2. For individual seasons: create a team per included club member
   const teamIds: number[] = [];
@@ -426,7 +478,7 @@ export async function createSeason(
     }
   }
 
-  return { seasonId, teamIds };
+  return { seasonId, seasonSlug, teamIds };
 }
 
 // ── Start / end season ────────────────────────────────
@@ -456,6 +508,7 @@ export async function getClubSeasons(
       id,
       club_id AS "clubId",
       name,
+      slug,
       status,
       min_team_size AS "minTeamSize",
       max_team_size AS "maxTeamSize",
@@ -749,6 +802,7 @@ export type NavigationSeason = {
   id: number;
   clubId: number;
   name: string;
+  slug: string;
   status: SeasonStatus;
 };
 
@@ -764,6 +818,7 @@ export async function getNavigationSeasons(
       s.id,
       s.club_id AS "clubId",
       s.name,
+      s.slug,
       s.status
     FROM seasons s
     WHERE s.club_id = ANY(${clubIds})
@@ -787,6 +842,7 @@ export async function getNavigationSeasons(
     id: row.id as number,
     clubId: row.clubId as number,
     name: row.name as string,
+    slug: row.slug as string,
     status: row.status as SeasonStatus,
   }));
 }
@@ -804,6 +860,7 @@ export async function getSeasonByInviteCode(
       s.id,
       s.club_id AS "clubId",
       s.name,
+      s.slug,
       s.status,
       s.min_team_size AS "minTeamSize",
       s.max_team_size AS "maxTeamSize",

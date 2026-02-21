@@ -4,11 +4,16 @@ import { seedPlayer, seedClub, seedClubMember } from "./seed";
 import {
   getClubByInviteCode,
   getClubById,
+  getClubBySlug,
+  getClubSlug,
   getPlayerClubs,
   getPlayerRole,
   isClubMember,
   joinClub,
+  createClub,
+  updateClub,
 } from "./club";
+import { SlugConflictError } from "./errors";
 
 const db = withTestDb();
 
@@ -27,6 +32,7 @@ describe("getClubByInviteCode", () => {
       expect(club).toEqual({
         id: clubId,
         name: "Tennis Club",
+        slug: "tennis-club",
         inviteCode: "TENNIS-123",
         url: "",
         phoneNumber: "",
@@ -88,7 +94,9 @@ describe("getPlayerClubs", () => {
       await seedClubMember(tx, playerId, clubId, "player");
 
       const clubs = await getPlayerClubs(tx, playerId);
-      expect(clubs).toEqual([{ clubId, clubName: "My Club", role: "player" }]);
+      expect(clubs).toEqual([
+        { clubId, clubName: "My Club", clubSlug: "my-club", role: "player" },
+      ]);
     });
   });
 
@@ -104,8 +112,18 @@ describe("getPlayerClubs", () => {
       expect(clubs).toHaveLength(2);
       expect(clubs).toEqual(
         expect.arrayContaining([
-          { clubId: club1, clubName: "Club A", role: "player" },
-          { clubId: club2, clubName: "Club B", role: "admin" },
+          {
+            clubId: club1,
+            clubName: "Club A",
+            clubSlug: "club-a",
+            role: "player",
+          },
+          {
+            clubId: club2,
+            clubName: "Club B",
+            clubSlug: "club-b",
+            role: "admin",
+          },
         ]),
       );
     });
@@ -216,6 +234,104 @@ describe("joinClub", () => {
       await joinClub(tx, playerId, clubId);
       const result = await joinClub(tx, playerId, clubId);
       expect(result).toEqual({ alreadyMember: true });
+    });
+  });
+});
+
+// ── getClubBySlug ───────────────────────────────────
+
+describe("getClubBySlug", () => {
+  it("returns club when slug matches", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx, { name: "Slug Lookup Club" });
+      const club = await getClubBySlug(tx, "slug-lookup-club");
+      expect(club).toEqual(
+        expect.objectContaining({
+          id: clubId,
+          name: "Slug Lookup Club",
+          slug: "slug-lookup-club",
+        }),
+      );
+    });
+  });
+
+  it("returns null when not found", async () => {
+    await db.withinTransaction(async (tx) => {
+      const club = await getClubBySlug(tx, "nonexistent-slug");
+      expect(club).toBeNull();
+    });
+  });
+});
+
+// ── getClubSlug ─────────────────────────────────────
+
+describe("getClubSlug", () => {
+  it("returns slug when club exists", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx, { name: "Slug Helper Club" });
+      const slug = await getClubSlug(tx, clubId);
+      expect(slug).toBe("slug-helper-club");
+    });
+  });
+
+  it("returns null when club does not exist", async () => {
+    await db.withinTransaction(async (tx) => {
+      const slug = await getClubSlug(tx, 999999);
+      expect(slug).toBeNull();
+    });
+  });
+});
+
+// ── createClub slug collision ───────────────────────
+
+describe("createClub", () => {
+  it("throws SlugConflictError on duplicate slug", async () => {
+    await db.withinTransaction(async (tx) => {
+      await createClub(tx, { name: "Unique Club Name" });
+      await expect(
+        createClub(tx, { name: "Unique Club Name" }),
+      ).rejects.toThrow(SlugConflictError);
+    });
+  });
+});
+
+// ── updateClub slug collision ───────────────────────
+
+describe("updateClub", () => {
+  it("throws SlugConflictError when renamed slug collides", async () => {
+    await db.withinTransaction(async (tx) => {
+      await seedClub(tx, { name: "Existing Name" });
+      const otherClubId = await seedClub(tx, { name: "Other Club" });
+
+      await expect(
+        updateClub(tx, otherClubId, {
+          name: "Existing Name",
+          url: "",
+          phoneNumber: "",
+          address: "",
+          city: "",
+          zip: "",
+          country: "",
+          imageId: null,
+        }),
+      ).rejects.toThrow(SlugConflictError);
+    });
+  });
+
+  it("returns new slug after rename", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx, { name: "Old Name" });
+      const result = await updateClub(tx, clubId, {
+        name: "New Name",
+        url: "",
+        phoneNumber: "",
+        address: "",
+        city: "",
+        zip: "",
+        country: "",
+        imageId: null,
+      });
+      expect(result).toEqual({ count: 1, slug: "new-name" });
     });
   });
 });
