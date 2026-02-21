@@ -58,7 +58,7 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-CHAL-03](#us-chal-03-challenge-from-player-profile) | Challenge from player profile | Player | P1 | Challenges | ✅ |
 | [US-CHAL-04](#us-chal-04-season-picker-multiple-active) | Season picker (multiple active) | Player | P1 | Challenges | ✅ |
 | [US-CHAL-05](#us-chal-05-challenge-validation-rules) | Challenge validation rules | Player | P0 | Challenges | ✅ |
-| [US-CHAL-06](#us-chal-06-fab-disabled-state) | FAB disabled state | Player | P1 | Challenges | |
+| [US-CHAL-06](#us-chal-06-fab-disabled-state) | FAB disabled state | Player | P1 | Challenges | ✅ |
 | [US-CHAL-07](#us-chal-07-view-match-list) | View match list | Player | P0 | Challenges | ✅ |
 | [US-CHAL-08](#us-chal-08-filter-matches-myallopen) | Filter matches (My/All/Open) | Player | P1 | Challenges | ✅ |
 | [US-CHAL-09](#us-chal-09-view-match-detail) | View match detail | Player | P0 | Challenges | ✅ |
@@ -86,10 +86,10 @@ Living documentation of every user flow in the Pyramid app. Serves as a manual Q
 | [US-PROF-10](#us-prof-10-challenge-from-other-players-profile) | Challenge from other profile | Player | P1 | Profile | ✅ |
 | [US-PROF-11](#us-prof-11-view-team-page) | View team page | Player | P2 | Profile | |
 | [US-SETT-01](#us-sett-01-toggle-dark-mode) | Toggle dark mode | Player | P2 | Settings | ✅ |
-| [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | |
-| [US-SETT-03](#us-sett-03-configure-email-notifications) | Configure email notifications | Player | P1 | Settings | |
-| [US-SETT-04](#us-sett-04-leave-club) | Leave club | Player | P1 | Settings | |
-| [US-SETT-05](#us-sett-05-join-another-club) | Join another club | Player | P1 | Settings | |
+| [US-SETT-02](#us-sett-02-change-language) | Change language | Player | P1 | Settings | ✅ |
+| [US-SETT-03](#us-sett-03-configure-email-notifications) | Configure email notifications | Player | P1 | Settings | ✅ |
+| [US-SETT-04](#us-sett-04-leave-club) | Leave club | Player | P1 | Settings | ✅ |
+| [US-SETT-05](#us-sett-05-join-another-club) | Join another club | Player | P1 | Settings | ✅ |
 | [US-SETT-06](#us-sett-06-delete-account) | Delete account | Player | P2 | Settings | |
 | [US-CLUB-01](#us-club-01-view-club-page) | View club page | Player | P0 | Club | ✅ |
 | [US-NAV-01](#us-nav-01-hamburger-menu-mobile) | Hamburger menu (mobile) | Player | P0 | Navigation | ✅ |

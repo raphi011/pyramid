@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { sql } from "./db";
 import * as authRepo from "./db/auth";
-import type { Theme } from "./db/auth";
+import type { Theme, Locale } from "./db/auth";
 import { env } from "./env";
 
 // Re-export from server-only-free module so existing imports keep working
@@ -11,9 +11,10 @@ import { generateToken } from "./crypto";
 
 const SESSION_COOKIE_NAME = "session_token";
 const THEME_COOKIE_NAME = "theme";
+const LOCALE_COOKIE_NAME = "locale";
 const MAGIC_LINK_EXPIRY_MINUTES = 15;
 const SESSION_EXPIRY_DAYS = 7;
-const THEME_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
+const PREF_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 
 export async function createMagicLink(playerId: number): Promise<string> {
   const token = generateToken();
@@ -107,7 +108,7 @@ export async function setThemeCookie(theme: Theme): Promise<void> {
     httpOnly: false, // readable by inline <script> for FOUC prevention
     secure: env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: THEME_COOKIE_MAX_AGE,
+    maxAge: PREF_COOKIE_MAX_AGE,
     path: "/",
   });
 }
@@ -117,4 +118,22 @@ export async function getThemeCookie(): Promise<Theme> {
   const value = cookieStore.get(THEME_COOKIE_NAME)?.value;
   if (value === "light" || value === "dark") return value;
   return "auto";
+}
+
+export async function setLocaleCookie(locale: Locale): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(LOCALE_COOKIE_NAME, locale, {
+    httpOnly: false, // readable by i18n config + client-side for instant switch
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: PREF_COOKIE_MAX_AGE,
+    path: "/",
+  });
+}
+
+export async function getLocaleCookie(): Promise<Locale> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  if (value === "en") return "en";
+  return "de";
 }

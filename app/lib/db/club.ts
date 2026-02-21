@@ -172,3 +172,49 @@ export async function joinClub(
 
   return { alreadyMember: rows.length === 0 };
 }
+
+// ── Leave club ────────────────────────────────
+
+export async function hasOpenChallengesInClub(
+  sql: Sql,
+  playerId: number,
+  clubId: number,
+): Promise<boolean> {
+  const [row] = await sql`
+    SELECT 1
+    FROM season_matches sm
+    JOIN seasons s ON s.id = sm.season_id
+    JOIN teams t ON t.id IN (sm.team1_id, sm.team2_id)
+    JOIN team_players tp ON tp.team_id = t.id
+    WHERE tp.player_id = ${playerId}
+      AND s.club_id = ${clubId}
+      AND s.status = 'active'
+      AND sm.status IN ('challenged', 'date_set', 'pending_confirmation')
+    LIMIT 1
+  `;
+  return !!row;
+}
+
+export async function leaveClub(
+  sql: Sql,
+  playerId: number,
+  clubId: number,
+): Promise<void> {
+  // Opt out all teams the player belongs to in active seasons of this club
+  await sql`
+    UPDATE teams t
+    SET opted_out = true
+    FROM team_players tp, seasons s
+    WHERE tp.team_id = t.id
+      AND s.id = t.season_id
+      AND tp.player_id = ${playerId}
+      AND s.club_id = ${clubId}
+      AND s.status = 'active'
+  `;
+
+  // Remove club membership
+  await sql`
+    DELETE FROM club_members
+    WHERE player_id = ${playerId} AND club_id = ${clubId}
+  `;
+}

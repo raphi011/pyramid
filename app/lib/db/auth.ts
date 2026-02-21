@@ -3,6 +3,14 @@ import type { Sql } from "../db";
 // ── Types ──────────────────────────────────────────────
 
 export type Theme = "auto" | "light" | "dark";
+export type Locale = "de" | "en";
+
+export type NotificationPreferences = {
+  emailEnabled: boolean;
+  challengeEmails: boolean;
+  resultEmails: boolean;
+  reminderEmails: boolean;
+};
 
 export type Player = {
   id: number;
@@ -274,4 +282,83 @@ export async function isPlayerUnavailable(
       AND (unavailable_until IS NULL OR unavailable_until >= NOW())
   `;
   return !!row;
+}
+
+// ── Notification preferences ──────────────────
+
+const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
+  emailEnabled: true,
+  challengeEmails: true,
+  resultEmails: true,
+  reminderEmails: true,
+};
+
+export async function getNotificationPreferences(
+  sql: Sql,
+  playerId: number,
+): Promise<NotificationPreferences> {
+  const [row] = await sql`
+    SELECT
+      email_enabled AS "emailEnabled",
+      challenge_emails AS "challengeEmails",
+      result_emails AS "resultEmails",
+      reminder_emails AS "reminderEmails"
+    FROM notification_preferences
+    WHERE player_id = ${playerId}
+  `;
+
+  if (!row) return DEFAULT_NOTIFICATION_PREFS;
+
+  return {
+    emailEnabled: row.emailEnabled as boolean,
+    challengeEmails: row.challengeEmails as boolean,
+    resultEmails: row.resultEmails as boolean,
+    reminderEmails: row.reminderEmails as boolean,
+  };
+}
+
+export async function upsertNotificationPreferences(
+  sql: Sql,
+  playerId: number,
+  prefs: NotificationPreferences,
+): Promise<void> {
+  await sql`
+    INSERT INTO notification_preferences (
+      player_id, email_enabled, challenge_emails, result_emails, reminder_emails
+    )
+    VALUES (
+      ${playerId}, ${prefs.emailEnabled}, ${prefs.challengeEmails},
+      ${prefs.resultEmails}, ${prefs.reminderEmails}
+    )
+    ON CONFLICT (player_id)
+    DO UPDATE SET
+      email_enabled = ${prefs.emailEnabled},
+      challenge_emails = ${prefs.challengeEmails},
+      result_emails = ${prefs.resultEmails},
+      reminder_emails = ${prefs.reminderEmails}
+  `;
+}
+
+// ── Language ──────────────────────────────────
+
+export async function getPlayerLanguage(
+  sql: Sql,
+  playerId: number,
+): Promise<Locale> {
+  const [row] = await sql`
+    SELECT language FROM player WHERE id = ${playerId}
+  `;
+  const val = row?.language as string | undefined;
+  return val === "en" ? "en" : "de";
+}
+
+export async function updatePlayerLanguage(
+  sql: Sql,
+  playerId: number,
+  locale: Locale,
+): Promise<number> {
+  const result = await sql`
+    UPDATE player SET language = ${locale} WHERE id = ${playerId}
+  `;
+  return result.count;
 }

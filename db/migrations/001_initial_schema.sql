@@ -46,7 +46,7 @@ CREATE TABLE player (
     email_address TEXT NOT NULL UNIQUE,
     image_id UUID REFERENCES images(id),
     bio TEXT NOT NULL DEFAULT '',
-    language TEXT NOT NULL DEFAULT 'en',
+    language TEXT NOT NULL DEFAULT 'de',
     theme TEXT NOT NULL DEFAULT 'auto',
     is_app_admin BOOL NOT NULL DEFAULT false,
     created TIMESTAMPTZ NOT NULL,

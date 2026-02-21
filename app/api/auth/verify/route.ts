@@ -4,8 +4,13 @@ import {
   createSession,
   setSessionCookie,
   setThemeCookie,
+  setLocaleCookie,
 } from "@/app/lib/auth";
-import { getPlayerById, getPlayerTheme } from "@/app/lib/db/auth";
+import {
+  getPlayerById,
+  getPlayerTheme,
+  getPlayerLanguage,
+} from "@/app/lib/db/auth";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";
 import { getAppUrl } from "@/app/lib/email";
@@ -42,12 +47,14 @@ export async function GET(request: NextRequest) {
     const sessionToken = await createSession(result.playerId);
     await setSessionCookie(sessionToken);
 
-    // Sync theme preference to cookie
-    const theme = await getPlayerTheme(sql, result.playerId);
-    await setThemeCookie(theme);
-
     // Post-login routing — failures here should not invalidate the login
     try {
+      // Sync theme + locale preferences to cookies
+      const theme = await getPlayerTheme(sql, result.playerId);
+      await setThemeCookie(theme);
+      const language = await getPlayerLanguage(sql, result.playerId);
+      await setLocaleCookie(language);
+
       // 1. No name → onboarding (both first and last name required)
       const player = await getPlayerById(sql, result.playerId);
       if (!player || !player.firstName.trim() || !player.lastName.trim()) {

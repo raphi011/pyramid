@@ -377,11 +377,20 @@
     "phoneLabel": "Telefon",
     "clubs": "Vereine",
     "leaveClub": "Verlassen",
+    "leaveClubConfirmTitle": "\u201E{club}\u201C verlassen?",
+    "leaveClubConfirmDesc": "Du wirst aus allen aktiven Saisons dieses Vereins abgemeldet.",
     "joinClub": "Verein beitreten",
     "dangerZone": "Gefahrenzone",
     "deleteAccountDesc": "Dein Konto und alle Daten werden unwiderruflich gel\u00f6scht.",
     "deleteAccount": "Konto l\u00f6schen",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "error": {
+      "invalidInput": "Ung\u00fcltige Eingabe.",
+      "notAuthenticated": "Nicht angemeldet.",
+      "lastAdmin": "Du bist der letzte Admin. Ern\u00e4nne zuerst ein anderes Mitglied zum Admin.",
+      "openChallenge": "Du hast eine offene Forderung. Schlie\u00dfe sie ab, bevor du den Verein verl\u00e4sst.",
+      "serverError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
   },
   "adminDashboard": {
     "title": "Club verwalten",
