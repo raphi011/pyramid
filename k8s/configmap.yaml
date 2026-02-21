@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: pyramid-config
-  namespace: pyramid
-data:
-  APP_URL: "https://pyramid.example.com"
-  NODE_ENV: "production"

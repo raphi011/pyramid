@@ -14,3 +14,6 @@ e2e/test-results/
 # docs (intentional formatting)
 *.md
 *.mdx
+
+# Helm templates (Go template syntax, not valid YAML)
+k8s/pyramid/templates/
