@@ -7,38 +7,45 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
+import Link from "next/link";
 import { XMarkIcon } from "@heroicons/react/20/solid";
+import { BellIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { useTranslations } from "next-intl";
-import { Avatar } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { ClubNavSection } from "@/components/club-nav-section";
 import {
   NavButton,
-  type SidebarItem,
+  ProfileButton,
   type ProfileInfo,
+  type NavClub,
 } from "@/components/sidebar-nav";
+import { cn } from "@/lib/utils";
 
 type MobileNavProps = {
   open: boolean;
   onClose: () => void;
-  items: SidebarItem[];
-  adminItems?: SidebarItem[];
+  clubs: NavClub[];
+  expandedClubIds: Set<number>;
+  onToggleClub: (clubId: number) => void;
   profile?: ProfileInfo;
   activeHref: string;
+  activeSeasonId: number | null;
+  unreadCount: number;
   onNavigate?: (href: string) => void;
-  clubSwitcher?: React.ReactNode;
 };
 
 function MobileNav({
   open,
   onClose,
-  items,
-  adminItems,
+  clubs,
+  expandedClubIds,
+  onToggleClub,
   profile,
   activeHref,
+  activeSeasonId,
+  unreadCount,
   onNavigate,
-  clubSwitcher,
 }: MobileNavProps) {
-  const tCommon = useTranslations("common");
   const tNav = useTranslations("nav");
 
   function handleNavigate(href: string) {
@@ -53,7 +60,7 @@ function MobileNav({
         className="relative z-50"
         aria-label={tNav("menuLabel")}
       >
-        {/* Backdrop */}
+        {/* Fullscreen panel */}
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-250"
@@ -63,94 +70,85 @@ function MobileNav({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-        </TransitionChild>
-
-        {/* Slide-from-left panel */}
-        <div className="fixed inset-y-0 left-0 z-50">
-          <TransitionChild
-            as={Fragment}
-            enter="ease-out duration-250"
-            enterFrom="-translate-x-full"
-            enterTo="translate-x-0"
-            leave="ease-in duration-150"
-            leaveFrom="translate-x-0"
-            leaveTo="-translate-x-full"
-          >
-            <DialogPanel className="flex h-full w-72 max-w-[85vw] flex-col bg-white shadow-xl dark:bg-slate-900">
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3">
-                <div className="min-w-0 flex-1">{clubSwitcher}</div>
-                <button
-                  onClick={onClose}
-                  className="ml-3 flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  aria-label={tNav("closeMenu")}
-                >
-                  <XMarkIcon className="size-5" />
-                </button>
-              </div>
-
-              {/* Separator */}
-              <div className="h-px bg-slate-200 dark:bg-slate-800" />
-
-              {/* Nav items */}
-              <div className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
-                {items.map((item) => (
-                  <NavButton
-                    key={item.href}
-                    item={item}
-                    active={activeHref === item.href}
-                    onNavigate={handleNavigate}
-                  />
-                ))}
-
-                {adminItems && adminItems.length > 0 && (
-                  <>
-                    <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
-                    <p className="px-3 pb-1 pt-2 text-xs font-medium tracking-wide text-slate-500">
-                      {tCommon("admin")}
-                    </p>
-                    {adminItems.map((item) => (
-                      <NavButton
-                        key={item.href}
-                        item={item}
-                        active={activeHref === item.href}
-                        onNavigate={handleNavigate}
-                      />
-                    ))}
-                  </>
+          <DialogPanel className="fixed inset-0 flex flex-col bg-white dark:bg-slate-900">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3">
+              <Link
+                href="/"
+                onClick={onClose}
+                className="text-base font-bold text-slate-900 transition-opacity hover:opacity-80 dark:text-white"
+              >
+                Pyramid
+              </Link>
+              <button
+                onClick={onClose}
+                className={cn(
+                  "ml-3 flex size-11 shrink-0 items-center justify-center rounded-xl",
+                  "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
                 )}
-              </div>
+                aria-label={tNav("closeMenu")}
+              >
+                <XMarkIcon className="size-5" />
+              </button>
+            </div>
 
-              {/* Profile at bottom */}
-              {profile && (
-                <div className="px-3 py-3">
-                  <div className="mb-3 h-px bg-slate-200 dark:bg-slate-800" />
-                  <button
-                    onClick={() => handleNavigate(profile.href)}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
-                      "transition-colors duration-150",
-                      activeHref === profile.href
-                        ? "bg-court-50 text-court-700 dark:bg-court-950 dark:text-court-400"
-                        : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
-                    )}
-                    aria-current={
-                      activeHref === profile.href ? "page" : undefined
-                    }
-                  >
-                    <Avatar
-                      name={profile.name}
-                      src={profile.avatarSrc}
-                      size="sm"
-                    />
-                    <span>{profile.name}</span>
-                  </button>
-                </div>
-              )}
-            </DialogPanel>
-          </TransitionChild>
-        </div>
+            <Separator />
+
+            {/* Nav items */}
+            <div className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
+              {/* News link */}
+              <NavButton
+                item={{
+                  icon: <BellIcon />,
+                  label: tNav("news"),
+                  href: "/feed",
+                  badge: unreadCount,
+                }}
+                active={activeHref === "/feed"}
+                onNavigate={handleNavigate}
+              />
+
+              <Separator className="my-2" />
+
+              {/* Club sections */}
+              {clubs.map((club) => (
+                <ClubNavSection
+                  key={club.id}
+                  club={club}
+                  expanded={expandedClubIds.has(club.id)}
+                  onToggle={() => onToggleClub(club.id)}
+                  activeHref={activeHref}
+                  activeSeasonId={activeSeasonId}
+                  onNavigate={handleNavigate}
+                />
+              ))}
+
+              <Separator className="my-2" />
+
+              <NavButton
+                item={{
+                  icon: <Cog6ToothIcon />,
+                  label: tNav("settings"),
+                  href: "/settings",
+                }}
+                active={activeHref === "/settings"}
+                onNavigate={handleNavigate}
+              />
+            </div>
+
+            {/* Profile at bottom */}
+            {profile && (
+              <div className="px-3 py-3">
+                <Separator className="mb-3" />
+                <ProfileButton
+                  profile={profile}
+                  active={activeHref === profile.href}
+                  onNavigate={handleNavigate}
+                />
+              </div>
+            )}
+          </DialogPanel>
+        </TransitionChild>
       </HeadlessDialog>
     </Transition>
   );

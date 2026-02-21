@@ -7,7 +7,11 @@ import { EventTimeline } from "@/components/domain/event-timeline";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TimelineEvent } from "@/components/domain/event-timeline";
-import { loadMoreFeedEventsAction, loadFeedForClubAction } from "./actions";
+import {
+  loadMoreFeedEventsAction,
+  loadFeedForClubAction,
+  markAllReadAction,
+} from "./actions";
 
 type Club = { id: number; name: string };
 
@@ -17,6 +21,7 @@ type FeedViewProps = {
   initialCursor: string | null;
   clubs: Club[];
   playerName: string;
+  hasUnread: boolean;
 };
 
 export function FeedView({
@@ -25,6 +30,7 @@ export function FeedView({
   initialCursor,
   clubs,
   playerName,
+  hasUnread: initialHasUnread,
 }: FeedViewProps) {
   const t = useTranslations("feed");
   const tError = useTranslations("error");
@@ -32,6 +38,7 @@ export function FeedView({
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [activeClubId, setActiveClubId] = useState<number>(0);
+  const [showUnread, setShowUnread] = useState(initialHasUnread);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -71,8 +78,35 @@ export function FeedView({
     });
   }
 
+  function handleMarkAllRead() {
+    setError(null);
+    startTransition(async () => {
+      const result = await markAllReadAction();
+      if ("error" in result) {
+        setError(tError("description"));
+        return;
+      }
+      setShowUnread(false);
+      setEvents((prev) => prev.map((e) => ({ ...e, unread: false })));
+    });
+  }
+
   return (
-    <PageLayout title={t("title")}>
+    <PageLayout
+      title={t("title")}
+      action={
+        showUnread ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleMarkAllRead}
+            disabled={isPending}
+          >
+            {t("markAllRead")}
+          </Button>
+        ) : undefined
+      }
+    >
       {showClubFilter && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           <FilterPill

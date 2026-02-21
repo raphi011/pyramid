@@ -75,9 +75,10 @@ export const ActiveSeason = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Title and status
-    await expect(canvas.getByText("Sommer 2026")).toBeInTheDocument();
-    await expect(canvas.getByText("Aktiv")).toBeInTheDocument();
+    // Title and status (scope to main to avoid sidebar nav duplicates)
+    const main = within(canvasElement.querySelector("main")! as HTMLElement);
+    await expect(main.getByText("Sommer 2026")).toBeInTheDocument();
+    await expect(main.getByText("Aktiv")).toBeInTheDocument();
 
     // Configuration section
     await expect(canvas.getByText("Konfiguration")).toBeInTheDocument();

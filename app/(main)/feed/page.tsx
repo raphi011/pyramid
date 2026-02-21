@@ -7,7 +7,7 @@ import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getPlayerClubs } from "@/app/lib/db/club";
 import {
-  getFeedEvents,
+  getTimelineEvents,
   getEventReadWatermarks,
   markAsRead,
 } from "@/app/lib/db/event";
@@ -27,7 +27,7 @@ export default async function FeedPage() {
   const clubIds = clubs.map((c) => c.clubId);
 
   const [rows, watermarks, t] = await Promise.all([
-    getFeedEvents(sql, clubIds, null, PAGE_SIZE + 1),
+    getTimelineEvents(sql, player.id, clubIds, null, PAGE_SIZE + 1),
     getEventReadWatermarks(sql, player.id, clubIds),
     getTranslations("feed"),
   ]);
@@ -39,6 +39,8 @@ export default async function FeedPage() {
     todayLabel: t("today"),
     yesterdayLabel: t("yesterday"),
   });
+
+  const hasUnread = events.some((e) => "unread" in e && e.unread);
 
   const lastRow = pageRows[pageRows.length - 1];
   const cursor = lastRow
@@ -59,6 +61,7 @@ export default async function FeedPage() {
       initialCursor={cursor}
       clubs={clubs.map((c) => ({ id: c.clubId, name: c.clubName }))}
       playerName={fullName(player.firstName, player.lastName)}
+      hasUnread={hasUnread}
     />
   );
 }

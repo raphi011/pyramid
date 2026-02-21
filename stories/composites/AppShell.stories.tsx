@@ -3,15 +3,7 @@
 import { useState } from "react";
 import preview from "#.storybook/preview";
 import { useTranslations } from "next-intl";
-import {
-  TrophyIcon,
-  PlusIcon,
-  BellIcon,
-  BellAlertIcon,
-  BoltIcon,
-  Cog6ToothIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { AppShell } from "@/components/app-shell";
 import type { AdminMessage } from "@/components/admin-banner";
 import { PageLayout } from "@/components/page-layout";
@@ -27,71 +19,62 @@ const meta = preview.meta({
 
 export default meta;
 
-function useNavItems(unreadCount = 3) {
-  const t = useTranslations("nav");
-  return {
-    sidebarItems: [
-      {
-        icon: <BellIcon />,
-        label: t("news"),
-        href: "/feed",
-        badge: unreadCount,
-      },
-      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-      { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
+const mockSearchParams =
+  new URLSearchParams() as unknown as import("next/navigation").ReadonlyURLSearchParams;
+
+const mockClubs: [
+  {
+    id: number;
+    name: string;
+    role: string;
+    seasons: { id: number; name: string; status: string }[];
+  },
+  ...{
+    id: number;
+    name: string;
+    role: string;
+    seasons: { id: number; name: string; status: string }[];
+  }[],
+] = [
+  {
+    id: 1,
+    name: "TC Musterstadt",
+    role: "player",
+    seasons: [
+      { id: 1, name: "Sommer 2026", status: "active" },
+      { id: 2, name: "Winter 2025/26", status: "ended" },
     ],
-    mobileNavItems: [
-      {
-        icon: <BellIcon />,
-        label: t("news"),
-        href: "/feed",
-        badge: unreadCount,
-      },
-      { icon: <TrophyIcon />, label: t("ranking"), href: "/rankings" },
-      { icon: <BoltIcon />, label: t("matches"), href: "/matches" },
-      {
-        icon: <BellAlertIcon />,
-        label: t("notifications"),
-        href: "/notifications",
-        badge: unreadCount,
-      },
-      { icon: <Cog6ToothIcon />, label: t("settings"), href: "/settings" },
-    ],
-    adminItems: [
-      {
-        icon: <ShieldCheckIcon />,
-        label: t("manageClub"),
-        href: "/admin/club/1",
-      },
-    ],
-    fabLabel: t("challenge"),
-  };
-}
+  },
+  {
+    id: 2,
+    name: "SC Grünwald",
+    role: "player",
+    seasons: [{ id: 3, name: "Herbst 2026", status: "active" }],
+  },
+];
+
+const adminClubs: typeof mockClubs = [
+  { ...mockClubs[0], role: "admin" },
+  mockClubs[1],
+];
 
 function AppShellDemo() {
-  const { sidebarItems, mobileNavItems, fabLabel } = useNavItems();
   const t = useTranslations("ranking");
   const tChallenge = useTranslations("challenge");
+  const tNav = useTranslations("nav");
   const [active, setActive] = useState("/rankings");
   return (
     <AppShell
-      sidebarItems={sidebarItems}
-      mobileNavItems={mobileNavItems}
+      clubs={mockClubs}
       activeHref={active}
+      activeSearchParams={mockSearchParams}
       onNavigate={setActive}
-      activeClubName="TC Musterstadt"
-      activeClubId={1}
       unreadCount={3}
       fab={{
         icon: <PlusIcon />,
-        label: fabLabel,
+        label: tNav("challenge"),
         onClick: () => {},
       }}
-      clubSwitcher={
-        <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          TC Musterstadt
-        </div>
-      }
     >
       <PageLayout
         title={t("title")}
@@ -123,8 +106,8 @@ export const Default = meta.story({
 });
 
 function AppShellWithMessages() {
-  const { sidebarItems, mobileNavItems, fabLabel } = useNavItems();
   const t = useTranslations("ranking");
+  const tNav = useTranslations("nav");
   const [messages, setMessages] = useState<AdminMessage[]>([
     {
       id: "1",
@@ -144,11 +127,9 @@ function AppShellWithMessages() {
 
   return (
     <AppShell
-      sidebarItems={sidebarItems}
-      mobileNavItems={mobileNavItems}
+      clubs={mockClubs}
       activeHref="/rankings"
-      activeClubName="TC Musterstadt"
-      activeClubId={1}
+      activeSearchParams={mockSearchParams}
       unreadCount={3}
       messages={messages}
       onDismissMessage={(id) =>
@@ -156,14 +137,9 @@ function AppShellWithMessages() {
       }
       fab={{
         icon: <PlusIcon />,
-        label: fabLabel,
+        label: tNav("challenge"),
         onClick: () => {},
       }}
-      clubSwitcher={
-        <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          TC Musterstadt
-        </div>
-      }
     >
       <PageLayout
         title={t("title")}
@@ -186,29 +162,20 @@ export const WithMessages = meta.story({
 });
 
 function AppShellWithAdmin() {
-  const { sidebarItems, mobileNavItems, adminItems, fabLabel } = useNavItems();
-  const t = useTranslations("nav");
+  const tNav = useTranslations("nav");
   return (
     <AppShell
-      sidebarItems={sidebarItems}
-      mobileNavItems={mobileNavItems}
-      adminItems={adminItems}
+      clubs={adminClubs}
       activeHref="/admin/club/1"
-      activeClubName="TC Musterstadt"
-      activeClubId={1}
+      activeSearchParams={mockSearchParams}
       unreadCount={0}
       fab={{
         icon: <PlusIcon />,
-        label: fabLabel,
+        label: tNav("challenge"),
         onClick: () => {},
       }}
-      clubSwitcher={
-        <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          TC Musterstadt
-        </div>
-      }
     >
-      <PageLayout title={t("manageClub")} subtitle="TC Musterstadt">
+      <PageLayout title={tNav("manageClub")} subtitle="TC Musterstadt">
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 dark:text-slate-400">
