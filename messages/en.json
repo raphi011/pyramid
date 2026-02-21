@@ -377,11 +377,20 @@
     "phoneLabel": "Phone",
     "clubs": "Clubs",
     "leaveClub": "Leave",
+    "leaveClubConfirmTitle": "Leave \"{club}\"?",
+    "leaveClubConfirmDesc": "You will be removed from all active seasons of this club.",
     "joinClub": "Join club",
     "dangerZone": "Danger zone",
     "deleteAccountDesc": "Your account and all data will be permanently deleted.",
     "deleteAccount": "Delete account",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "error": {
+      "invalidInput": "Invalid input.",
+      "notAuthenticated": "Not authenticated.",
+      "lastAdmin": "You are the last admin. Promote another member first.",
+      "openChallenge": "You have an open challenge. Complete it before leaving.",
+      "serverError": "An error occurred. Please try again."
+    }
   },
   "adminDashboard": {
     "title": "Manage club",

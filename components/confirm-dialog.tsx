@@ -10,6 +10,7 @@ type ConfirmDialogProps = {
   onConfirm: () => void;
   title: string;
   description?: string;
+  error?: string;
   confirmLabel?: string;
   cancelLabel?: string;
   loading?: boolean;
@@ -21,6 +22,7 @@ function ConfirmDialog({
   onConfirm,
   title,
   description,
+  error,
   confirmLabel,
   cancelLabel,
   loading,
@@ -32,6 +34,11 @@ function ConfirmDialog({
       {description && (
         <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
           {description}
+        </p>
+      )}
+      {error && (
+        <p className="mb-6 text-sm font-medium text-red-600 dark:text-red-400">
+          {error}
         </p>
       )}
       <div className="flex gap-3">

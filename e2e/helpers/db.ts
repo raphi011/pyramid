@@ -18,8 +18,8 @@ export async function createTestPlayer({
 }: { firstName?: string; lastName?: string; emailPrefix?: string } = {}) {
   const email = `${emailPrefix}-${crypto.randomUUID()}@test.local`;
   const [row] = await sql`
-    INSERT INTO player (first_name, last_name, email_address, created)
-    VALUES (${firstName}, ${lastName}, ${email}, NOW())
+    INSERT INTO player (first_name, last_name, email_address, language, created)
+    VALUES (${firstName}, ${lastName}, ${email}, 'de', NOW())
     RETURNING id
   `;
   return { id: row.id as number, email };
