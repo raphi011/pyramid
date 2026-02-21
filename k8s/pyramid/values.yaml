@@ -1,4 +1,4 @@
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: pyramid
@@ -10,19 +10,24 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+automountServiceAccountToken: false
+
 service:
   type: ClusterIP
   port: 80
 
 ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+  enabled: false
+  className: ""
+  annotations: {}
   host: pyramid.example.com
+  # Use defaultBackend instead of rules-based routing (e.g. for Tailscale ingress)
+  defaultBackend: false
   tls:
-    enabled: true
-    secretName: pyramid-tls
+    enabled: false
+    secretName: ""
+    # Additional TLS hosts (used by some ingress controllers like Tailscale)
+    hosts: []
 
 config:
   appUrl: "https://pyramid.example.com"
@@ -42,10 +47,19 @@ secret:
 resources:
   requests:
     cpu: 100m
-    memory: 128Mi
+    memory: 256Mi
   limits:
     cpu: 500m
     memory: 512Mi
+
+podSecurityContext: {}
+
+securityContext: {}
+
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
 
 livenessProbe:
   httpGet:
