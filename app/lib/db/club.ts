@@ -173,6 +173,68 @@ export async function joinClub(
   return { alreadyMember: rows.length === 0 };
 }
 
+// ── Update club ──────────────────────────────────
+
+export type UpdateClubData = {
+  name: string;
+  url: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+  zip: string;
+  country: string;
+  imageId: string | null;
+};
+
+export async function updateClub(
+  sql: Sql,
+  clubId: number,
+  data: UpdateClubData,
+): Promise<number> {
+  const result = await sql`
+    UPDATE clubs
+    SET
+      name = ${data.name},
+      url = ${data.url},
+      phone_number = ${data.phoneNumber},
+      address = ${data.address},
+      city = ${data.city},
+      zip = ${data.zip},
+      country = ${data.country},
+      image_id = ${data.imageId}
+    WHERE id = ${clubId}
+  `;
+
+  return result.count;
+}
+
+export async function getClubImageId(
+  sql: Sql,
+  clubId: number,
+): Promise<string | null> {
+  const rows = await sql`
+    SELECT image_id::text AS "imageId" FROM clubs WHERE id = ${clubId}
+  `;
+  return rows.length > 0 ? (rows[0].imageId as string | null) : null;
+}
+
+// ── Regenerate invite code ───────────────────────
+
+export async function regenerateClubInviteCode(
+  sql: Sql,
+  clubId: number,
+): Promise<string | null> {
+  const code = generateInviteCode();
+  const rows = await sql`
+    UPDATE clubs
+    SET invite_code = ${code}
+    WHERE id = ${clubId}
+    RETURNING invite_code AS "inviteCode"
+  `;
+
+  return rows.length > 0 ? (rows[0].inviteCode as string) : null;
+}
+
 // ── Leave club ────────────────────────────────
 
 export async function hasOpenChallengesInClub(

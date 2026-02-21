@@ -219,10 +219,19 @@ export function AdminDashboardView({
                 {t("sendAnnouncement")}
               </Button>
             )}
-            <Button variant="outline" className="justify-start" disabled>
-              <Cog6ToothIcon className="size-5" />
-              {t("clubSettings")}
-            </Button>
+            {clubId ? (
+              <Link href={`/admin/club/${clubId}/settings`}>
+                <Button variant="outline" className="w-full justify-start">
+                  <Cog6ToothIcon className="size-5" />
+                  {t("clubSettings")}
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" className="justify-start" disabled>
+                <Cog6ToothIcon className="size-5" />
+                {t("clubSettings")}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
