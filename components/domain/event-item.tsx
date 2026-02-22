@@ -224,7 +224,9 @@ function getAvatarPlayer(event: EventItemProps): PlayerRef {
 function useFormatDate() {
   const format = useFormatter();
   return (iso: string) => {
+    if (!iso) return "\u2013";
     const date = new Date(iso);
+    if (isNaN(date.getTime())) return "\u2013";
     return format.dateTime(date, {
       day: "2-digit",
       month: "2-digit",
@@ -416,18 +418,12 @@ function EventDetail({ event }: { event: EventItemProps }) {
         </p>
       );
 
-    case "announcement":
-      return (
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          {t("announcementFrom", { admin: event.adminName })}
-        </p>
-      );
-
     case "challenge":
     case "challenged":
     case "challenge_accepted":
     case "challenge_withdrawn":
     case "result_disputed":
+    case "announcement":
       return null;
   }
 }
@@ -455,8 +451,8 @@ function EventItem(props: EventItemProps) {
   const { time, unread, personal, highlightName, href, className } = props;
   const t = useTranslations("events");
   const title = useEventTitle(props);
-  const avatarPlayer = getAvatarPlayer(props);
   const isAnnouncement = props.type === "announcement";
+  const avatarPlayer = isAnnouncement ? null : getAvatarPlayer(props);
 
   const innerContent = isAnnouncement ? (
     <>
@@ -493,8 +489,8 @@ function EventItem(props: EventItemProps) {
       {/* Avatar + mobile time */}
       <div className="shrink-0">
         <Avatar
-          name={avatarPlayer.name}
-          src={avatarPlayer.avatarSrc}
+          name={avatarPlayer!.name}
+          src={avatarPlayer!.avatarSrc}
           size="sm"
         />
         <p className="mt-1 text-center text-[11px] tabular-nums text-slate-500 dark:text-slate-400 md:hidden">

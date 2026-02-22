@@ -36,6 +36,12 @@ const defaultOpts = {
   now: NOW,
   todayLabel: "Today",
   yesterdayLabel: "Yesterday",
+  timeLabels: {
+    justNow: "just now",
+    minutes: (n: number) => `${n}m ago`,
+    hours: (n: number) => `${n}h ago`,
+    days: (n: number) => `${n}d ago`,
+  },
 };
 
 describe("mapEventRowsToTimeline", () => {
@@ -279,11 +285,12 @@ describe("mapEventRowsToTimeline", () => {
     expect(result[0].group).toBe("Yesterday");
   });
 
-  it("uses German defaults when no labels provided", () => {
+  it("uses German defaults when no date group labels provided", () => {
     const rows = [makeRow({ created: new Date("2026-02-14T10:00:00Z") })];
     const result = mapEventRowsToTimeline(rows, {
       watermarks: new Map(),
       now: NOW,
+      timeLabels: defaultOpts.timeLabels,
     });
     expect(result[0].group).toBe("Heute");
   });

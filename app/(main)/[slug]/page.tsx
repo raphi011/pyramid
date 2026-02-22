@@ -18,6 +18,7 @@ import {
   mapEventRowsToTimeline,
   buildTimeLabels,
 } from "@/app/lib/event-mapper";
+import type { TimelineEvent } from "@/components/domain/event-timeline";
 import { imageUrl } from "@/app/lib/image-url";
 import { ClubDetailView } from "./club-detail-view";
 
@@ -40,12 +41,26 @@ export default async function ClubPage({ params }: ClubPageProps) {
     redirect("/feed");
   }
 
-  const [members, seasons, recentEventRows, watermarks] = await Promise.all([
+  const [members, seasons] = await Promise.all([
     getClubMembers(sql, club.id),
     getClubSeasons(sql, club.id),
-    getClubRecentEvents(sql, club.id, 5),
-    getEventReadWatermarks(sql, player.id, [club.id]),
   ]);
+
+  // Recent activity is supplementary — degrade gracefully on failure
+  let recentActivity: TimelineEvent[] = [];
+  try {
+    const [recentEventRows, watermarks, t] = await Promise.all([
+      getClubRecentEvents(sql, club.id, 5),
+      getEventReadWatermarks(sql, player.id, [club.id]),
+      getTranslations("match"),
+    ]);
+    recentActivity = mapEventRowsToTimeline(recentEventRows, {
+      watermarks,
+      timeLabels: buildTimeLabels(t),
+    });
+  } catch (e) {
+    console.error(`Failed to load recent activity for club ${club.id}:`, e);
+  }
 
   // Filter seasons by visibility
   const seasonIds = seasons.map((s) => s.id);
@@ -64,12 +79,6 @@ export default async function ClubPage({ params }: ClubPageProps) {
     visibleSeasonIds.length > 0
       ? await getSeasonPlayerCounts(sql, visibleSeasonIds)
       : new Map<number, number>();
-
-  const t = await getTranslations("match");
-  const recentActivity = mapEventRowsToTimeline(recentEventRows, {
-    watermarks,
-    timeLabels: buildTimeLabels(t),
-  });
 
   return (
     <ClubDetailView

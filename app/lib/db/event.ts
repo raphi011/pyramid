@@ -217,6 +217,7 @@ export async function getClubRecentEvents(
     `SELECT ${EVENT_SELECT}
      ${EVENT_JOIN}
      WHERE e.club_id = $1
+       AND e.target_player_id IS NULL
      ORDER BY e.created DESC, e.id DESC
      LIMIT $2`,
     [clubId, limit],

@@ -464,8 +464,8 @@ async function seed() {
     }
 
     // ── 16. Backdate events + matches for realistic timestamps ──
-    // Spread events across days so the club overview "Recent Activity"
-    // section shows varied relative timestamps (hours, days).
+    // Distribute event timestamps from ~30 days ago to ~1 hour ago so the
+    // club overview "Recent Activity" section shows varied relative timestamps.
     {
       const allEvents = await tx`
         SELECT id FROM events
@@ -485,7 +485,7 @@ async function seed() {
         `;
       }
 
-      // Also backdate match created timestamps to match their events
+      // Also spread match timestamps across a similar range
       const allMatches = await tx`
         SELECT id FROM season_matches
         WHERE season_id = ${seasonId}

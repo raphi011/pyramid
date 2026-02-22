@@ -86,7 +86,7 @@ function MatchList({
           player2={m.player2}
           status={m.status}
           winnerId={m.winnerId}
-          currentTeamId={
+          viewerSide={
             currentTeamId != null
               ? m.team1Id === currentTeamId
                 ? "player1"

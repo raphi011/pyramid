@@ -15,7 +15,7 @@ type MapperOptions = {
   now?: Date;
   todayLabel?: string;
   yesterdayLabel?: string;
-  timeLabels?: TimeLabels;
+  timeLabels: TimeLabels;
 };
 
 export function buildTimeLabels(
@@ -216,14 +216,22 @@ function mapSingleEvent(
         ...base,
       };
 
-    case "announcement":
+    case "announcement": {
+      const message = (row.metadata?.message as string) ?? "";
+      if (!message) {
+        console.warn(
+          `[mapSingleEvent] Announcement event id=${row.id} has empty message. Skipping.`,
+        );
+        return null;
+      }
       return {
         id: row.id,
         type: "announcement",
-        message: (row.metadata?.message as string) ?? "",
+        message,
         adminName: row.actorName ?? "",
         ...base,
       };
+    }
 
     case "deadline_exceeded":
       return {
@@ -288,27 +296,16 @@ function computeHref(row: EventRow): string | undefined {
   return undefined;
 }
 
-function formatRelativeTime(
-  date: Date,
-  now: Date,
-  labels?: TimeLabels,
-): string {
+function formatRelativeTime(date: Date, now: Date, labels: TimeLabels): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMinutes = Math.floor(diffMs / 60_000);
   const diffHours = Math.floor(diffMs / 3_600_000);
   const diffDays = Math.floor(diffMs / 86_400_000);
 
-  if (labels) {
-    if (diffMinutes < 1) return labels.justNow;
-    if (diffMinutes < 60) return labels.minutes(diffMinutes);
-    if (diffHours < 24) return labels.hours(diffHours);
-    return labels.days(diffDays);
-  }
-
-  if (diffMinutes < 1) return "just now";
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
+  if (diffMinutes < 1) return labels.justNow;
+  if (diffMinutes < 60) return labels.minutes(diffMinutes);
+  if (diffHours < 24) return labels.hours(diffHours);
+  return labels.days(diffDays);
 }
 
 function formatDateGroup(
