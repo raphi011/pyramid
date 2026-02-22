@@ -453,11 +453,42 @@ function HighlightedText({ text, name }: { text: string; name?: string }) {
 
 function EventItem(props: EventItemProps) {
   const { time, unread, personal, highlightName, href, className } = props;
+  const t = useTranslations("events");
   const title = useEventTitle(props);
   const avatarPlayer = getAvatarPlayer(props);
   const isAnnouncement = props.type === "announcement";
 
-  const innerContent = (
+  const innerContent = isAnnouncement ? (
+    <>
+      {/* Megaphone icon */}
+      <div className="shrink-0">
+        <div className="flex size-8 items-center justify-center rounded-full bg-trophy-100 text-trophy-600 dark:bg-trophy-900/40 dark:text-trophy-400">
+          <MegaphoneIcon className="size-4" />
+        </div>
+        <p className="mt-1 text-center text-[11px] tabular-nums text-slate-500 dark:text-slate-400 md:hidden">
+          {time}
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between">
+          <p className="text-sm font-medium text-slate-900 dark:text-white">
+            {unread && (
+              <span className="mr-1.5 inline-block size-1.5 rounded-full bg-court-500 align-middle" />
+            )}
+            {props.message}
+          </p>
+          <span className="ml-4 hidden shrink-0 text-xs text-slate-500 dark:text-slate-400 md:block">
+            {time}
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          {t("announcementFrom", { admin: props.adminName })}
+        </p>
+      </div>
+    </>
+  ) : (
     <>
       {/* Avatar + mobile time */}
       <div className="shrink-0">
@@ -491,8 +522,9 @@ function EventItem(props: EventItemProps) {
 
   const sharedClassName = cn(
     "flex items-start gap-3 md:gap-6 rounded-xl px-3 py-3",
-    unread && "bg-court-50/50 dark:bg-court-950/20",
-    isAnnouncement && "bg-trophy-50/50 dark:bg-trophy-950/20",
+    unread && !isAnnouncement && "bg-court-50/50 dark:bg-court-950/20",
+    isAnnouncement &&
+      "bg-trophy-50/30 ring-1 ring-trophy-200 dark:bg-trophy-950/20 dark:ring-trophy-800/50",
     personal &&
       !isAnnouncement &&
       !unread &&
