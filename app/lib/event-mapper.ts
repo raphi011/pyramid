@@ -2,13 +2,32 @@ import type { EventRow } from "@/app/lib/db/event";
 import { routes } from "@/app/lib/routes";
 import type { TimelineEvent } from "@/components/domain/event-timeline";
 
+export type TimeLabels = {
+  justNow: string;
+  minutes: (n: number) => string;
+  hours: (n: number) => string;
+  days: (n: number) => string;
+};
+
 type MapperOptions = {
   watermarks: Map<number, Date>;
   locale?: string;
   now?: Date;
   todayLabel?: string;
   yesterdayLabel?: string;
+  timeLabels?: TimeLabels;
 };
+
+export function buildTimeLabels(
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+): TimeLabels {
+  return {
+    justNow: t("timeJustNow"),
+    minutes: (n) => t("timeMinutes", { minutes: n }),
+    hours: (n) => t("timeHours", { hours: n }),
+    days: (n) => t("timeDays", { days: n }),
+  };
+}
 
 export function mapEventRowsToTimeline(
   rows: EventRow[],
@@ -33,7 +52,7 @@ function mapSingleEvent(
 ): TimelineEvent | null {
   const watermark = watermarks.get(row.clubId);
   const unread = watermark ? row.created > watermark : true;
-  const time = formatRelativeTime(row.created, now);
+  const time = formatRelativeTime(row.created, now, opts.timeLabels);
   const group = formatDateGroup(row.created, now, opts);
   const groupDate = row.created.toLocaleDateString(opts.locale ?? "de-AT", {
     weekday: "long",
@@ -269,11 +288,22 @@ function computeHref(row: EventRow): string | undefined {
   return undefined;
 }
 
-function formatRelativeTime(date: Date, now: Date): string {
+function formatRelativeTime(
+  date: Date,
+  now: Date,
+  labels?: TimeLabels,
+): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMinutes = Math.floor(diffMs / 60_000);
   const diffHours = Math.floor(diffMs / 3_600_000);
   const diffDays = Math.floor(diffMs / 86_400_000);
+
+  if (labels) {
+    if (diffMinutes < 1) return labels.justNow;
+    if (diffMinutes < 60) return labels.minutes(diffMinutes);
+    if (diffHours < 24) return labels.hours(diffHours);
+    return labels.days(diffDays);
+  }
 
   if (diffMinutes < 1) return "just now";
   if (diffMinutes < 60) return `${diffMinutes}m ago`;

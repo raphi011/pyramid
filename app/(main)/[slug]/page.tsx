@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getClubBySlug, getClubMembers, isClubMember } from "@/app/lib/db/club";
@@ -13,7 +14,10 @@ import {
   getPlayerEnrolledSeasonIds,
   isIndividualSeason,
 } from "@/app/lib/db/season";
-import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
+import {
+  mapEventRowsToTimeline,
+  buildTimeLabels,
+} from "@/app/lib/event-mapper";
 import { imageUrl } from "@/app/lib/image-url";
 import { ClubDetailView } from "./club-detail-view";
 
@@ -61,8 +65,10 @@ export default async function ClubPage({ params }: ClubPageProps) {
       ? await getSeasonPlayerCounts(sql, visibleSeasonIds)
       : new Map<number, number>();
 
+  const t = await getTranslations("match");
   const recentActivity = mapEventRowsToTimeline(recentEventRows, {
     watermarks,
+    timeLabels: buildTimeLabels(t),
   });
 
   return (
