@@ -235,7 +235,10 @@
     "website": "Webseite",
     "phone": "Telefon",
     "noMembers": "Keine Mitglieder",
-    "noMembersDescription": "Dieser Verein hat noch keine Mitglieder."
+    "noMembersDescription": "Dieser Verein hat noch keine Mitglieder.",
+    "recentActivity": "Letzte Aktivität",
+    "noActivity": "Keine Aktivität",
+    "noActivityDescription": "Sobald etwas passiert, erscheint es hier."
   },
   "season": {
     "archived": "(Archiv)",

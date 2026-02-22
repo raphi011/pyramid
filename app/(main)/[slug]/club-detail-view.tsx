@@ -8,12 +8,18 @@ import {
   PhoneIcon,
   MapPinIcon,
   CalendarIcon,
+  BoltIcon,
 } from "@heroicons/react/24/outline";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataList } from "@/components/data-list";
 import { PageLayout } from "@/components/page-layout";
+import { EmptyState } from "@/components/empty-state";
+import {
+  EventTimeline,
+  type TimelineEvent,
+} from "@/components/domain/event-timeline";
 import { fullName } from "@/lib/utils";
 import { enrollInSeasonAction } from "@/app/lib/actions/enroll";
 import { routes } from "@/app/lib/routes";
@@ -54,6 +60,7 @@ type ClubDetailViewProps = {
     imageId: string | null;
   };
   memberCount: number;
+  recentActivity: TimelineEvent[];
   seasons: SeasonItem[];
   members: MemberItem[];
 };
@@ -62,6 +69,7 @@ export function ClubDetailView({
   clubSlug,
   club,
   memberCount,
+  recentActivity,
   seasons,
   members,
 }: ClubDetailViewProps) {
@@ -84,10 +92,7 @@ export function ClubDetailView({
           <div className="flex items-center gap-4">
             <Avatar name={club.name} src={club.imageId} size="lg" />
             <div className="min-w-0 flex-1">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {club.name}
-              </h2>
-              <Badge variant="subtle" className="mt-1">
+              <Badge variant="subtle">
                 {t("memberCount", { count: memberCount })}
               </Badge>
             </div>
@@ -132,6 +137,22 @@ export function ClubDetailView({
             </div>
           )}
         </div>
+
+        {/* Recent Activity Section */}
+        <section>
+          <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">
+            {t("recentActivity")}
+          </h3>
+          {recentActivity.length > 0 ? (
+            <EventTimeline events={recentActivity} />
+          ) : (
+            <EmptyState
+              icon={<BoltIcon />}
+              title={t("noActivity")}
+              description={t("noActivityDescription")}
+            />
+          )}
+        </section>
 
         {/* Seasons Section */}
         <section>

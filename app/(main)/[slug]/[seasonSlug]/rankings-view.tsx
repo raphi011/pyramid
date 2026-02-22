@@ -67,10 +67,12 @@ function MatchList({
   items,
   onMatchClick,
   empty,
+  currentTeamId,
 }: {
   items: SerializedMatch[];
   onMatchClick: (id: number) => void;
   empty: { title: string; description: string };
+  currentTeamId?: number | null;
 }) {
   const format = useFormatter();
   return (
@@ -84,6 +86,15 @@ function MatchList({
           player2={m.player2}
           status={m.status}
           winnerId={m.winnerId}
+          currentTeamId={
+            currentTeamId != null
+              ? m.team1Id === currentTeamId
+                ? "player1"
+                : m.team2Id === currentTeamId
+                  ? "player2"
+                  : undefined
+              : undefined
+          }
           scores={m.scores}
           date={format.dateTime(new Date(m.date), {
             day: "2-digit",
@@ -294,6 +305,7 @@ export function RankingsView({
                       <MatchList
                         items={matches}
                         onMatchClick={handleMatchClick}
+                        currentTeamId={currentTeamId}
                         empty={{
                           title: t("noMatches"),
                           description: t("noMatchesDesc"),
@@ -307,6 +319,7 @@ export function RankingsView({
                       <MatchList
                         items={openMatches}
                         onMatchClick={handleMatchClick}
+                        currentTeamId={currentTeamId}
                         empty={{
                           title: t("noOpenMatches"),
                           description: t("noOpenMatchesDesc"),
@@ -320,6 +333,7 @@ export function RankingsView({
                       <MatchList
                         items={myMatches}
                         onMatchClick={handleMatchClick}
+                        currentTeamId={currentTeamId}
                         empty={{
                           title: t("noMyMatches"),
                           description: t("noMyMatchesDesc"),

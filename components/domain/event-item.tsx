@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import {
   TrophyIcon,
   BoltIcon,
@@ -221,8 +221,23 @@ function getAvatarPlayer(event: EventItemProps): PlayerRef {
   }
 }
 
+function useFormatDate() {
+  const format = useFormatter();
+  return (iso: string) => {
+    const date = new Date(iso);
+    return format.dateTime(date, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+}
+
 function useEventTitle(event: EventItemProps): string {
   const t = useTranslations("events");
+  const formatDate = useFormatDate();
 
   switch (event.type) {
     case "result": {
@@ -262,7 +277,7 @@ function useEventTitle(event: EventItemProps): string {
     case "date_proposed":
       return t("dateProposedTitle", { player: event.player.name });
     case "date_accepted":
-      return t("dateAcceptedTitle", { date: event.acceptedDate });
+      return t("dateAcceptedTitle", { date: formatDate(event.acceptedDate) });
     case "date_reminder":
       return t("dateReminderTitle");
     case "result_entered":
@@ -282,6 +297,7 @@ function useEventTitle(event: EventItemProps): string {
 
 function EventDetail({ event }: { event: EventItemProps }) {
   const t = useTranslations("events");
+  const formatDate = useFormatDate();
 
   switch (event.type) {
     case "result": {
@@ -361,7 +377,7 @@ function EventDetail({ event }: { event: EventItemProps }) {
       return (
         <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <CalendarIcon className="size-3.5" />
-          {event.proposedDate}
+          {formatDate(event.proposedDate)}
         </p>
       );
 
@@ -369,7 +385,7 @@ function EventDetail({ event }: { event: EventItemProps }) {
       return (
         <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <CalendarDaysIcon className="size-3.5" />
-          {event.acceptedDate}
+          {formatDate(event.acceptedDate)}
         </p>
       );
 

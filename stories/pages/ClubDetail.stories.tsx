@@ -3,6 +3,7 @@
 import preview from "#.storybook/preview";
 import { PageWrapper } from "./_page-wrapper";
 import { ClubDetailView } from "@/app/(main)/[slug]/club-detail-view";
+import type { TimelineEvent } from "@/components/domain/event-timeline";
 
 const meta = preview.meta({
   title: "Pages/ClubDetail",
@@ -170,6 +171,38 @@ const seasons = [
   },
 ];
 
+const recentActivity: TimelineEvent[] = [
+  {
+    id: 1,
+    type: "result",
+    player1: { name: "Anna Müller" },
+    player2: { name: "Max Weber" },
+    winnerId: "player1",
+    scores: [
+      [6, 3],
+      [4, 6],
+      [6, 2],
+    ],
+    time: "2h ago",
+    href: "/tc-musterstadt/sommer-2026/matches/1",
+  },
+  {
+    id: 2,
+    type: "challenge",
+    challenger: { name: "Tom Fischer" },
+    challengee: { name: "Lisa Schmidt" },
+    time: "5h ago",
+    href: "/tc-musterstadt/sommer-2026/matches/2",
+  },
+  {
+    id: 3,
+    type: "new_player",
+    player: { name: "Felix Wagner" },
+    startingRank: 8,
+    time: "1d ago",
+  },
+];
+
 // ── Stories ───────────────────────────────────
 
 function ClubDetailPage(props: {
@@ -177,6 +210,7 @@ function ClubDetailPage(props: {
   seasons?: typeof seasons;
   members?: typeof members;
   memberCount?: number;
+  recentActivity?: TimelineEvent[];
 }) {
   return (
     <PageWrapper activeHref="/club">
@@ -184,6 +218,7 @@ function ClubDetailPage(props: {
         clubSlug="tc-musterstadt"
         club={props.club ?? fullClub}
         memberCount={props.memberCount ?? (props.members ?? members).length}
+        recentActivity={props.recentActivity ?? recentActivity}
         seasons={props.seasons ?? seasons}
         members={props.members ?? members}
       />

@@ -4,11 +4,16 @@ import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getClubBySlug, getClubMembers, isClubMember } from "@/app/lib/db/club";
 import {
+  getClubRecentEvents,
+  getEventReadWatermarks,
+} from "@/app/lib/db/event";
+import {
   getClubSeasons,
   getSeasonPlayerCounts,
   getPlayerEnrolledSeasonIds,
   isIndividualSeason,
 } from "@/app/lib/db/season";
+import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
 import { imageUrl } from "@/app/lib/image-url";
 import { ClubDetailView } from "./club-detail-view";
 
@@ -31,9 +36,11 @@ export default async function ClubPage({ params }: ClubPageProps) {
     redirect("/feed");
   }
 
-  const [members, seasons] = await Promise.all([
+  const [members, seasons, recentEventRows, watermarks] = await Promise.all([
     getClubMembers(sql, club.id),
     getClubSeasons(sql, club.id),
+    getClubRecentEvents(sql, club.id, 5),
+    getEventReadWatermarks(sql, player.id, [club.id]),
   ]);
 
   // Filter seasons by visibility
@@ -54,6 +61,10 @@ export default async function ClubPage({ params }: ClubPageProps) {
       ? await getSeasonPlayerCounts(sql, visibleSeasonIds)
       : new Map<number, number>();
 
+  const recentActivity = mapEventRowsToTimeline(recentEventRows, {
+    watermarks,
+  });
+
   return (
     <ClubDetailView
       clubSlug={club.slug}
@@ -68,6 +79,7 @@ export default async function ClubPage({ params }: ClubPageProps) {
         imageId: imageUrl(club.imageId),
       }}
       memberCount={members.length}
+      recentActivity={recentActivity}
       seasons={visibleSeasons.map((s) => ({
         id: s.id,
         slug: s.slug,

@@ -235,7 +235,10 @@
     "website": "Website",
     "phone": "Phone",
     "noMembers": "No members",
-    "noMembersDescription": "This club has no members yet."
+    "noMembersDescription": "This club has no members yet.",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity",
+    "noActivityDescription": "Activity will appear here once something happens."
   },
   "season": {
     "archived": "(Archive)",
