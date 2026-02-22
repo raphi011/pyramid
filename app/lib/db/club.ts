@@ -1,7 +1,12 @@
 import { generateInviteCode } from "../crypto";
 import { slugify } from "../slug";
 import type { Sql } from "../db";
-import { isUniqueViolation, SlugConflictError } from "./errors";
+import {
+  isUniqueViolation,
+  SlugConflictError,
+  ReservedSlugError,
+} from "./errors";
+import { isReservedClubSlug } from "../reserved-slugs";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -178,6 +183,7 @@ export async function createClub(
 ): Promise<{ id: number; slug: string; inviteCode: string }> {
   const code = inviteCode ?? generateInviteCode();
   const slug = slugify(name);
+  if (isReservedClubSlug(slug)) throw new ReservedSlugError();
 
   try {
     const [row] = await sql`
@@ -230,6 +236,7 @@ export async function updateClub(
   data: UpdateClubData,
 ): Promise<{ count: number; slug: string }> {
   const slug = slugify(data.name);
+  if (isReservedClubSlug(slug)) throw new ReservedSlugError();
 
   try {
     const result = await sql`
