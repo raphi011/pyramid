@@ -120,31 +120,34 @@ function MobileNav({
                   onNavigate={handleNavigate}
                 />
               ))}
-
-              <Separator className="my-2" />
-
-              <NavButton
-                item={{
-                  icon: <Cog6ToothIcon />,
-                  label: tNav("settings"),
-                  href: "/settings",
-                }}
-                active={activeHref === "/settings"}
-                onNavigate={handleNavigate}
-              />
             </div>
 
-            {/* Profile at bottom */}
-            {profile && (
-              <div className="px-3 py-3">
-                <Separator className="mb-3" />
-                <ProfileButton
-                  profile={profile}
-                  active={activeHref === profile.href}
+            {/* Bottom: Settings + Profile */}
+            <div className="px-3">
+              <Separator />
+
+              <div className="py-2">
+                <NavButton
+                  item={{
+                    icon: <Cog6ToothIcon />,
+                    label: tNav("settings"),
+                    href: "/settings",
+                  }}
+                  active={activeHref === "/settings"}
                   onNavigate={handleNavigate}
                 />
               </div>
-            )}
+
+              {profile && (
+                <div className="pb-3">
+                  <ProfileButton
+                    profile={profile}
+                    active={activeHref === profile.href}
+                    onNavigate={handleNavigate}
+                  />
+                </div>
+              )}
+            </div>
           </DialogPanel>
         </TransitionChild>
       </HeadlessDialog>

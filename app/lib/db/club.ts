@@ -26,6 +26,7 @@ export type ClubMembership = {
   clubId: number;
   clubName: string;
   clubSlug: string;
+  clubImageId: string | null;
   role: ClubRole;
 };
 
@@ -87,7 +88,8 @@ export async function getPlayerClubs(
   playerId: number,
 ): Promise<ClubMembership[]> {
   const rows = await sql<ClubMembership[]>`
-    SELECT c.id AS "clubId", c.name AS "clubName", c.slug AS "clubSlug", cm.role
+    SELECT c.id AS "clubId", c.name AS "clubName", c.slug AS "clubSlug",
+           c.image_id::text AS "clubImageId", cm.role
     FROM club_members cm
     JOIN clubs c ON c.id = cm.club_id
     WHERE cm.player_id = ${playerId}

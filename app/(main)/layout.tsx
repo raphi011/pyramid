@@ -11,6 +11,7 @@ import { getActiveMatchId } from "../lib/db/match";
 import { getUnreadCount } from "../lib/db/event";
 import { sql } from "../lib/db";
 import { assertNonEmpty } from "../lib/assert";
+import { imageUrl } from "../lib/image-url";
 import { AppShellWrapper } from "./app-shell-wrapper";
 
 export default async function MainLayout({
@@ -88,6 +89,7 @@ export default async function MainLayout({
       name: c.clubName,
       slug: c.clubSlug,
       role: c.role,
+      imageSrc: imageUrl(c.clubImageId),
       seasons: seasonsByClub.get(c.clubId) ?? [],
     })),
   );

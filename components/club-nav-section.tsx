@@ -18,6 +18,7 @@ type ClubNavSectionProps = {
     name: string;
     slug: string;
     role: string;
+    imageSrc: string | null;
     seasons: NavSeason[];
   };
   expanded: boolean;
@@ -56,7 +57,7 @@ function ClubNavSection({
           )}
           aria-expanded={expanded}
         >
-          <Avatar name={club.name} size="sm" />
+          <Avatar name={club.name} src={club.imageSrc} size="sm" />
           <span className="flex-1 text-left truncate">{club.name}</span>
           <ChevronDownIcon
             className={cn(
@@ -73,7 +74,7 @@ function ClubNavSection({
             "dark:text-slate-300",
           )}
         >
-          <Avatar name={club.name} size="sm" />
+          <Avatar name={club.name} src={club.imageSrc} size="sm" />
           <span className="flex-1 text-left truncate">{club.name}</span>
         </div>
       )}

@@ -36,6 +36,7 @@ type NavClub = {
   name: string;
   slug: string;
   role: string;
+  imageSrc: string | null;
   seasons: NavSeason[];
 };
 

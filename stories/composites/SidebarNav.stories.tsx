@@ -21,6 +21,7 @@ const mockClubs = [
     slug: "tc-musterstadt",
     name: "TC Musterstadt",
     role: "player",
+    imageSrc: null,
     seasons: [
       { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
       {
@@ -36,6 +37,7 @@ const mockClubs = [
     slug: "sc-gruenwald",
     name: "SC Grünwald",
     role: "player",
+    imageSrc: null,
     seasons: [
       { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
     ],
