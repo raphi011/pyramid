@@ -36,6 +36,8 @@ export type EventRow = {
   actorName: string | null;
   targetName: string | null;
   clubName: string;
+  clubSlug: string;
+  seasonSlug: string | null;
   team1Id: number | null;
   team2Id: number | null;
   winnerTeamId: number | null;
@@ -60,6 +62,8 @@ const EVENT_SELECT = `
   (actor.first_name || ' ' || actor.last_name) AS "actorName",
   (target.first_name || ' ' || target.last_name) AS "targetName",
   c.name AS "clubName",
+  c.slug AS "clubSlug",
+  s.slug AS "seasonSlug",
   sm.team1_id AS "team1Id",
   sm.team2_id AS "team2Id",
   sm.winner_team_id AS "winnerTeamId",
@@ -74,6 +78,7 @@ const EVENT_SELECT = `
 const EVENT_JOIN = `
   FROM events e
   JOIN clubs c ON c.id = e.club_id
+  LEFT JOIN seasons s ON s.id = e.season_id
   LEFT JOIN player actor ON actor.id = e.player_id
   LEFT JOIN player target ON target.id = e.target_player_id
   LEFT JOIN season_matches sm ON sm.id = e.match_id
@@ -103,6 +108,8 @@ function toEventRow(row: Record<string, unknown>): EventRow {
     actorName: (row.actorName as string) ?? null,
     targetName: (row.targetName as string) ?? null,
     clubName: row.clubName as string,
+    clubSlug: row.clubSlug as string,
+    seasonSlug: (row.seasonSlug as string) ?? null,
     team1Id: (row.team1Id as number) ?? null,
     team2Id: (row.team2Id as number) ?? null,
     winnerTeamId: (row.winnerTeamId as number) ?? null,

@@ -1,4 +1,5 @@
 import type { EventRow } from "@/app/lib/db/event";
+import { routes } from "@/app/lib/routes";
 import type { TimelineEvent } from "@/components/domain/event-timeline";
 
 type MapperOptions = {
@@ -257,7 +258,9 @@ function zipScores(
 }
 
 function computeHref(row: EventRow): string | undefined {
-  if (row.matchId) return `/matches/${row.matchId}`;
+  if (row.matchId && row.clubSlug && row.seasonSlug) {
+    return routes.match(row.clubSlug, row.seasonSlug, row.matchId);
+  }
   return undefined;
 }
 
