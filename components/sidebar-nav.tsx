@@ -110,6 +110,7 @@ function SidebarNav({
             club={club}
             expanded={expandedClubIds.has(club.id)}
             onToggle={() => onToggleClub(club.id)}
+            collapsible={clubs.length > 1}
             activeHref={activeHref}
             onNavigate={onNavigate}
           />
