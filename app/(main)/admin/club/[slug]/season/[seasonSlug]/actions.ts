@@ -8,6 +8,7 @@ import { parseFormData } from "@/app/lib/action-utils";
 import { getSeasonSlug, startSeason } from "@/app/lib/db/season";
 import { slugify } from "@/app/lib/slug";
 import { isUniqueViolation } from "@/app/lib/db/errors";
+import { isReservedSeasonSlug } from "@/app/lib/reserved-slugs";
 import type { ActionResult, ActionResultWith } from "@/app/lib/action-result";
 
 // ── Schemas ─────────────────────────────────────────────
@@ -67,6 +68,9 @@ export async function updateSeasonAction(
   if (authCheck.error) return { error: authCheck.error };
 
   const newSlug = slugify(name);
+  if (isReservedSeasonSlug(newSlug)) {
+    return { error: "seasonManagement.error.nameTaken" };
+  }
 
   try {
     const result = await sql`

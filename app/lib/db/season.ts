@@ -2,7 +2,12 @@ import type postgres from "postgres";
 import { generateInviteCode } from "../crypto";
 import { slugify } from "../slug";
 import type { Sql } from "../db";
-import { isUniqueViolation, SlugConflictError } from "./errors";
+import {
+  isUniqueViolation,
+  SlugConflictError,
+  ReservedSlugError,
+} from "./errors";
+import { isReservedSeasonSlug } from "../reserved-slugs";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -331,6 +336,7 @@ export async function createSeason(
   const maxTeamSize = type === "team" ? teamSize : 1;
   const code = inviteCode ?? generateInviteCode();
   const seasonSlug = slugify(name);
+  if (isReservedSeasonSlug(seasonSlug)) throw new ReservedSlugError();
 
   // Verify fromSeasonId belongs to this club (IDOR prevention)
   if (startingRanks === "from_season" && fromSeasonId != null) {
