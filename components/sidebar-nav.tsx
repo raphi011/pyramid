@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BellIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import {
+  BellIcon,
+  Cog6ToothIcon,
+  WrenchScrewdriverIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -44,6 +48,7 @@ type SidebarNavProps = {
   clubs: NavClub[];
   expandedClubIds: Set<number>;
   onToggleClub: (clubId: number) => void;
+  isAppAdmin?: boolean;
   profile?: ProfileInfo;
   activeHref: string;
   unreadCount: number;
@@ -56,6 +61,7 @@ function SidebarNav({
   clubs,
   expandedClubIds,
   onToggleClub,
+  isAppAdmin,
   profile,
   activeHref,
   unreadCount,
@@ -141,11 +147,22 @@ function SidebarNav({
         )}
       </div>
 
-      {/* Bottom: Settings + Profile */}
+      {/* Bottom: App Admin + Settings + Profile */}
       <div className="px-3">
         <Separator />
 
-        <div className="py-2">
+        <div className="py-2 space-y-0.5">
+          {isAppAdmin && (
+            <NavButton
+              item={{
+                icon: <WrenchScrewdriverIcon />,
+                label: t("appAdmin"),
+                href: "/admin",
+              }}
+              active={activeHref === "/admin"}
+              onNavigate={onNavigate}
+            />
+          )}
           <NavButton
             item={{
               icon: <Cog6ToothIcon />,

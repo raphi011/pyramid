@@ -2,7 +2,7 @@
 
 import preview from "#.storybook/preview";
 import { PageWrapper } from "./_page-wrapper";
-import { ClubDetailView } from "@/app/(main)/club/[slug]/club-detail-view";
+import { ClubDetailView } from "@/app/(main)/[slug]/club-detail-view";
 
 const meta = preview.meta({
   title: "Pages/ClubDetail",
@@ -48,6 +48,7 @@ const minimalClub = {
 const members = [
   {
     playerId: 1,
+    playerSlug: "anna-mueller",
     firstName: "Anna",
     lastName: "M\u00fcller",
     imageId: null,
@@ -55,6 +56,7 @@ const members = [
   },
   {
     playerId: 2,
+    playerSlug: "max-weber",
     firstName: "Max",
     lastName: "Weber",
     imageId: null,
@@ -62,6 +64,7 @@ const members = [
   },
   {
     playerId: 3,
+    playerSlug: "lisa-schmidt",
     firstName: "Lisa",
     lastName: "Schmidt",
     imageId: null,
@@ -69,6 +72,7 @@ const members = [
   },
   {
     playerId: 4,
+    playerSlug: "tom-fischer",
     firstName: "Tom",
     lastName: "Fischer",
     imageId: null,
@@ -76,6 +80,7 @@ const members = [
   },
   {
     playerId: 5,
+    playerSlug: "julia-braun",
     firstName: "Julia",
     lastName: "Braun",
     imageId: null,
@@ -83,6 +88,7 @@ const members = [
   },
   {
     playerId: 6,
+    playerSlug: "felix-wagner",
     firstName: "Felix",
     lastName: "Wagner",
     imageId: null,
@@ -90,6 +96,7 @@ const members = [
   },
   {
     playerId: 7,
+    playerSlug: "sophie-becker",
     firstName: "Sophie",
     lastName: "Becker",
     imageId: null,
@@ -97,6 +104,7 @@ const members = [
   },
   {
     playerId: 8,
+    playerSlug: "luca-hoffmann",
     firstName: "Luca",
     lastName: "Hoffmann",
     imageId: null,

@@ -39,8 +39,8 @@ import type {
   SerializedMatch,
   StatsScope,
   SeasonStatsScope,
-} from "@/app/(main)/player/shared";
-import { winRate } from "@/app/(main)/player/shared";
+} from "@/app/(main)/profile/[playerSlug]/shared";
+import { winRate } from "@/app/(main)/profile/[playerSlug]/shared";
 
 type ProfileViewProps = {
   profile: PlayerProfileType;

@@ -15,7 +15,8 @@ import { AdminBanner, type AdminMessage } from "@/components/admin-banner";
 
 type AppShellProps = {
   children: React.ReactNode;
-  clubs: [NavClub, ...NavClub[]];
+  clubs: NavClub[];
+  isAppAdmin?: boolean;
   profile?: ProfileInfo;
   activeHref: string;
   onNavigate?: (href: string) => void;
@@ -37,6 +38,7 @@ const STORAGE_KEY = "pyramid:nav:clubs";
 function AppShell({
   children,
   clubs,
+  isAppAdmin,
   profile,
   activeHref,
   onNavigate,
@@ -98,6 +100,7 @@ function AppShell({
           clubs={clubs}
           expandedClubIds={expandedClubIds}
           onToggleClub={handleToggleClub}
+          isAppAdmin={isAppAdmin}
           profile={profile}
           activeHref={activeHref}
           unreadCount={unreadCount}
@@ -172,6 +175,7 @@ function AppShell({
         clubs={clubs}
         expandedClubIds={expandedClubIds}
         onToggleClub={handleToggleClub}
+        isAppAdmin={isAppAdmin}
         profile={profile}
         activeHref={activeHref}
         unreadCount={unreadCount}

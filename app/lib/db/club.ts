@@ -141,6 +141,7 @@ export async function getClubSlug(
 
 export type ClubMember = {
   playerId: number;
+  playerSlug: string;
   firstName: string;
   lastName: string;
   imageId: string | null;
@@ -154,6 +155,7 @@ export async function getClubMembers(
   const rows = await sql`
     SELECT
       p.id AS "playerId",
+      p.slug AS "playerSlug",
       p.first_name AS "firstName",
       p.last_name AS "lastName",
       p.image_id::text AS "imageId",
@@ -168,6 +170,7 @@ export async function getClubMembers(
 
   return rows.map((r) => ({
     playerId: r.playerId as number,
+    playerSlug: r.playerSlug as string,
     firstName: r.firstName as string,
     lastName: r.lastName as string,
     imageId: (r.imageId as string) ?? null,

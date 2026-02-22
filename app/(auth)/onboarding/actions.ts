@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getSession } from "@/app/lib/auth";
 import { updatePlayerProfile } from "@/app/lib/db/auth";
-import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";
 import { parseFormData } from "@/app/lib/action-utils";
 
@@ -55,13 +54,5 @@ export async function completeOnboarding(
     return { error: t("serverError") };
   }
 
-  let hasClubs = false;
-  try {
-    const clubs = await getPlayerClubs(sql, session.playerId);
-    hasClubs = clubs.length > 0;
-  } catch (error) {
-    console.error("Failed to check clubs after onboarding:", error);
-  }
-
-  redirect(hasClubs ? "/" : "/join");
+  redirect("/");
 }

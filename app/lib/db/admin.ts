@@ -103,6 +103,7 @@ export type AppStats = {
 export type AdminClub = {
   id: number;
   name: string;
+  slug: string;
   memberCount: number;
   isDisabled: boolean;
   adminEmail: string | null;
@@ -419,6 +420,7 @@ export async function getAdminClubs(sql: Sql): Promise<AdminClub[]> {
     SELECT
       c.id,
       c.name,
+      c.slug,
       (SELECT COUNT(*)::int FROM club_members WHERE club_id = c.id)
         AS "memberCount",
       c.is_disabled AS "isDisabled",

@@ -8,9 +8,14 @@ import { fullName } from "@/lib/utils";
 import type { NavClub } from "@/components/sidebar-nav";
 
 type AppShellWrapperProps = {
-  player: { id: number; firstName: string; lastName: string };
-  clubs: [NavClub, ...NavClub[]];
-  activeMatchId: number | null;
+  player: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    isAppAdmin: boolean;
+  };
+  clubs: NavClub[];
+  activeMatchUrl: string | null;
   unreadCount: number;
   children: React.ReactNode;
 };
@@ -18,7 +23,7 @@ type AppShellWrapperProps = {
 export function AppShellWrapper({
   player,
   clubs,
-  activeMatchId,
+  activeMatchUrl,
   unreadCount,
   children,
 }: AppShellWrapperProps) {
@@ -29,6 +34,7 @@ export function AppShellWrapper({
   return (
     <AppShell
       clubs={clubs}
+      isAppAdmin={player.isAppAdmin}
       activeHref={pathname}
       unreadCount={unreadCount}
       profile={{
@@ -37,11 +43,11 @@ export function AppShellWrapper({
       }}
       onNavigate={(href) => router.push(href)}
       fab={
-        activeMatchId != null
+        activeMatchUrl != null
           ? {
               icon: <BoltIcon />,
               label: t("activeChallenge"),
-              onClick: () => router.push(`/matches/${activeMatchId}`),
+              onClick: () => router.push(activeMatchUrl),
               variant: "active",
             }
           : pathname.endsWith("/rankings")

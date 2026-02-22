@@ -22,8 +22,6 @@ export default async function FeedPage() {
   if (!player) redirect("/login");
 
   const clubs = await getPlayerClubs(sql, player.id);
-  if (clubs.length === 0) redirect("/join");
-
   const clubIds = clubs.map((c) => c.clubId);
 
   const [rows, watermarks, t] = await Promise.all([

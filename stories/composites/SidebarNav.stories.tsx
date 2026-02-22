@@ -46,9 +46,7 @@ const mockClubs = [
 
 function SidebarDemo() {
   const t = useTranslations("nav");
-  const [active, setActive] = useState(
-    "/club/tc-musterstadt/season/sommer-2026/rankings",
-  );
+  const [active, setActive] = useState("/tc-musterstadt/sommer-2026");
   const [expanded, setExpanded] = useState(new Set([1, 2]));
   return (
     <div className="h-[600px]">
@@ -95,7 +93,7 @@ function SidebarWithAdmin() {
             return next;
           })
         }
-        activeHref="/admin/club/tc-musterstadt"
+        activeHref="/tc-musterstadt/admin"
         unreadCount={0}
       />
     </div>

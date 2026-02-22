@@ -13,6 +13,7 @@ import { cn, fullName } from "@/lib/utils";
 type StandingsPlayer = {
   id: string | number;
   playerId?: number;
+  playerSlug?: string;
   firstName: string;
   lastName: string;
   rank: number;

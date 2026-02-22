@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { MemberManagementView } from "@/app/(main)/admin/club/[slug]/members/member-management-view";
+import { MemberManagementView } from "@/app/(main)/[slug]/admin/members/member-management-view";
 import type { ClubMember } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -65,7 +65,7 @@ const members: ClubMember[] = [
 export const Default = meta.story({
   render: function DefaultStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <MemberManagementView clubId={1} members={members} />
       </PageWrapper>
     );
@@ -110,7 +110,7 @@ export const Default = meta.story({
 export const WithSearch = meta.story({
   render: function SearchStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <MemberManagementView clubId={1} members={members} />
       </PageWrapper>
     );
@@ -164,7 +164,7 @@ export const SingleAdmin = meta.story({
       },
     ];
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <MemberManagementView clubId={1} members={singleAdminMembers} />
       </PageWrapper>
     );
@@ -183,7 +183,7 @@ export const SingleAdmin = meta.story({
 export const EmptyClub = meta.story({
   render: function EmptyStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <MemberManagementView clubId={1} members={[]} />
       </PageWrapper>
     );

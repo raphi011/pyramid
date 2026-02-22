@@ -11,7 +11,6 @@ import {
   getPlayerTheme,
   getPlayerLanguage,
 } from "@/app/lib/db/auth";
-import { getPlayerClubs } from "@/app/lib/db/club";
 import { sql } from "@/app/lib/db";
 import { getAppUrl } from "@/app/lib/email";
 
@@ -66,11 +65,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL(returnTo, baseUrl));
       }
 
-      // 3. 0 clubs → join page
-      const clubs = await getPlayerClubs(sql, result.playerId);
-      if (clubs.length === 0) {
-        return NextResponse.redirect(new URL("/join", baseUrl));
-      }
+      // 3. 0 clubs → home (user can join via invite link later)
     } catch (routingError) {
       console.error("Post-login routing failed:", routingError);
     }

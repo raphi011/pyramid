@@ -49,9 +49,7 @@ const mockClubs = [
 
 function MobileNavDefault() {
   const [open, setOpen] = useState(true);
-  const [active, setActive] = useState(
-    "/club/tc-musterstadt/season/sommer-2026/rankings",
-  );
+  const [active, setActive] = useState("/tc-musterstadt/sommer-2026");
   const [expanded, setExpanded] = useState(new Set([1, 2]));
 
   return (
@@ -192,7 +190,7 @@ function MobileNavSingleClub() {
             return next;
           })
         }
-        activeHref="/club/tc-musterstadt/season/sommer-2026/rankings"
+        activeHref="/tc-musterstadt/sommer-2026"
         unreadCount={0}
         onNavigate={() => {}}
         profile={{

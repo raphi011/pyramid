@@ -57,6 +57,7 @@ export type PlayerSeasonTeam = {
 export type RankedPlayer = {
   teamId: number;
   playerId: number;
+  playerSlug: string;
   firstName: string;
   lastName: string;
   imageId: string | null;
@@ -609,6 +610,7 @@ export async function getStandingsWithPlayers(
     SELECT
       t.id AS "teamId",
       p.id AS "playerId",
+      p.slug AS "playerSlug",
       p.first_name AS "firstName",
       p.last_name AS "lastName",
       p.image_id::text AS "imageId"
@@ -623,6 +625,7 @@ export async function getStandingsWithPlayers(
     number,
     {
       playerId: number;
+      playerSlug: string;
       firstName: string;
       lastName: string;
       imageId: string | null;
@@ -637,6 +640,7 @@ export async function getStandingsWithPlayers(
     }
     teamMap.set(teamId, {
       playerId: row.playerId as number,
+      playerSlug: row.playerSlug as string,
       firstName: row.firstName as string,
       lastName: row.lastName as string,
       imageId: (row.imageId as string) ?? null,
@@ -658,6 +662,7 @@ export async function getStandingsWithPlayers(
     players.push({
       teamId,
       playerId: info.playerId,
+      playerSlug: info.playerSlug,
       firstName: info.firstName,
       lastName: info.lastName,
       imageId: info.imageId,

@@ -10,6 +10,7 @@ import { cn, abbreviateName, fullName } from "@/lib/utils";
 type PyramidPlayer = {
   id: string | number;
   playerId?: number;
+  playerSlug?: string;
   firstName: string;
   lastName: string;
   rank: number;

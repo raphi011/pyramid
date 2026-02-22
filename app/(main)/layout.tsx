@@ -10,8 +10,8 @@ import {
 import { getActiveMatchId } from "../lib/db/match";
 import { getUnreadCount } from "../lib/db/event";
 import { sql } from "../lib/db";
-import { assertNonEmpty } from "../lib/assert";
 import { imageUrl } from "../lib/image-url";
+import { routes } from "../lib/routes";
 import { AppShellWrapper } from "./app-shell-wrapper";
 
 export default async function MainLayout({
@@ -30,46 +30,52 @@ export default async function MainLayout({
   }
 
   const clubs = await getPlayerClubs(sql, player.id);
-
-  if (clubs.length === 0) {
-    redirect("/join");
-  }
-
   const clubIds = clubs.map((c) => c.clubId);
 
   // Fetch navigation seasons and unread count in parallel
   // Non-essential for page rendering — degrade to empty nav on failure
   let navSeasons: Awaited<ReturnType<typeof getNavigationSeasons>> = [];
   let unreadCount = 0;
-  try {
-    [navSeasons, unreadCount] = await Promise.all([
-      getNavigationSeasons(sql, player.id, clubIds),
-      getUnreadCount(sql, player.id, clubIds),
-    ]);
-  } catch (error) {
-    console.error(
-      `[layout] Failed to fetch navigation data for player ${player.id}:`,
-      error,
-    );
+  if (clubs.length > 0) {
+    try {
+      [navSeasons, unreadCount] = await Promise.all([
+        getNavigationSeasons(sql, player.id, clubIds),
+        getUnreadCount(sql, player.id, clubIds),
+      ]);
+    } catch (error) {
+      console.error(
+        `[layout] Failed to fetch navigation data for player ${player.id}:`,
+        error,
+      );
+    }
   }
 
   // Check if player has an active match (for FAB navigation)
   // Non-essential — fallback to default "Challenge" FAB on failure
-  let activeMatchId: number | null = null;
-  try {
-    const activeSeasons = await getActiveSeasons(sql, clubs[0].clubId);
-    if (activeSeasons.length > 0) {
-      const firstSeason = activeSeasons[0];
-      const teamId = await getPlayerTeamId(sql, player.id, firstSeason.id);
-      if (teamId) {
-        activeMatchId = await getActiveMatchId(sql, firstSeason.id, teamId);
+  let activeMatchUrl: string | null = null;
+  if (clubs.length > 0) {
+    try {
+      const activeSeasons = await getActiveSeasons(sql, clubs[0].clubId);
+      if (activeSeasons.length > 0) {
+        const firstSeason = activeSeasons[0];
+        const teamId = await getPlayerTeamId(sql, player.id, firstSeason.id);
+        if (teamId) {
+          const matchId = await getActiveMatchId(sql, firstSeason.id, teamId);
+          if (matchId) {
+            activeMatchUrl = routes.match(
+              clubs[0].clubSlug,
+              firstSeason.slug,
+              matchId,
+            );
+          }
+        }
       }
+    } catch (error) {
+      console.error(
+        `[layout] Failed to fetch active match for player ${player.id}:`,
+        error,
+      );
     }
-  } catch (error) {
-    console.error(
-      `[layout] Failed to fetch active match for player ${player.id}:`,
-      error,
-    );
   }
 
   // Build clubs with seasons and roles for navigation
@@ -83,16 +89,14 @@ export default async function MainLayout({
     seasonsByClub.set(s.clubId, arr);
   }
 
-  const clubsWithSeasons = assertNonEmpty(
-    clubs.map((c) => ({
-      id: c.clubId,
-      name: c.clubName,
-      slug: c.clubSlug,
-      role: c.role,
-      imageSrc: imageUrl(c.clubImageId),
-      seasons: seasonsByClub.get(c.clubId) ?? [],
-    })),
-  );
+  const clubsWithSeasons = clubs.map((c) => ({
+    id: c.clubId,
+    name: c.clubName,
+    slug: c.clubSlug,
+    role: c.role,
+    imageSrc: imageUrl(c.clubImageId),
+    seasons: seasonsByClub.get(c.clubId) ?? [],
+  }));
 
   return (
     <Suspense>
@@ -101,9 +105,10 @@ export default async function MainLayout({
           id: player.id,
           firstName: player.firstName,
           lastName: player.lastName,
+          isAppAdmin: player.isAppAdmin,
         }}
         clubs={clubsWithSeasons}
-        activeMatchId={activeMatchId}
+        activeMatchUrl={activeMatchUrl}
         unreadCount={unreadCount}
       >
         {children}

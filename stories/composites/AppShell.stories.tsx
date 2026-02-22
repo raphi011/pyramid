@@ -74,9 +74,7 @@ function AppShellDemo() {
   const t = useTranslations("ranking");
   const tChallenge = useTranslations("challenge");
   const tNav = useTranslations("nav");
-  const [active, setActive] = useState(
-    "/club/tc-musterstadt/season/sommer-2026/rankings",
-  );
+  const [active, setActive] = useState("/tc-musterstadt/sommer-2026");
   return (
     <AppShell
       clubs={mockClubs}
@@ -141,7 +139,7 @@ function AppShellWithMessages() {
   return (
     <AppShell
       clubs={mockClubs}
-      activeHref="/club/tc-musterstadt/season/sommer-2026/rankings"
+      activeHref="/tc-musterstadt/sommer-2026"
       unreadCount={3}
       messages={messages}
       onDismissMessage={(id) =>
@@ -178,7 +176,7 @@ function AppShellWithAdmin() {
   return (
     <AppShell
       clubs={adminClubs}
-      activeHref="/admin/club/1"
+      activeHref="/tc-musterstadt/admin"
       unreadCount={0}
       fab={{
         icon: <PlusIcon />,

@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { TeamManagementView } from "@/app/(main)/admin/club/[slug]/season/[seasonSlug]/teams/team-management-view";
+import { TeamManagementView } from "@/app/(main)/[slug]/admin/[seasonSlug]/teams/team-management-view";
 import type { Team, TeamMember } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -58,7 +58,7 @@ const unassignedPlayers: TeamMember[] = [
 export const Default = meta.story({
   render: function DefaultStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <TeamManagementView
           seasonName="Doppel Sommer 2026"
           teams={teams}
@@ -111,7 +111,7 @@ export const Default = meta.story({
 export const WithUnassignedPlayers = meta.story({
   render: function UnassignedStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <TeamManagementView
           seasonName="Doppel Sommer 2026"
           teams={teams}
@@ -139,7 +139,7 @@ export const WithUnassignedPlayers = meta.story({
 export const EmptyTeams = meta.story({
   render: function EmptyStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <TeamManagementView
           seasonName="Doppel Sommer 2026"
           teams={[]}

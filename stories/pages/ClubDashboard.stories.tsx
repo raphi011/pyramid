@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { AdminDashboardView } from "@/app/(main)/admin/club/[slug]/admin-dashboard-view";
+import { AdminDashboardView } from "@/app/(main)/[slug]/admin/admin-dashboard-view";
 import type {
   ClubStats,
   AdminSeasonSummary,
@@ -72,7 +72,7 @@ const overdueMatches: OverdueMatch[] = [
 export const Default = meta.story({
   render: function DefaultStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <AdminDashboardView
           clubSlug="tc-musterstadt"
           clubName="TC Musterstadt"
@@ -108,7 +108,7 @@ export const Default = meta.story({
 export const WithOverdueMatches = meta.story({
   render: function OverdueStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <AdminDashboardView
           clubSlug="tc-musterstadt"
           clubName="TC Musterstadt"
@@ -140,7 +140,7 @@ export const WithOverdueMatches = meta.story({
 export const EmptyClub = meta.story({
   render: function EmptyStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <AdminDashboardView
           clubSlug="tc-musterstadt"
           clubName="TC Musterstadt"

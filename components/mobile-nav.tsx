@@ -9,7 +9,11 @@ import {
 } from "@headlessui/react";
 import Link from "next/link";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import { BellIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import {
+  BellIcon,
+  Cog6ToothIcon,
+  WrenchScrewdriverIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslations } from "next-intl";
 import { Separator } from "@/components/ui/separator";
 import { ClubNavSection } from "@/components/club-nav-section";
@@ -27,6 +31,7 @@ type MobileNavProps = {
   clubs: NavClub[];
   expandedClubIds: Set<number>;
   onToggleClub: (clubId: number) => void;
+  isAppAdmin?: boolean;
   profile?: ProfileInfo;
   activeHref: string;
   unreadCount: number;
@@ -39,6 +44,7 @@ function MobileNav({
   clubs,
   expandedClubIds,
   onToggleClub,
+  isAppAdmin,
   profile,
   activeHref,
   unreadCount,
@@ -122,11 +128,22 @@ function MobileNav({
               ))}
             </div>
 
-            {/* Bottom: Settings + Profile */}
+            {/* Bottom: App Admin + Settings + Profile */}
             <div className="px-3">
               <Separator />
 
-              <div className="py-2">
+              <div className="py-2 space-y-0.5">
+                {isAppAdmin && (
+                  <NavButton
+                    item={{
+                      icon: <WrenchScrewdriverIcon />,
+                      label: tNav("appAdmin"),
+                      href: "/admin",
+                    }}
+                    active={activeHref === "/admin"}
+                    onNavigate={handleNavigate}
+                  />
+                )}
                 <NavButton
                   item={{
                     icon: <Cog6ToothIcon />,

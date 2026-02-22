@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { SeasonManagementView } from "@/app/(main)/admin/club/[slug]/season/[seasonSlug]/season-management-view";
+import { SeasonManagementView } from "@/app/(main)/[slug]/admin/[seasonSlug]/season-management-view";
 import type { SeasonDetail } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -61,7 +61,7 @@ const endedSeason: SeasonDetail = {
 export const ActiveSeason = meta.story({
   render: function ActiveStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <SeasonManagementView
           season={activeSeason}
           playerCount={18}
@@ -101,7 +101,7 @@ export const ActiveSeason = meta.story({
 export const DraftSeason = meta.story({
   render: function DraftStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <SeasonManagementView
           season={draftSeason}
           playerCount={24}
@@ -133,7 +133,7 @@ export const DraftSeason = meta.story({
 export const TeamSeason = meta.story({
   render: function TeamStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <SeasonManagementView
           season={teamSeason}
           playerCount={16}
@@ -161,7 +161,7 @@ export const TeamSeason = meta.story({
 export const EndedSeason = meta.story({
   render: function EndedStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <SeasonManagementView
           season={endedSeason}
           playerCount={18}

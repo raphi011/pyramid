@@ -98,9 +98,9 @@ function ClubNavSection({
               item={{
                 icon: <TrophyIcon />,
                 label: season.name,
-                href: routes.rankings(club.slug, season.slug),
+                href: routes.season(club.slug, season.slug),
               }}
-              active={activeHref === routes.rankings(club.slug, season.slug)}
+              active={activeHref === routes.season(club.slug, season.slug)}
               onNavigate={onNavigate}
             />
           ))}
