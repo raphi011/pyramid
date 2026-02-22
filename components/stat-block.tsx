@@ -18,7 +18,7 @@ function StatBlock({
 }: StatBlockProps) {
   return (
     <div className={cn("space-y-1", className)}>
-      <p className="text-xs font-medium tracking-wide text-slate-500 dark:text-slate-400">
+      <p className="text-xs font-medium tracking-wide text-slate-500 dark:text-slate-300">
         {label}
       </p>
       <div className="flex items-baseline gap-2">

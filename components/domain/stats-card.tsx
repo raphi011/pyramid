@@ -15,7 +15,7 @@ function StatsCard({ wins, losses }: { wins: number; losses: number }) {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {wins}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-300">
             {t("winsLabel")}
           </p>
         </div>
@@ -23,7 +23,7 @@ function StatsCard({ wins, losses }: { wins: number; losses: number }) {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {losses}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-300">
             {t("lossesLabel")}
           </p>
         </div>
@@ -31,7 +31,7 @@ function StatsCard({ wins, losses }: { wins: number; losses: number }) {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {rate}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-300">
             {t("winRateLabel")}
           </p>
         </div>

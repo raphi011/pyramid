@@ -44,7 +44,7 @@ export default async function ProfilePage() {
     trend: "none",
     trendValue: "",
   };
-  let rankHistory: { date: string; rank: number }[] = [];
+  let rankHistory: { date: string; rank: number; matchId: number }[] = [];
   let recentMatches: Awaited<ReturnType<typeof getRecentMatchesByTeam>> = [];
   let headToHead: Awaited<ReturnType<typeof getHeadToHeadRecords>> = [];
   let seasonId: number | null = null;

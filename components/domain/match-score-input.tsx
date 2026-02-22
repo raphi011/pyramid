@@ -80,7 +80,7 @@ function MatchScoreInput({
             className="text-center tabular-nums"
             aria-label={t("setAriaLabel", { set: idx + 1, player: p1 })}
           />
-          <span className="text-sm font-bold text-slate-500">:</span>
+          <span className="text-sm font-bold text-slate-500 dark:text-slate-400">:</span>
           <Input
             type="number"
             min="0"
@@ -94,7 +94,7 @@ function MatchScoreInput({
           {!readOnly && sets.length > 1 ? (
             <button
               onClick={() => removeSet(idx)}
-              className="flex size-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+              className="flex size-8 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
               aria-label={t("removeSetAriaLabel", { set: idx + 1 })}
             >
               <XMarkIcon className="size-4" />

@@ -28,7 +28,7 @@ type PlayerDetailViewProps = {
   seasonStats: SeasonStatsScope;
   clubStats: StatsScope;
   allStats: StatsScope;
-  rankHistory: { date: string; rank: number }[];
+  rankHistory: { date: string; rank: number; matchId: number }[];
   recentMatches: SerializedMatch[];
   headToHead: HeadToHeadRecord[];
   canChallenge: boolean;
@@ -87,6 +87,7 @@ function PlayerDetailView({
                   data={rankHistory}
                   emptyLabel={t("noRankData")}
                   tooltipLabel={t("rankTooltip")}
+                  onDotClick={(matchId) => router.push(`/matches/${matchId}`)}
                 />
               </CardContent>
             </Card>

@@ -39,6 +39,7 @@ export type TeamEnrollment = {
 export type RankHistoryPoint = {
   date: string;
   rank: number;
+  matchId: number;
 };
 
 export type PlayerSeasonTeam = {
@@ -748,21 +749,33 @@ export async function getRankHistory(
 ): Promise<RankHistoryPoint[]> {
   const rows = await sql`
     SELECT
-      created,
-      array_position(results, ${teamId}) AS rank
-    FROM season_standings
-    WHERE season_id = ${seasonId}
-      AND ${teamId} = ANY(results)
-    ORDER BY created ASC
+      ss.created,
+      ss.match_id,
+      array_position(ss.results, ${teamId}) AS rank
+    FROM season_standings ss
+    JOIN season_matches sm ON sm.id = ss.match_id
+    WHERE ss.season_id = ${seasonId}
+      AND ${teamId} = ANY(ss.results)
+      AND (sm.team1_id = ${teamId} OR sm.team2_id = ${teamId})
+    ORDER BY ss.created ASC
   `;
 
-  return rows.map((row) => ({
+  const points = rows.map((row) => ({
     date: (row.created as Date).toLocaleDateString("de-DE", {
       day: "2-digit",
       month: "2-digit",
     }),
     rank: row.rank as number,
+    matchId: row.match_id as number,
   }));
+
+  // Deduplicate labels: "21.02." → "21.02.", "21.02. (2)", "21.02. (3)"
+  const seen = new Map<string, number>();
+  return points.map((p) => {
+    const count = (seen.get(p.date) ?? 0) + 1;
+    seen.set(p.date, count);
+    return count > 1 ? { ...p, date: `${p.date} (${count})` } : p;
+  });
 }
 
 export async function getPlayerSeasonTeams(

@@ -176,10 +176,11 @@ export async function seedStandings(
   tx: Tx,
   seasonId: number,
   teamIds: number[],
+  { matchId }: { matchId?: number } = {},
 ): Promise<number> {
   const [row] = await tx`
-    INSERT INTO season_standings (season_id, results, created)
-    VALUES (${seasonId}, ${teamIds}, NOW())
+    INSERT INTO season_standings (season_id, match_id, results, created)
+    VALUES (${seasonId}, ${matchId ?? null}, ${teamIds}, NOW())
     RETURNING id
   `;
   return row.id as number;

@@ -307,7 +307,7 @@ function EventDetail({ event }: { event: EventItemProps }) {
                 >
                   {winnerScore}
                 </span>
-                <span className="text-slate-500">:</span>
+                <span className="text-slate-500 dark:text-slate-400">:</span>
                 <span className="font-medium text-slate-500 dark:text-slate-400">
                   {loserScore}
                 </span>

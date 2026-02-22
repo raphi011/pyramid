@@ -143,7 +143,7 @@ function MatchRow({
                 >
                   {s1}
                 </span>
-                <span className="text-slate-400">:</span>
+                <span className="text-slate-400 dark:text-slate-500">:</span>
                 <span
                   className={cn(
                     winnerId === "player2"
@@ -174,7 +174,7 @@ function MatchRow({
         </Badge>
       )}
       {(status === "withdrawn" || status === "forfeited") && (
-        <span className="text-xs italic text-slate-500">
+        <span className="text-xs italic text-slate-500 dark:text-slate-400">
           {t(statusKeys[status])}
         </span>
       )}
