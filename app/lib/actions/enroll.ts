@@ -93,8 +93,7 @@ export async function enrollInSeasonAction(
   }
 
   const clubSlug = await getClubSlug(sql, season.clubId);
-  revalidatePath(routes.rankings(clubSlug ?? "", season.slug));
-  revalidatePath("/club", "layout");
+  revalidatePath(routes.season(clubSlug ?? "", season.slug));
 
   return { success: true };
 }

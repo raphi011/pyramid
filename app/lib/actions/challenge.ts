@@ -75,7 +75,7 @@ export async function createChallengeAction(
     });
 
     const clubSlug = await getClubSlug(sql, season.clubId);
-    revalidatePath(routes.rankings(clubSlug ?? "", season.slug));
+    revalidatePath(routes.season(clubSlug ?? "", season.slug));
 
     return { success: true, matchId };
   } catch (e) {
