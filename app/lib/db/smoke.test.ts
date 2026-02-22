@@ -43,8 +43,8 @@ describe("transaction isolation", () => {
   it("rolls back inserts after test", async () => {
     await db.withinTransaction(async (tx) => {
       await tx`
-        INSERT INTO player (first_name, last_name, email_address, created)
-        VALUES ('Test', 'Player', 'isolation-test@example.com', NOW())
+        INSERT INTO player (first_name, last_name, email_address, slug, created)
+        VALUES ('Test', 'Player', 'isolation-test@example.com', '', NOW())
       `;
       const [row] = await tx`
         SELECT first_name FROM player WHERE email_address = 'isolation-test@example.com'
