@@ -335,7 +335,7 @@ export async function createSeason(
   // Verify fromSeasonId belongs to this club (IDOR prevention)
   if (startingRanks === "from_season" && fromSeasonId != null) {
     const sourceCheck = await tx`
-      SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId}
+      SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId} AND status = 'ended'
     `;
     if (sourceCheck.length === 0) {
       throw new InvalidSourceSeasonError();

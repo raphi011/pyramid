@@ -255,7 +255,7 @@ export async function getPreviousSeasons(
   const rows = await sql<PreviousSeason[]>`
     SELECT id, name
     FROM seasons
-    WHERE club_id = ${clubId}
+    WHERE club_id = ${clubId} AND status = 'ended'
     ORDER BY created DESC
   `;
 
