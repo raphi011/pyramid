@@ -2,6 +2,7 @@ import type postgres from "postgres";
 // Ensures TransactionSql module augmentation is in compilation scope (see app/lib/db.ts)
 import type { Sql as _Sql } from "../db";
 import { slugify } from "../slug";
+import { generateUniquePlayerSlug } from "./auth";
 
 type Tx = postgres.TransactionSql;
 
@@ -18,9 +19,10 @@ export async function seedPlayer(
   firstName = "Test",
   lastName = "Player",
 ): Promise<number> {
+  const slug = await generateUniquePlayerSlug(tx, firstName, lastName);
   const [row] = await tx`
-    INSERT INTO player (first_name, last_name, email_address, created)
-    VALUES (${firstName}, ${lastName}, ${email}, NOW())
+    INSERT INTO player (first_name, last_name, email_address, slug, created)
+    VALUES (${firstName}, ${lastName}, ${email}, ${slug}, NOW())
     RETURNING id
   `;
   return row.id as number;

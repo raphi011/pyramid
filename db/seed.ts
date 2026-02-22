@@ -19,6 +19,7 @@ import {
   createMatchComment,
 } from "../app/lib/db/match";
 import { challengeTeam } from "../app/lib/domain/challenge";
+import { generateUniquePlayerSlug } from "../app/lib/db/auth";
 import {
   submitResult,
   confirmResult,
@@ -190,6 +191,12 @@ async function seed() {
       players.push(player);
     }
     const playerIds = players.map((p) => p.id);
+
+    // ── 2b. Generate player slugs ────────────────────
+    for (const p of players) {
+      const slug = await generateUniquePlayerSlug(tx, p.firstName, p.lastName);
+      await tx`UPDATE player SET slug = ${slug} WHERE id = ${p.id}`;
+    }
 
     // ── 3. Create club ─────────────────────────────
     const { id: clubId } = await createClub(tx, {
