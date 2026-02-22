@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import {
@@ -10,7 +11,10 @@ import {
 import { getStandingsWithPlayers } from "@/app/lib/db/season";
 import { getPlayerRole } from "@/app/lib/db/club";
 import { getMatchEvents } from "@/app/lib/db/event";
-import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
+import {
+  mapEventRowsToTimeline,
+  buildTimeLabels,
+} from "@/app/lib/event-mapper";
 import { MatchDetailView } from "./match-detail-view";
 
 type MatchDetailPageProps = {
@@ -44,19 +48,21 @@ export default async function MatchDetailPage({
   const match = await getMatchById(sql, matchId);
   if (!match) notFound();
 
-  const [proposals, comments, standings, clubRole, eventRows] =
+  const [proposals, comments, standings, clubRole, eventRows, t] =
     await Promise.all([
       getDateProposals(sql, matchId),
       getMatchComments(sql, matchId),
       getStandingsWithPlayers(sql, match.seasonId),
       getPlayerRole(sql, player.id, match.clubId),
       getMatchEvents(sql, matchId),
+      getTranslations("match"),
     ]);
 
   const isAdmin = clubRole === "admin";
 
   const events = mapEventRowsToTimeline(eventRows, {
     watermarks: new Map(),
+    timeLabels: buildTimeLabels(t),
   }).map(({ href: _href, ...rest }) => rest);
 
   // Determine user role

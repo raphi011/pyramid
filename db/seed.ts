@@ -72,6 +72,10 @@ function daysFromNow(days: number): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
+function hoursAgo(hours: number): Date {
+  return new Date(Date.now() - hours * 60 * 60 * 1000);
+}
+
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -203,6 +207,18 @@ async function seed() {
       name: "TC Beispiel",
       inviteCode: "test-123",
     });
+
+    // Set club contact details for a realistic club overview page
+    await tx`
+      UPDATE clubs SET
+        url = 'https://tc-beispiel.at',
+        phone_number = '+43 1 234 5678',
+        address = 'Sportplatzgasse 12',
+        city = 'Wien',
+        zip = '1030',
+        country = 'AT'
+      WHERE id = ${clubId}
+    `;
 
     // ── 4. Join club (all players) ─────────────────
     for (const playerId of playerIds) {
@@ -447,7 +463,67 @@ async function seed() {
       }
     }
 
-    // ── 16. Magic links for quick login ────────────
+    // ── 16. Backdate events + matches for realistic timestamps ──
+    // Distribute event timestamps from ~30 days ago to ~1 hour ago so the
+    // club overview "Recent Activity" section shows varied relative timestamps.
+    {
+      const allEvents = await tx`
+        SELECT id FROM events
+        WHERE club_id = ${clubId}
+        ORDER BY id ASC
+      `;
+
+      // Assign timestamps: oldest events → weeks ago, newest → hours ago
+      const total = allEvents.length;
+      for (let i = 0; i < total; i++) {
+        // Spread from ~30 days ago to ~1 hour ago
+        const fraction = i / Math.max(total - 1, 1);
+        const hoursBack = Math.round(30 * 24 * (1 - fraction) + 1);
+        await tx`
+          UPDATE events SET created = ${hoursAgo(hoursBack)}
+          WHERE id = ${allEvents[i].id}
+        `;
+      }
+
+      // Also spread match timestamps across a similar range
+      const allMatches = await tx`
+        SELECT id FROM season_matches
+        WHERE season_id = ${seasonId}
+        ORDER BY id ASC
+      `;
+      const matchTotal = allMatches.length;
+      for (let i = 0; i < matchTotal; i++) {
+        const fraction = i / Math.max(matchTotal - 1, 1);
+        const hoursBack = Math.round(28 * 24 * (1 - fraction) + 2);
+        await tx`
+          UPDATE season_matches SET created = ${hoursAgo(hoursBack)}
+          WHERE id = ${allMatches[i].id}
+        `;
+      }
+    }
+
+    // ── 17. Add announcement event ──────────────────
+    await tx`
+      INSERT INTO events (club_id, season_id, player_id, event_type, metadata, created)
+      VALUES (
+        ${clubId},
+        ${seasonId},
+        ${playerIds[0]},
+        'announcement',
+        ${tx.json({ message: "Platzpflege am Samstag 10:00 \u2014 bitte helft mit!" })},
+        ${hoursAgo(4)}
+      )
+    `;
+
+    // ── 18. Set read watermark so some events appear unread ──
+    // Mark player[0] (Anna) as having read events up to 12 hours ago
+    // so recent events show as unread in her activity feed.
+    await tx`
+      INSERT INTO event_reads (player_id, club_id, last_read_at)
+      VALUES (${playerIds[0]}, ${clubId}, ${hoursAgo(12)})
+    `;
+
+    // ── 19. Magic links for quick login ─────────────
     const tokens: { name: string; token: string }[] = [];
     for (let i = 0; i < 3; i++) {
       const token = crypto.randomBytes(32).toString("hex");

@@ -10,7 +10,10 @@ import {
   getEventReadWatermarks,
   markAsRead,
 } from "@/app/lib/db/event";
-import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
+import {
+  mapEventRowsToTimeline,
+  buildTimeLabels,
+} from "@/app/lib/event-mapper";
 import type { TimelineEvent } from "@/components/domain/event-timeline";
 
 const PAGE_SIZE = 20;
@@ -40,10 +43,11 @@ export async function loadMoreFeedEventsAction(
 
     const allClubIds = clubs.map((c) => c.clubId);
 
-    const [rows, watermarks, t] = await Promise.all([
+    const [rows, watermarks, t, tMatch] = await Promise.all([
       getTimelineEvents(sql, player.id, validClubIds, parsed, PAGE_SIZE + 1),
       getEventReadWatermarks(sql, player.id, allClubIds),
       getTranslations("feed"),
+      getTranslations("match"),
     ]);
     const hasMore = rows.length > PAGE_SIZE;
     const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
@@ -52,6 +56,7 @@ export async function loadMoreFeedEventsAction(
       watermarks,
       todayLabel: t("today"),
       yesterdayLabel: t("yesterday"),
+      timeLabels: buildTimeLabels(tMatch),
     });
 
     const lastRow = pageRows[pageRows.length - 1];
@@ -83,10 +88,11 @@ export async function loadFeedForClubAction(
       return { events: [], hasMore: false, cursor: null };
     }
 
-    const [rows, watermarks, t] = await Promise.all([
+    const [rows, watermarks, t, tMatch] = await Promise.all([
       getTimelineEvents(sql, player.id, effectiveClubIds, null, PAGE_SIZE + 1),
       getEventReadWatermarks(sql, player.id, allClubIds),
       getTranslations("feed"),
+      getTranslations("match"),
     ]);
     const hasMore = rows.length > PAGE_SIZE;
     const pageRows = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
@@ -95,6 +101,7 @@ export async function loadFeedForClubAction(
       watermarks,
       todayLabel: t("today"),
       yesterdayLabel: t("yesterday"),
+      timeLabels: buildTimeLabels(tMatch),
     });
 
     const lastRow = pageRows[pageRows.length - 1];

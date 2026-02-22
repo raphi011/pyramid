@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import {
   TrophyIcon,
   BoltIcon,
@@ -221,8 +221,25 @@ function getAvatarPlayer(event: EventItemProps): PlayerRef {
   }
 }
 
+function useFormatDate() {
+  const format = useFormatter();
+  return (iso: string) => {
+    if (!iso) return "\u2013";
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return "\u2013";
+    return format.dateTime(date, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+}
+
 function useEventTitle(event: EventItemProps): string {
   const t = useTranslations("events");
+  const formatDate = useFormatDate();
 
   switch (event.type) {
     case "result": {
@@ -262,7 +279,7 @@ function useEventTitle(event: EventItemProps): string {
     case "date_proposed":
       return t("dateProposedTitle", { player: event.player.name });
     case "date_accepted":
-      return t("dateAcceptedTitle", { date: event.acceptedDate });
+      return t("dateAcceptedTitle", { date: formatDate(event.acceptedDate) });
     case "date_reminder":
       return t("dateReminderTitle");
     case "result_entered":
@@ -282,6 +299,7 @@ function useEventTitle(event: EventItemProps): string {
 
 function EventDetail({ event }: { event: EventItemProps }) {
   const t = useTranslations("events");
+  const formatDate = useFormatDate();
 
   switch (event.type) {
     case "result": {
@@ -361,7 +379,7 @@ function EventDetail({ event }: { event: EventItemProps }) {
       return (
         <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <CalendarIcon className="size-3.5" />
-          {event.proposedDate}
+          {formatDate(event.proposedDate)}
         </p>
       );
 
@@ -369,7 +387,7 @@ function EventDetail({ event }: { event: EventItemProps }) {
       return (
         <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <CalendarDaysIcon className="size-3.5" />
-          {event.acceptedDate}
+          {formatDate(event.acceptedDate)}
         </p>
       );
 
@@ -400,18 +418,12 @@ function EventDetail({ event }: { event: EventItemProps }) {
         </p>
       );
 
-    case "announcement":
-      return (
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          {t("announcementFrom", { admin: event.adminName })}
-        </p>
-      );
-
     case "challenge":
     case "challenged":
     case "challenge_accepted":
     case "challenge_withdrawn":
     case "result_disputed":
+    case "announcement":
       return null;
   }
 }
@@ -437,17 +449,48 @@ function HighlightedText({ text, name }: { text: string; name?: string }) {
 
 function EventItem(props: EventItemProps) {
   const { time, unread, personal, highlightName, href, className } = props;
+  const t = useTranslations("events");
   const title = useEventTitle(props);
-  const avatarPlayer = getAvatarPlayer(props);
   const isAnnouncement = props.type === "announcement";
+  const avatarPlayer = isAnnouncement ? null : getAvatarPlayer(props);
 
-  const innerContent = (
+  const innerContent = isAnnouncement ? (
+    <>
+      {/* Megaphone icon */}
+      <div className="shrink-0">
+        <div className="flex size-8 items-center justify-center rounded-full bg-trophy-100 text-trophy-600 dark:bg-trophy-900/40 dark:text-trophy-400">
+          <MegaphoneIcon className="size-4" />
+        </div>
+        <p className="mt-1 text-center text-[11px] tabular-nums text-slate-500 dark:text-slate-400 md:hidden">
+          {time}
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between">
+          <p className="text-sm font-medium text-slate-900 dark:text-white">
+            {unread && (
+              <span className="mr-1.5 inline-block size-1.5 rounded-full bg-court-500 align-middle" />
+            )}
+            {props.message}
+          </p>
+          <span className="ml-4 hidden shrink-0 text-xs text-slate-500 dark:text-slate-400 md:block">
+            {time}
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          {t("announcementFrom", { admin: props.adminName })}
+        </p>
+      </div>
+    </>
+  ) : (
     <>
       {/* Avatar + mobile time */}
       <div className="shrink-0">
         <Avatar
-          name={avatarPlayer.name}
-          src={avatarPlayer.avatarSrc}
+          name={avatarPlayer!.name}
+          src={avatarPlayer!.avatarSrc}
           size="sm"
         />
         <p className="mt-1 text-center text-[11px] tabular-nums text-slate-500 dark:text-slate-400 md:hidden">
@@ -475,8 +518,9 @@ function EventItem(props: EventItemProps) {
 
   const sharedClassName = cn(
     "flex items-start gap-3 md:gap-6 rounded-xl px-3 py-3",
-    unread && "bg-court-50/50 dark:bg-court-950/20",
-    isAnnouncement && "bg-trophy-50/50 dark:bg-trophy-950/20",
+    unread && !isAnnouncement && "bg-court-50/50 dark:bg-court-950/20",
+    isAnnouncement &&
+      "bg-trophy-50/30 ring-1 ring-trophy-200 dark:bg-trophy-950/20 dark:ring-trophy-800/50",
     personal &&
       !isAnnouncement &&
       !unread &&

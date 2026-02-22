@@ -11,7 +11,10 @@ import {
   getEventReadWatermarks,
   markAsRead,
 } from "@/app/lib/db/event";
-import { mapEventRowsToTimeline } from "@/app/lib/event-mapper";
+import {
+  mapEventRowsToTimeline,
+  buildTimeLabels,
+} from "@/app/lib/event-mapper";
 import { fullName } from "@/lib/utils";
 import { FeedView } from "./feed-view";
 
@@ -24,10 +27,11 @@ export default async function FeedPage() {
   const clubs = await getPlayerClubs(sql, player.id);
   const clubIds = clubs.map((c) => c.clubId);
 
-  const [rows, watermarks, t] = await Promise.all([
+  const [rows, watermarks, t, tMatch] = await Promise.all([
     getTimelineEvents(sql, player.id, clubIds, null, PAGE_SIZE + 1),
     getEventReadWatermarks(sql, player.id, clubIds),
     getTranslations("feed"),
+    getTranslations("match"),
   ]);
 
   const hasMore = rows.length > PAGE_SIZE;
@@ -36,6 +40,7 @@ export default async function FeedPage() {
     watermarks,
     todayLabel: t("today"),
     yesterdayLabel: t("yesterday"),
+    timeLabels: buildTimeLabels(tMatch),
   });
 
   const hasUnread = events.some((e) => "unread" in e && e.unread);

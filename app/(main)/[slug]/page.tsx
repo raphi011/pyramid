@@ -1,14 +1,24 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentPlayer } from "@/app/lib/auth";
 import { sql } from "@/app/lib/db";
 import { getClubBySlug, getClubMembers, isClubMember } from "@/app/lib/db/club";
+import {
+  getClubRecentEvents,
+  getEventReadWatermarks,
+} from "@/app/lib/db/event";
 import {
   getClubSeasons,
   getSeasonPlayerCounts,
   getPlayerEnrolledSeasonIds,
   isIndividualSeason,
 } from "@/app/lib/db/season";
+import {
+  mapEventRowsToTimeline,
+  buildTimeLabels,
+} from "@/app/lib/event-mapper";
+import type { TimelineEvent } from "@/components/domain/event-timeline";
 import { imageUrl } from "@/app/lib/image-url";
 import { ClubDetailView } from "./club-detail-view";
 
@@ -35,6 +45,22 @@ export default async function ClubPage({ params }: ClubPageProps) {
     getClubMembers(sql, club.id),
     getClubSeasons(sql, club.id),
   ]);
+
+  // Recent activity is supplementary — degrade gracefully on failure
+  let recentActivity: TimelineEvent[] = [];
+  try {
+    const [recentEventRows, watermarks, t] = await Promise.all([
+      getClubRecentEvents(sql, club.id, 5),
+      getEventReadWatermarks(sql, player.id, [club.id]),
+      getTranslations("match"),
+    ]);
+    recentActivity = mapEventRowsToTimeline(recentEventRows, {
+      watermarks,
+      timeLabels: buildTimeLabels(t),
+    });
+  } catch (e) {
+    console.error(`Failed to load recent activity for club ${club.id}:`, e);
+  }
 
   // Filter seasons by visibility
   const seasonIds = seasons.map((s) => s.id);
@@ -68,6 +94,7 @@ export default async function ClubPage({ params }: ClubPageProps) {
         imageId: imageUrl(club.imageId),
       }}
       memberCount={members.length}
+      recentActivity={recentActivity}
       seasons={visibleSeasons.map((s) => ({
         id: s.id,
         slug: s.slug,

@@ -208,6 +208,23 @@ export async function getMatchEvents(
   return rows.map(toEventRow);
 }
 
+export async function getClubRecentEvents(
+  sql: Sql,
+  clubId: number,
+  limit: number,
+): Promise<EventRow[]> {
+  const rows = await sql.unsafe(
+    `SELECT ${EVENT_SELECT}
+     ${EVENT_JOIN}
+     WHERE e.club_id = $1
+       AND e.target_player_id IS NULL
+     ORDER BY e.created DESC, e.id DESC
+     LIMIT $2`,
+    [clubId, limit],
+  );
+  return rows.map(toEventRow);
+}
+
 export async function markAsRead(
   sql: Sql,
   playerId: number,

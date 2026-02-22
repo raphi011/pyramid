@@ -22,6 +22,7 @@ type MatchRowProps = {
   player2: { name: string; avatarSrc?: string | null };
   status: MatchStatus;
   winnerId?: "player1" | "player2";
+  viewerSide?: "player1" | "player2";
   scores?: [number, number][];
   date?: string;
   selected?: boolean;
@@ -52,6 +53,7 @@ function MatchRow({
   player2,
   status,
   winnerId,
+  viewerSide,
   scores,
   date,
   selected,
@@ -100,14 +102,24 @@ function MatchRow({
       {/* Names + date */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
-          <span className={cn(winnerId === "player1" && "font-bold")}>
+          <span
+            className={cn(
+              winnerId === "player1" && "font-bold",
+              viewerSide === "player1" && "text-court-600 dark:text-court-400",
+            )}
+          >
             {player1.name}
             {winnerId === "player1" && (
               <TrophyIcon className="ml-0.5 inline size-3.5 align-[-0.125em] text-trophy-400" />
             )}
           </span>
           {" vs "}
-          <span className={cn(winnerId === "player2" && "font-bold")}>
+          <span
+            className={cn(
+              winnerId === "player2" && "font-bold",
+              viewerSide === "player2" && "text-court-600 dark:text-court-400",
+            )}
+          >
             {player2.name}
             {winnerId === "player2" && (
               <TrophyIcon className="ml-0.5 inline size-3.5 align-[-0.125em] text-trophy-400" />
