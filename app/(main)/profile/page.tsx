@@ -20,7 +20,7 @@ import {
   getAggregatedWinsLosses,
 } from "@/app/lib/db/match";
 import { computeMovement } from "@/app/lib/pyramid";
-import type { SeasonStatsScope } from "../player/shared";
+import type { SeasonStatsScope } from "./[playerSlug]/shared";
 import { imageUrl } from "@/app/lib/image-url";
 import { ProfileView } from "./profile-view";
 
@@ -32,9 +32,7 @@ export default async function ProfilePage() {
   if (!profile) redirect("/login");
 
   const clubs = await getPlayerClubs(sql, player.id);
-  if (clubs.length === 0) redirect("/join");
-
-  const clubId = clubs[0].clubId;
+  const clubId = clubs[0]?.clubId ?? null;
 
   // Default stats
   let seasonStats: SeasonStatsScope = {
@@ -44,12 +42,12 @@ export default async function ProfilePage() {
     trend: "none",
     trendValue: "",
   };
-  let rankHistory: { date: string; rank: number }[] = [];
+  let rankHistory: { date: string; rank: number; matchId: number }[] = [];
   let recentMatches: Awaited<ReturnType<typeof getRecentMatchesByTeam>> = [];
   let headToHead: Awaited<ReturnType<typeof getHeadToHeadRecords>> = [];
   let seasonId: number | null = null;
 
-  const seasons = await getActiveSeasons(sql, clubId);
+  const seasons = clubId ? await getActiveSeasons(sql, clubId) : [];
 
   if (seasons.length > 0) {
     const season = seasons[0];
@@ -92,7 +90,9 @@ export default async function ProfilePage() {
   }
 
   // Club scope: aggregate across all seasons in this club
-  const clubTeams = await getPlayerSeasonTeams(sql, player.id, clubId);
+  const clubTeams = clubId
+    ? await getPlayerSeasonTeams(sql, player.id, clubId)
+    : [];
   const clubWL =
     clubTeams.length > 0
       ? await getAggregatedWinsLosses(
@@ -131,6 +131,8 @@ export default async function ProfilePage() {
       }))}
       headToHead={headToHead}
       seasonId={seasonId}
+      clubSlug={clubs[0]?.clubSlug ?? null}
+      seasonSlug={seasons.length > 0 ? seasons[0].slug : null}
     />
   );
 }

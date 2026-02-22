@@ -25,6 +25,7 @@ const mockClubs: [
     slug: string;
     name: string;
     role: string;
+    imageSrc: string | null;
     seasons: { id: number; slug: string; name: string; status: string }[];
   },
   ...{
@@ -32,6 +33,7 @@ const mockClubs: [
     slug: string;
     name: string;
     role: string;
+    imageSrc: string | null;
     seasons: { id: number; slug: string; name: string; status: string }[];
   }[],
 ] = [
@@ -40,6 +42,7 @@ const mockClubs: [
     slug: "tc-musterstadt",
     name: "TC Musterstadt",
     role: "player",
+    imageSrc: null,
     seasons: [
       { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
       {
@@ -55,6 +58,7 @@ const mockClubs: [
     slug: "sc-gruenwald",
     name: "SC Grünwald",
     role: "player",
+    imageSrc: null,
     seasons: [
       { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
     ],
@@ -70,9 +74,7 @@ function AppShellDemo() {
   const t = useTranslations("ranking");
   const tChallenge = useTranslations("challenge");
   const tNav = useTranslations("nav");
-  const [active, setActive] = useState(
-    "/club/tc-musterstadt/season/sommer-2026/rankings",
-  );
+  const [active, setActive] = useState("/tc-musterstadt/sommer-2026");
   return (
     <AppShell
       clubs={mockClubs}
@@ -137,7 +139,7 @@ function AppShellWithMessages() {
   return (
     <AppShell
       clubs={mockClubs}
-      activeHref="/club/tc-musterstadt/season/sommer-2026/rankings"
+      activeHref="/tc-musterstadt/sommer-2026"
       unreadCount={3}
       messages={messages}
       onDismissMessage={(id) =>
@@ -174,7 +176,7 @@ function AppShellWithAdmin() {
   return (
     <AppShell
       clubs={adminClubs}
-      activeHref="/admin/club/1"
+      activeHref="/tc-musterstadt/admin"
       unreadCount={0}
       fab={{
         icon: <PlusIcon />,

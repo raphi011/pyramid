@@ -1,4 +1,5 @@
 import type { Sql } from "../db";
+import { slugify } from "../slug";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -78,6 +79,48 @@ export async function getPlayerById(
     : null;
 }
 
+export async function getPlayerBySlug(
+  sql: Sql,
+  slug: string,
+): Promise<{ id: number; firstName: string; lastName: string } | null> {
+  const rows = await sql`
+    SELECT id, first_name AS "firstName", last_name AS "lastName"
+    FROM player WHERE slug = ${slug}
+  `;
+  return rows.length > 0
+    ? (rows[0] as { id: number; firstName: string; lastName: string })
+    : null;
+}
+
+export async function generateUniquePlayerSlug(
+  sql: Sql,
+  firstName: string,
+  lastName: string,
+  excludePlayerId?: number,
+): Promise<string> {
+  const base = slugify(`${firstName} ${lastName}`);
+  const [existing] = excludePlayerId
+    ? await sql`SELECT 1 FROM player WHERE slug = ${base} AND id != ${excludePlayerId}`
+    : await sql`SELECT 1 FROM player WHERE slug = ${base}`;
+  if (!existing) return base;
+
+  const rows = excludePlayerId
+    ? await sql`SELECT slug FROM player WHERE slug LIKE ${base + "-%"} AND id != ${excludePlayerId}`
+    : await sql`SELECT slug FROM player WHERE slug LIKE ${base + "-%"}`;
+  const usedNumbers = new Set(
+    rows
+      .map((r) => {
+        const suffix = (r.slug as string).slice(base.length + 1);
+        return parseInt(suffix, 10);
+      })
+      .filter((n) => !isNaN(n)),
+  );
+
+  let n = 2;
+  while (usedNumbers.has(n)) n++;
+  return `${base}-${n}`;
+}
+
 export async function getPlayerProfile(
   sql: Sql,
   playerId: number,
@@ -125,13 +168,20 @@ export async function updatePlayerProfile(
     bio,
   }: { firstName: string; lastName: string; phoneNumber: string; bio: string },
 ): Promise<number> {
+  const slug = await generateUniquePlayerSlug(
+    sql,
+    firstName,
+    lastName,
+    playerId,
+  );
   const result = await sql`
     UPDATE player
     SET
       first_name = ${firstName},
       last_name = ${lastName},
       phone_number = ${phoneNumber},
-      bio = ${bio}
+      bio = ${bio},
+      slug = ${slug}
     WHERE id = ${playerId}
   `;
   return result.count;

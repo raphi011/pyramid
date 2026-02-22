@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { AppAdminView } from "@/app/(main)/admin/app/app-admin-view";
+import { AppAdminView } from "@/app/(main)/admin/app-admin-view";
 import type { AppStats, AdminClub, AppAdmin } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -33,6 +33,7 @@ const clubs: AdminClub[] = [
   {
     id: 1,
     name: "TC Musterstadt",
+    slug: "tc-musterstadt",
     memberCount: 24,
     isDisabled: false,
     adminEmail: "admin@tc-musterstadt.de",
@@ -40,6 +41,7 @@ const clubs: AdminClub[] = [
   {
     id: 2,
     name: "SC Beispieldorf",
+    slug: "sc-beispieldorf",
     memberCount: 18,
     isDisabled: false,
     adminEmail: "admin@sc-beispieldorf.de",
@@ -47,6 +49,7 @@ const clubs: AdminClub[] = [
   {
     id: 3,
     name: "TV Sportheim",
+    slug: "tv-sportheim",
     memberCount: 32,
     isDisabled: false,
     adminEmail: "admin@tv-sportheim.de",
@@ -61,7 +64,7 @@ const appAdmins: AppAdmin[] = [
 export const Default = meta.story({
   render: function DefaultStory() {
     return (
-      <PageWrapper activeHref="/admin/app" isAdmin>
+      <PageWrapper activeHref="/admin" isAdmin>
         <AppAdminView stats={stats} clubs={clubs} appAdmins={appAdmins} />
       </PageWrapper>
     );
@@ -90,7 +93,7 @@ export const Default = meta.story({
 export const EmptyState = meta.story({
   render: function EmptyStory() {
     return (
-      <PageWrapper activeHref="/admin/app" isAdmin>
+      <PageWrapper activeHref="/admin" isAdmin>
         <AppAdminView
           stats={{ totalClubs: 0, totalPlayers: 0, totalSeasons: 0 }}
           clubs={[]}
@@ -119,13 +122,14 @@ export const WithDisabledClub = meta.story({
       {
         id: 4,
         name: "Inaktiver Verein",
+        slug: "inaktiver-verein",
         memberCount: 5,
         isDisabled: true,
         adminEmail: "old@inactive.de",
       },
     ];
     return (
-      <PageWrapper activeHref="/admin/app" isAdmin>
+      <PageWrapper activeHref="/admin" isAdmin>
         <AppAdminView
           stats={{ ...stats, totalClubs: 6 }}
           clubs={clubsWithDisabled}

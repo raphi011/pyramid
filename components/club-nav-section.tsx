@@ -18,10 +18,12 @@ type ClubNavSectionProps = {
     name: string;
     slug: string;
     role: string;
+    imageSrc: string | null;
     seasons: NavSeason[];
   };
   expanded: boolean;
   onToggle: () => void;
+  collapsible?: boolean;
   activeHref: string;
   onNavigate?: (href: string) => void;
 };
@@ -30,6 +32,7 @@ function ClubNavSection({
   club,
   expanded,
   onToggle,
+  collapsible = true,
   activeHref,
   onNavigate,
 }: ClubNavSectionProps) {
@@ -38,31 +41,46 @@ function ClubNavSection({
   const clubOverviewHref = routes.club(club.slug);
   const adminHref = routes.admin.club(club.slug);
 
+  const showContent = !collapsible || expanded;
+
   return (
     <div>
-      {/* Club header toggle */}
-      <button
-        onClick={onToggle}
-        className={cn(
-          "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold",
-          "transition-colors duration-150",
-          "text-slate-700 hover:bg-slate-50",
-          "dark:text-slate-300 dark:hover:bg-slate-800",
-        )}
-        aria-expanded={expanded}
-      >
-        <Avatar name={club.name} size="sm" />
-        <span className="flex-1 text-left truncate">{club.name}</span>
-        <ChevronDownIcon
+      {/* Club header — collapsible toggle or static label */}
+      {collapsible ? (
+        <button
+          onClick={onToggle}
           className={cn(
-            "size-4 text-slate-400 transition-transform duration-200",
-            expanded && "rotate-180",
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold",
+            "transition-colors duration-150",
+            "text-slate-700 hover:bg-slate-50",
+            "dark:text-slate-300 dark:hover:bg-slate-800",
           )}
-        />
-      </button>
+          aria-expanded={expanded}
+        >
+          <Avatar name={club.name} src={club.imageSrc} size="sm" />
+          <span className="flex-1 text-left truncate">{club.name}</span>
+          <ChevronDownIcon
+            className={cn(
+              "size-4 text-slate-400 transition-transform duration-200",
+              expanded && "rotate-180",
+            )}
+          />
+        </button>
+      ) : (
+        <div
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold",
+            "text-slate-700",
+            "dark:text-slate-300",
+          )}
+        >
+          <Avatar name={club.name} src={club.imageSrc} size="sm" />
+          <span className="flex-1 text-left truncate">{club.name}</span>
+        </div>
+      )}
 
-      {/* Collapsible panel */}
-      {expanded && (
+      {/* Content panel */}
+      {showContent && (
         <div className="ml-3 space-y-0.5 pt-0.5">
           <NavButton
             item={{
@@ -80,9 +98,9 @@ function ClubNavSection({
               item={{
                 icon: <TrophyIcon />,
                 label: season.name,
-                href: routes.rankings(club.slug, season.slug),
+                href: routes.season(club.slug, season.slug),
               }}
-              active={activeHref === routes.rankings(club.slug, season.slug)}
+              active={activeHref === routes.season(club.slug, season.slug)}
               onNavigate={onNavigate}
             />
           ))}

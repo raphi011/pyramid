@@ -26,8 +26,8 @@ export async function getOrCreatePlayer(
   }: { email: string; firstName: string; lastName: string },
 ): Promise<Player> {
   const [row] = await sql`
-    INSERT INTO player (first_name, last_name, email_address, created)
-    VALUES (${firstName}, ${lastName}, ${email}, NOW())
+    INSERT INTO player (first_name, last_name, email_address, slug, created)
+    VALUES (${firstName}, ${lastName}, ${email}, '', NOW())
     ON CONFLICT (email_address) DO UPDATE SET email_address = EXCLUDED.email_address
     RETURNING id, first_name AS "firstName", last_name AS "lastName", email_address AS email
   `;

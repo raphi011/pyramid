@@ -8,17 +8,32 @@ import { fullName } from "@/lib/utils";
 import type { NavClub } from "@/components/sidebar-nav";
 
 type AppShellWrapperProps = {
-  player: { id: number; firstName: string; lastName: string };
-  clubs: [NavClub, ...NavClub[]];
-  activeMatchId: number | null;
+  player: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    isAppAdmin: boolean;
+  };
+  clubs: NavClub[];
+  activeMatchUrl: string | null;
   unreadCount: number;
   children: React.ReactNode;
 };
 
+/**
+ * Check if the current path is a season/rankings page (/{clubSlug}/{seasonSlug}).
+ * Matches any path that starts with a known club slug and has exactly one more segment.
+ */
+function isSeasonPage(pathname: string, clubs: NavClub[]): boolean {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length !== 2) return false;
+  return clubs.some((c) => c.slug === segments[0]);
+}
+
 export function AppShellWrapper({
   player,
   clubs,
-  activeMatchId,
+  activeMatchUrl,
   unreadCount,
   children,
 }: AppShellWrapperProps) {
@@ -29,6 +44,7 @@ export function AppShellWrapper({
   return (
     <AppShell
       clubs={clubs}
+      isAppAdmin={player.isAppAdmin}
       activeHref={pathname}
       unreadCount={unreadCount}
       profile={{
@@ -37,14 +53,14 @@ export function AppShellWrapper({
       }}
       onNavigate={(href) => router.push(href)}
       fab={
-        activeMatchId != null
+        activeMatchUrl != null
           ? {
               icon: <BoltIcon />,
               label: t("activeChallenge"),
-              onClick: () => router.push(`/matches/${activeMatchId}`),
+              onClick: () => router.push(activeMatchUrl),
               variant: "active",
             }
-          : pathname.endsWith("/rankings")
+          : isSeasonPage(pathname, clubs)
             ? {
                 icon: <PlusIcon />,
                 label: t("challenge"),

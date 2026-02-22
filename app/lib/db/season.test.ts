@@ -656,25 +656,36 @@ describe("getPlayerTeamId", () => {
 // ── getRankHistory ──────────────────────────────
 
 describe("getRankHistory", () => {
-  it("returns chronological rank history", async () => {
+  it("returns only standings from team's own matches", async () => {
     await db.withinTransaction(async (tx) => {
       const clubId = await seedClub(tx);
       const seasonId = await seedSeason(tx, clubId);
       const p1 = await seedPlayer(tx, "rh1@example.com");
       const p2 = await seedPlayer(tx, "rh2@example.com");
+      const p3 = await seedPlayer(tx, "rh3@example.com");
       const t1 = await seedTeam(tx, seasonId, [p1]);
       const t2 = await seedTeam(tx, seasonId, [p2]);
+      const t3 = await seedTeam(tx, seasonId, [p3]);
 
-      // First snapshot: t1=rank1, t2=rank2
-      await seedStandings(tx, seasonId, [t1, t2]);
-      // Second snapshot: t2=rank1, t1=rank2 (swapped)
-      await seedStandings(tx, seasonId, [t2, t1]);
+      // Match between t1 and t2
+      const m1 = await seedMatch(tx, seasonId, t1, t2, { winnerTeamId: t1 });
+      await seedStandings(tx, seasonId, [t1, t2, t3], { matchId: m1 });
+
+      // Match between t2 and t3 (t1 not involved)
+      const m2 = await seedMatch(tx, seasonId, t2, t3, { winnerTeamId: t2 });
+      await seedStandings(tx, seasonId, [t1, t2, t3], { matchId: m2 });
+
+      // Match between t1 and t3
+      const m3 = await seedMatch(tx, seasonId, t1, t3, { winnerTeamId: t3 });
+      await seedStandings(tx, seasonId, [t2, t3, t1], { matchId: m3 });
 
       const history = await getRankHistory(tx, seasonId, t1);
+      // Only 2 standings: m1 (t1 vs t2) and m3 (t1 vs t3), NOT m2
       expect(history).toHaveLength(2);
       expect(history[0].rank).toBe(1);
-      expect(history[1].rank).toBe(2);
-      expect(history[0].date).toBeTruthy();
+      expect(history[0].matchId).toBe(m1);
+      expect(history[1].rank).toBe(3);
+      expect(history[1].matchId).toBe(m3);
     });
   });
 

@@ -158,7 +158,7 @@ function RankingsPage({
     : t("seasonSubtitle", { year: "2026", club: "TC Musterstadt" });
 
   return (
-    <PageWrapper activeHref="/club/tc-musterstadt/season/sommer-2026/rankings">
+    <PageWrapper activeHref="/tc-musterstadt/sommer-2026">
       <PageLayout
         title={t("title")}
         subtitle={subtitle}

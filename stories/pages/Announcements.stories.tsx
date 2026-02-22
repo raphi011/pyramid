@@ -3,7 +3,7 @@
 import preview from "#.storybook/preview";
 import { within, expect, userEvent, fn } from "storybook/test";
 import { PageWrapper } from "./_page-wrapper";
-import { AnnouncementsView } from "@/app/(main)/admin/club/[slug]/announcements/announcements-view";
+import { AnnouncementsView } from "@/app/(main)/[slug]/admin/announcements/announcements-view";
 import type { PastAnnouncement } from "@/app/lib/db/admin";
 
 const meta = preview.meta({
@@ -51,7 +51,7 @@ const pastAnnouncements: PastAnnouncement[] = [
 export const Default = meta.story({
   render: function DefaultStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <AnnouncementsView
           pastAnnouncements={pastAnnouncements}
           sendAction={fn().mockResolvedValue({ success: true as const })}
@@ -97,7 +97,7 @@ export const Default = meta.story({
 export const NoPastAnnouncements = meta.story({
   render: function NoPastStory() {
     return (
-      <PageWrapper activeHref="/admin/club/1" isAdmin>
+      <PageWrapper activeHref="/tc-musterstadt/admin" isAdmin>
         <AnnouncementsView
           pastAnnouncements={[]}
           sendAction={fn().mockResolvedValue({ success: true as const })}

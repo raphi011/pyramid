@@ -1,7 +1,12 @@
 import { generateInviteCode } from "../crypto";
 import { slugify } from "../slug";
 import type { Sql } from "../db";
-import { isUniqueViolation, SlugConflictError } from "./errors";
+import {
+  isUniqueViolation,
+  SlugConflictError,
+  ReservedSlugError,
+} from "./errors";
+import { isReservedClubSlug } from "../reserved-slugs";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -26,6 +31,7 @@ export type ClubMembership = {
   clubId: number;
   clubName: string;
   clubSlug: string;
+  clubImageId: string | null;
   role: ClubRole;
 };
 
@@ -87,7 +93,8 @@ export async function getPlayerClubs(
   playerId: number,
 ): Promise<ClubMembership[]> {
   const rows = await sql<ClubMembership[]>`
-    SELECT c.id AS "clubId", c.name AS "clubName", c.slug AS "clubSlug", cm.role
+    SELECT c.id AS "clubId", c.name AS "clubName", c.slug AS "clubSlug",
+           c.image_id::text AS "clubImageId", cm.role
     FROM club_members cm
     JOIN clubs c ON c.id = cm.club_id
     WHERE cm.player_id = ${playerId}
@@ -134,6 +141,7 @@ export async function getClubSlug(
 
 export type ClubMember = {
   playerId: number;
+  playerSlug: string;
   firstName: string;
   lastName: string;
   imageId: string | null;
@@ -147,6 +155,7 @@ export async function getClubMembers(
   const rows = await sql`
     SELECT
       p.id AS "playerId",
+      p.slug AS "playerSlug",
       p.first_name AS "firstName",
       p.last_name AS "lastName",
       p.image_id::text AS "imageId",
@@ -161,6 +170,7 @@ export async function getClubMembers(
 
   return rows.map((r) => ({
     playerId: r.playerId as number,
+    playerSlug: r.playerSlug as string,
     firstName: r.firstName as string,
     lastName: r.lastName as string,
     imageId: (r.imageId as string) ?? null,
@@ -176,6 +186,7 @@ export async function createClub(
 ): Promise<{ id: number; slug: string; inviteCode: string }> {
   const code = inviteCode ?? generateInviteCode();
   const slug = slugify(name);
+  if (isReservedClubSlug(slug)) throw new ReservedSlugError();
 
   try {
     const [row] = await sql`
@@ -228,6 +239,7 @@ export async function updateClub(
   data: UpdateClubData,
 ): Promise<{ count: number; slug: string }> {
   const slug = slugify(data.name);
+  if (isReservedClubSlug(slug)) throw new ReservedSlugError();
 
   try {
     const result = await sql`

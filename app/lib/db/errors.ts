@@ -12,3 +12,10 @@ export class SlugConflictError extends Error {
     this.name = "SlugConflictError";
   }
 }
+
+export class ReservedSlugError extends Error {
+  constructor() {
+    super("Slug conflicts with reserved route");
+    this.name = "ReservedSlugError";
+  }
+}

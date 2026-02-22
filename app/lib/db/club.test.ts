@@ -13,7 +13,7 @@ import {
   createClub,
   updateClub,
 } from "./club";
-import { SlugConflictError } from "./errors";
+import { SlugConflictError, ReservedSlugError } from "./errors";
 
 const db = withTestDb();
 
@@ -293,6 +293,17 @@ describe("createClub", () => {
       ).rejects.toThrow(SlugConflictError);
     });
   });
+
+  it("throws ReservedSlugError when name slugifies to reserved word", async () => {
+    await db.withinTransaction(async (tx) => {
+      await expect(createClub(tx, { name: "Feed" })).rejects.toThrow(
+        ReservedSlugError,
+      );
+      await expect(createClub(tx, { name: "Admin" })).rejects.toThrow(
+        ReservedSlugError,
+      );
+    });
+  });
 });
 
 // ── updateClub slug collision ───────────────────────
@@ -315,6 +326,24 @@ describe("updateClub", () => {
           imageId: null,
         }),
       ).rejects.toThrow(SlugConflictError);
+    });
+  });
+
+  it("throws ReservedSlugError when renamed slug is reserved", async () => {
+    await db.withinTransaction(async (tx) => {
+      const clubId = await seedClub(tx, { name: "Normal Club" });
+      await expect(
+        updateClub(tx, clubId, {
+          name: "Feed",
+          url: "",
+          phoneNumber: "",
+          address: "",
+          city: "",
+          zip: "",
+          country: "",
+          imageId: null,
+        }),
+      ).rejects.toThrow(ReservedSlugError);
     });
   });
 

@@ -80,7 +80,7 @@ export async function leaveClubAction(clubId: number): Promise<ActionResult> {
   revalidatePath("/settings");
 
   if (shouldRedirectToJoin) {
-    redirect("/join");
+    redirect("/");
   }
 
   return { success: true };

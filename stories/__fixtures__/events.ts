@@ -80,7 +80,7 @@ export const feedEvents: TimelineEvent[] = [
     time: "14:30",
     group: "Heute",
     groupDate: "12.02.2026",
-    href: "/matches/m3",
+    href: "/tc-musterstadt/sommer-2026/matches/m3",
   },
   {
     id: "e2",
@@ -90,7 +90,7 @@ export const feedEvents: TimelineEvent[] = [
     time: "11:45",
     group: "Heute",
     groupDate: "12.02.2026",
-    href: "/matches/m2",
+    href: "/tc-musterstadt/sommer-2026/matches/m2",
   },
   {
     id: "e3",
@@ -101,7 +101,7 @@ export const feedEvents: TimelineEvent[] = [
     time: "16:20",
     group: "Gestern",
     groupDate: "11.02.2026",
-    href: "/matches/m5",
+    href: "/tc-musterstadt/sommer-2026/matches/m5",
   },
   {
     id: "e4",
@@ -112,7 +112,7 @@ export const feedEvents: TimelineEvent[] = [
     time: "09:15",
     group: "Gestern",
     groupDate: "11.02.2026",
-    href: "/matches/m6",
+    href: "/tc-musterstadt/sommer-2026/matches/m6",
   },
   {
     id: "e6",
@@ -122,7 +122,7 @@ export const feedEvents: TimelineEvent[] = [
     time: "10:30",
     group: "Vor 3 Tagen",
     groupDate: "09.02.2026",
-    href: "/player/p12",
+    href: "/profile/p12",
   },
   {
     id: "e7",
@@ -141,7 +141,7 @@ export const feedEvents: TimelineEvent[] = [
     time: "12:00",
     group: "Letzte Woche",
     groupDate: "05.02.2026",
-    href: "/player/p6",
+    href: "/profile/p6",
   },
   {
     id: "e9",
@@ -308,7 +308,7 @@ export const allEvents: TimelineEvent[] = [
     group: "Heute",
     groupDate: "12.02.2026",
     unread: true,
-    href: "/matches/m1",
+    href: "/tc-musterstadt/sommer-2026/matches/m1",
   },
   {
     id: "e1",
@@ -326,7 +326,7 @@ export const allEvents: TimelineEvent[] = [
     group: "Heute",
     groupDate: "12.02.2026",
     unread: true,
-    href: "/matches/m3",
+    href: "/tc-musterstadt/sommer-2026/matches/m3",
   },
   {
     id: "n3",
@@ -336,7 +336,7 @@ export const allEvents: TimelineEvent[] = [
     group: "Heute",
     groupDate: "12.02.2026",
     unread: true,
-    href: "/player/p6",
+    href: "/profile/p6",
   },
   {
     id: "e2",
@@ -346,7 +346,7 @@ export const allEvents: TimelineEvent[] = [
     time: "11:00",
     group: "Heute",
     groupDate: "12.02.2026",
-    href: "/matches/m2",
+    href: "/tc-musterstadt/sommer-2026/matches/m2",
   },
   {
     id: "e3",
@@ -357,7 +357,7 @@ export const allEvents: TimelineEvent[] = [
     time: "16:20",
     group: "Gestern",
     groupDate: "11.02.2026",
-    href: "/matches/m5",
+    href: "/tc-musterstadt/sommer-2026/matches/m5",
   },
   {
     id: "e4",
@@ -368,7 +368,7 @@ export const allEvents: TimelineEvent[] = [
     time: "09:15",
     group: "Gestern",
     groupDate: "11.02.2026",
-    href: "/matches/m6",
+    href: "/tc-musterstadt/sommer-2026/matches/m6",
   },
   {
     id: "e6",
@@ -378,7 +378,7 @@ export const allEvents: TimelineEvent[] = [
     time: "10:30",
     group: "Vor 3 Tagen",
     groupDate: "09.02.2026",
-    href: "/player/p12",
+    href: "/profile/p12",
   },
   {
     id: "e7",
@@ -397,7 +397,7 @@ export const allEvents: TimelineEvent[] = [
     time: "12:00",
     group: "Letzte Woche",
     groupDate: "05.02.2026",
-    href: "/player/p6",
+    href: "/profile/p6",
   },
   {
     id: "e9",

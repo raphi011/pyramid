@@ -26,8 +26,37 @@ import {
 } from "@/app/lib/domain/match";
 import { postgresImageStorage } from "@/app/lib/image-storage";
 import { parseFormData } from "@/app/lib/action-utils";
+import { getClubSlug } from "@/app/lib/db/club";
+import { getSeasonSlug } from "@/app/lib/db/season";
+import { routes } from "@/app/lib/routes";
 
 export type MatchActionResult = { success: true } | { error: string };
+
+async function revalidateMatch(
+  matchId: number,
+  clubId: number,
+  seasonId: number,
+) {
+  try {
+    const [clubSlug, seasonSlug] = await Promise.all([
+      getClubSlug(sql, clubId),
+      getSeasonSlug(sql, seasonId),
+    ]);
+    if (clubSlug && seasonSlug) {
+      revalidatePath(routes.match(clubSlug, seasonSlug, matchId));
+      revalidatePath(routes.season(clubSlug, seasonSlug));
+    } else {
+      console.error(
+        `[revalidateMatch] Missing slug for match ${matchId}: clubSlug=${clubSlug}, seasonSlug=${seasonSlug}`,
+      );
+    }
+  } catch (error) {
+    console.error(
+      `[revalidateMatch] Failed to revalidate match ${matchId}:`,
+      error,
+    );
+  }
+}
 
 // ── Schemas ──────────────────────────────────────────
 
@@ -132,8 +161,7 @@ export async function proposeDateAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -187,8 +215,7 @@ export async function acceptDateAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -227,8 +254,7 @@ export async function declineDateAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -267,8 +293,7 @@ export async function removeDateProposalAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -319,8 +344,7 @@ export async function enterResultAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -363,8 +387,7 @@ export async function confirmResultAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -412,8 +435,7 @@ export async function withdrawAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -455,8 +477,7 @@ export async function forfeitAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -519,8 +540,7 @@ export async function disputeAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/club", "layout");
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }
@@ -564,7 +584,7 @@ export async function uploadMatchImageAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
   return { success: true };
 }
 
@@ -605,7 +625,7 @@ export async function postCommentAction(
     return { error: "matchDetail.error.serverError" };
   }
 
-  revalidatePath(`/matches/${matchId}`);
+  await revalidateMatch(matchId, match.clubId, match.seasonId);
 
   return { success: true };
 }

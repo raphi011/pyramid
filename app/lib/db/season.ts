@@ -2,7 +2,12 @@ import type postgres from "postgres";
 import { generateInviteCode } from "../crypto";
 import { slugify } from "../slug";
 import type { Sql } from "../db";
-import { isUniqueViolation, SlugConflictError } from "./errors";
+import {
+  isUniqueViolation,
+  SlugConflictError,
+  ReservedSlugError,
+} from "./errors";
+import { isReservedSeasonSlug } from "../reserved-slugs";
 
 // ── Types ──────────────────────────────────────────────
 
@@ -39,6 +44,7 @@ export type TeamEnrollment = {
 export type RankHistoryPoint = {
   date: string;
   rank: number;
+  matchId: number;
 };
 
 export type PlayerSeasonTeam = {
@@ -51,6 +57,7 @@ export type PlayerSeasonTeam = {
 export type RankedPlayer = {
   teamId: number;
   playerId: number;
+  playerSlug: string;
   firstName: string;
   lastName: string;
   imageId: string | null;
@@ -330,11 +337,12 @@ export async function createSeason(
   const maxTeamSize = type === "team" ? teamSize : 1;
   const code = inviteCode ?? generateInviteCode();
   const seasonSlug = slugify(name);
+  if (isReservedSeasonSlug(seasonSlug)) throw new ReservedSlugError();
 
   // Verify fromSeasonId belongs to this club (IDOR prevention)
   if (startingRanks === "from_season" && fromSeasonId != null) {
     const sourceCheck = await tx`
-      SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId}
+      SELECT 1 FROM seasons WHERE id = ${fromSeasonId} AND club_id = ${clubId} AND status = 'ended'
     `;
     if (sourceCheck.length === 0) {
       throw new InvalidSourceSeasonError();
@@ -602,6 +610,7 @@ export async function getStandingsWithPlayers(
     SELECT
       t.id AS "teamId",
       p.id AS "playerId",
+      p.slug AS "playerSlug",
       p.first_name AS "firstName",
       p.last_name AS "lastName",
       p.image_id::text AS "imageId"
@@ -616,6 +625,7 @@ export async function getStandingsWithPlayers(
     number,
     {
       playerId: number;
+      playerSlug: string;
       firstName: string;
       lastName: string;
       imageId: string | null;
@@ -630,6 +640,7 @@ export async function getStandingsWithPlayers(
     }
     teamMap.set(teamId, {
       playerId: row.playerId as number,
+      playerSlug: row.playerSlug as string,
       firstName: row.firstName as string,
       lastName: row.lastName as string,
       imageId: (row.imageId as string) ?? null,
@@ -651,6 +662,7 @@ export async function getStandingsWithPlayers(
     players.push({
       teamId,
       playerId: info.playerId,
+      playerSlug: info.playerSlug,
       firstName: info.firstName,
       lastName: info.lastName,
       imageId: info.imageId,
@@ -748,21 +760,33 @@ export async function getRankHistory(
 ): Promise<RankHistoryPoint[]> {
   const rows = await sql`
     SELECT
-      created,
-      array_position(results, ${teamId}) AS rank
-    FROM season_standings
-    WHERE season_id = ${seasonId}
-      AND ${teamId} = ANY(results)
-    ORDER BY created ASC
+      ss.created,
+      ss.match_id,
+      array_position(ss.results, ${teamId}) AS rank
+    FROM season_standings ss
+    JOIN season_matches sm ON sm.id = ss.match_id
+    WHERE ss.season_id = ${seasonId}
+      AND ${teamId} = ANY(ss.results)
+      AND (sm.team1_id = ${teamId} OR sm.team2_id = ${teamId})
+    ORDER BY ss.created ASC
   `;
 
-  return rows.map((row) => ({
+  const points = rows.map((row) => ({
     date: (row.created as Date).toLocaleDateString("de-DE", {
       day: "2-digit",
       month: "2-digit",
     }),
     rank: row.rank as number,
+    matchId: row.match_id as number,
   }));
+
+  // Deduplicate labels: "21.02." → "21.02.", "21.02. (2)", "21.02. (3)"
+  const seen = new Map<string, number>();
+  return points.map((p) => {
+    const count = (seen.get(p.date) ?? 0) + 1;
+    seen.set(p.date, count);
+    return count > 1 ? { ...p, date: `${p.date} (${count})` } : p;
+  });
 }
 
 export async function getPlayerSeasonTeams(

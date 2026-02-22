@@ -23,7 +23,7 @@ test.describe("auth flow", () => {
     await expect(page).toHaveURL(/\/check-email/);
   });
 
-  test("valid magic link with named player redirects to /join", async ({
+  test("valid magic link with named player redirects to /feed", async ({
     page,
   }) => {
     const player = await createTestPlayer({
@@ -35,8 +35,8 @@ test.describe("auth flow", () => {
       const token = await createTestMagicLink(player.id);
       await page.goto(`/api/auth/verify?token=${token}`);
 
-      // Player has no club memberships, so they land on /join
-      await expect(page).toHaveURL(/\/join/);
+      // Player has no club memberships, lands on feed
+      await expect(page).toHaveURL(/\/feed/);
     } finally {
       await cleanupTestPlayer(player.id);
     }
@@ -79,7 +79,7 @@ test.describe("auth flow", () => {
     await expect(page).toHaveURL(/\/login\?error=invalid_token/);
   });
 
-  test("complete onboarding sets name and redirects to /join", async ({
+  test("complete onboarding sets name and redirects to /feed", async ({
     page,
   }) => {
     const player = await createTestPlayer();
@@ -96,8 +96,8 @@ test.describe("auth flow", () => {
       await page.getByPlaceholder("+49 170 1234567").fill("+49 170 0000000");
       await page.getByRole("button", { name: /weiter/i }).click();
 
-      // Player has no club memberships, so they land on /join
-      await expect(page).toHaveURL(/\/join/);
+      // Player has no club memberships, lands on feed
+      await expect(page).toHaveURL(/\/feed/);
     } finally {
       await cleanupTestPlayer(player.id);
     }
@@ -116,7 +116,7 @@ test.describe("auth flow", () => {
     try {
       const token = await createTestMagicLink(player.id);
       await page.goto(`/api/auth/verify?token=${token}`);
-      await expect(page).toHaveURL(/\/join/);
+      await expect(page).toHaveURL(/\/feed/);
 
       // Click logout
       await page.getByRole("button", { name: /abmelden/i }).click();

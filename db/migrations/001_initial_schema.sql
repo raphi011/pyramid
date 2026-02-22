@@ -23,7 +23,7 @@ CREATE TABLE images (
 CREATE TABLE clubs (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    slug TEXT NOT NULL DEFAULT '',
+    slug TEXT NOT NULL,
     invite_code TEXT UNIQUE NOT NULL,
     url TEXT NOT NULL DEFAULT '',
     phone_number TEXT NOT NULL DEFAULT '',
@@ -45,6 +45,7 @@ CREATE TABLE player (
     id SERIAL PRIMARY KEY,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
+    slug TEXT NOT NULL,
     phone_number TEXT NOT NULL DEFAULT '',
     email_address TEXT NOT NULL UNIQUE,
     image_id UUID REFERENCES images(id),
@@ -57,6 +58,8 @@ CREATE TABLE player (
     unavailable_until TIMESTAMPTZ,
     unavailable_reason TEXT NOT NULL DEFAULT ''
 );
+
+CREATE UNIQUE INDEX player_slug_unique ON player (slug) WHERE slug != '';
 
 -- Deferred FK: images.uploaded_by → player(id)
 ALTER TABLE images ADD CONSTRAINT images_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES player(id);
@@ -79,7 +82,7 @@ CREATE TABLE seasons (
     id SERIAL PRIMARY KEY,
     club_id INT NOT NULL REFERENCES clubs(id),
     name TEXT NOT NULL,
-    slug TEXT NOT NULL DEFAULT '',
+    slug TEXT NOT NULL,
     min_team_size INT NOT NULL DEFAULT 1,
     max_team_size INT NOT NULL DEFAULT 1,
     best_of INT NOT NULL DEFAULT 3,

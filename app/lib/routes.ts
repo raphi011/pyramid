@@ -1,21 +1,23 @@
 export const routes = {
-  club: (slug: string) => `/club/${slug}`,
+  club: (slug: string) => `/${slug}`,
 
-  rankings: (clubSlug: string, seasonSlug: string) =>
-    `/club/${clubSlug}/season/${seasonSlug}/rankings`,
+  season: (clubSlug: string, seasonSlug: string) =>
+    `/${clubSlug}/${seasonSlug}`,
+
+  match: (clubSlug: string, seasonSlug: string, id: number) =>
+    `/${clubSlug}/${seasonSlug}/matches/${id}`,
+
+  player: (playerSlug: string) => `/profile/${playerSlug}`,
 
   admin: {
-    club: (slug: string) => `/admin/club/${slug}`,
-    settings: (slug: string) => `/admin/club/${slug}/settings`,
-    members: (slug: string) => `/admin/club/${slug}/members`,
-    announcements: (slug: string) => `/admin/club/${slug}/announcements`,
-    seasonNew: (slug: string) => `/admin/club/${slug}/season/new`,
+    club: (slug: string) => `/${slug}/admin`,
+    settings: (slug: string) => `/${slug}/admin/settings`,
+    members: (slug: string) => `/${slug}/admin/members`,
+    announcements: (slug: string) => `/${slug}/admin/announcements`,
+    newSeason: (slug: string) => `/${slug}/admin/new-season`,
     season: (clubSlug: string, seasonSlug: string) =>
-      `/admin/club/${clubSlug}/season/${seasonSlug}`,
+      `/${clubSlug}/admin/${seasonSlug}`,
     teams: (clubSlug: string, seasonSlug: string) =>
-      `/admin/club/${clubSlug}/season/${seasonSlug}/teams`,
+      `/${clubSlug}/admin/${seasonSlug}/teams`,
   },
-
-  match: (id: number) => `/matches/${id}`,
-  player: (id: number) => `/player/${id}`,
 } as const;

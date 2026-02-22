@@ -115,11 +115,11 @@ function MatchCard({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
           {team1Name}
-          <span className="mx-1.5 text-slate-400">vs</span>
+          <span className="mx-1.5 text-slate-400 dark:text-slate-500">vs</span>
           {team2Name}
         </p>
         {hasScore && (
-          <p className="text-xs tabular-nums text-slate-500">
+          <p className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
             {formatScore(team1Score!, team2Score!)}
           </p>
         )}
@@ -130,7 +130,7 @@ function MatchCard({
         <Badge variant={variant} size="sm">
           {t(key)}
         </Badge>
-        <span className="text-[10px] text-slate-400">
+        <span className="text-[10px] text-slate-400 dark:text-slate-500">
           {relativeTime(created, t)}
         </span>
       </div>

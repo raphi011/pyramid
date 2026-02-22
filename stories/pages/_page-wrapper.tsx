@@ -19,6 +19,7 @@ type Club = {
   slug: string;
   name: string;
   role: string;
+  imageSrc: string | null;
   seasons: { id: number; slug: string; name: string; status: string }[];
 };
 
@@ -37,6 +38,7 @@ export function PageWrapper({
       slug: "tc-musterstadt",
       name: "TC Musterstadt",
       role: isAdmin ? "admin" : "player",
+      imageSrc: null,
       seasons: [
         { id: 1, slug: "sommer-2026", name: "Sommer 2026", status: "active" },
         {
@@ -55,6 +57,7 @@ export function PageWrapper({
       slug: "sc-gruenwald",
       name: "SC Grünwald",
       role: "player",
+      imageSrc: null,
       seasons: [
         { id: 3, slug: "herbst-2026", name: "Herbst 2026", status: "active" },
       ],

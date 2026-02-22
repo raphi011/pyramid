@@ -18,6 +18,8 @@ function makeRow(overrides: Partial<EventRow> = {}): EventRow {
     actorName: "Alice",
     targetName: null,
     clubName: "Test Club",
+    clubSlug: "test-club",
+    seasonSlug: "season-1",
     team1Id: 1,
     team2Id: 2,
     winnerTeamId: null,
@@ -254,7 +256,7 @@ describe("mapEventRowsToTimeline", () => {
   it("generates match href when matchId present", () => {
     const rows = [makeRow({ matchId: 42 })];
     const result = mapEventRowsToTimeline(rows, defaultOpts);
-    expect(result[0].href).toBe("/matches/42");
+    expect(result[0].href).toBe("/test-club/season-1/matches/42");
   });
 
   it("generates no href when matchId is null", () => {
