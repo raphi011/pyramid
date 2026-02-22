@@ -50,7 +50,7 @@ export async function createTeamAction(
     clubId,
     "teamManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     await sql.begin(async (tx) => {
@@ -86,9 +86,9 @@ export async function createTeamAction(
   }
 
   const seasonSlug = await getSeasonSlug(sql, seasonId);
-  revalidatePath(
-    routes.admin.teams(authCheck.clubSlug ?? "", seasonSlug ?? ""),
-  );
+  if (seasonSlug) {
+    revalidatePath(routes.admin.teams(authCheck.clubSlug, seasonSlug));
+  }
   return { success: true };
 }
 
@@ -106,7 +106,7 @@ export async function deleteTeamAction(
     clubId,
     "teamManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     await sql.begin(async (tx) => {
@@ -142,8 +142,8 @@ export async function deleteTeamAction(
   }
 
   const seasonSlug = await getSeasonSlug(sql, seasonId);
-  revalidatePath(
-    routes.admin.teams(authCheck.clubSlug ?? "", seasonSlug ?? ""),
-  );
+  if (seasonSlug) {
+    revalidatePath(routes.admin.teams(authCheck.clubSlug, seasonSlug));
+  }
   return { success: true };
 }

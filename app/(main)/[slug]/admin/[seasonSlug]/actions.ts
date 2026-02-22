@@ -66,7 +66,7 @@ export async function updateSeasonAction(
     clubId,
     "seasonManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   const newSlug = slugify(name);
   if (isReservedSeasonSlug(newSlug)) {
@@ -98,7 +98,7 @@ export async function updateSeasonAction(
     return { error: "seasonManagement.error.serverError" };
   }
 
-  revalidatePath(routes.admin.season(authCheck.clubSlug ?? "", newSlug));
+  revalidatePath(routes.admin.season(authCheck.clubSlug, newSlug));
   return { success: true, slug: newSlug };
 }
 
@@ -116,7 +116,7 @@ export async function startSeasonAction(
     clubId,
     "seasonManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     const updated = await startSeason(sql, seasonId, clubId);
@@ -129,9 +129,9 @@ export async function startSeasonAction(
   }
 
   const seasonSlug = await getSeasonSlug(sql, seasonId);
-  revalidatePath(
-    routes.admin.season(authCheck.clubSlug ?? "", seasonSlug ?? ""),
-  );
+  if (seasonSlug) {
+    revalidatePath(routes.admin.season(authCheck.clubSlug, seasonSlug));
+  }
   return { success: true };
 }
 
@@ -149,7 +149,7 @@ export async function endSeasonAction(
     clubId,
     "seasonManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     const result = await sql`
@@ -167,8 +167,8 @@ export async function endSeasonAction(
   }
 
   const seasonSlug = await getSeasonSlug(sql, seasonId);
-  revalidatePath(
-    routes.admin.season(authCheck.clubSlug ?? "", seasonSlug ?? ""),
-  );
+  if (seasonSlug) {
+    revalidatePath(routes.admin.season(authCheck.clubSlug, seasonSlug));
+  }
   return { success: true };
 }

@@ -37,13 +37,24 @@ async function revalidateMatch(
   clubId: number,
   seasonId: number,
 ) {
-  const [clubSlug, seasonSlug] = await Promise.all([
-    getClubSlug(sql, clubId),
-    getSeasonSlug(sql, seasonId),
-  ]);
-  if (clubSlug && seasonSlug) {
-    revalidatePath(routes.match(clubSlug, seasonSlug, matchId));
-    revalidatePath(routes.season(clubSlug, seasonSlug));
+  try {
+    const [clubSlug, seasonSlug] = await Promise.all([
+      getClubSlug(sql, clubId),
+      getSeasonSlug(sql, seasonId),
+    ]);
+    if (clubSlug && seasonSlug) {
+      revalidatePath(routes.match(clubSlug, seasonSlug, matchId));
+      revalidatePath(routes.season(clubSlug, seasonSlug));
+    } else {
+      console.error(
+        `[revalidateMatch] Missing slug for match ${matchId}: clubSlug=${clubSlug}, seasonSlug=${seasonSlug}`,
+      );
+    }
+  } catch (error) {
+    console.error(
+      `[revalidateMatch] Failed to revalidate match ${matchId}:`,
+      error,
+    );
   }
 }
 

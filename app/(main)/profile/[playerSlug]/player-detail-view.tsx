@@ -14,6 +14,7 @@ import { StatsCard } from "@/components/domain/stats-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/card";
 import { Tabs } from "@/components/ui/tabs";
 import { DataList } from "@/components/data-list";
+import { routes } from "@/app/lib/routes";
 import type { PlayerProfile as PlayerProfileType } from "@/app/lib/db/auth";
 import type { HeadToHeadRecord } from "@/app/lib/db/match";
 import type { SerializedMatch, StatsScope, SeasonStatsScope } from "./shared";
@@ -30,6 +31,8 @@ type PlayerDetailViewProps = {
   canChallenge: boolean;
   seasonId: number | null;
   targetTeamId: number | null;
+  clubSlug: string | null;
+  seasonSlug: string | null;
 };
 
 function PlayerDetailView({
@@ -43,6 +46,8 @@ function PlayerDetailView({
   canChallenge: canChallengePlayer,
   seasonId,
   targetTeamId,
+  clubSlug,
+  seasonSlug,
 }: PlayerDetailViewProps) {
   const t = useTranslations("profile");
   const router = useRouter();
@@ -83,7 +88,11 @@ function PlayerDetailView({
                   data={rankHistory}
                   emptyLabel={t("noRankData")}
                   tooltipLabel={t("rankTooltip")}
-                  onDotClick={(matchId) => router.push(`/matches/${matchId}`)}
+                  onDotClick={(matchId) =>
+                    clubSlug && seasonSlug
+                      ? router.push(routes.match(clubSlug, seasonSlug, matchId))
+                      : undefined
+                  }
                 />
               </CardContent>
             </Card>
@@ -149,7 +158,12 @@ function PlayerDetailView({
                 team1Score={m.team1Score}
                 team2Score={m.team2Score}
                 created={new Date(m.created)}
-                onClick={() => router.push(`/matches/${m.id}`)}
+                onClick={
+                  clubSlug && seasonSlug
+                    ? () =>
+                        router.push(routes.match(clubSlug, seasonSlug, m.id))
+                    : undefined
+                }
               />
             )}
           />

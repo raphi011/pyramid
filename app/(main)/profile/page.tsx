@@ -131,6 +131,8 @@ export default async function ProfilePage() {
       }))}
       headToHead={headToHead}
       seasonId={seasonId}
+      clubSlug={clubs[0]?.clubSlug ?? null}
+      seasonSlug={seasons.length > 0 ? seasons[0].slug : null}
     />
   );
 }

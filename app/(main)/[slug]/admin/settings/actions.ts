@@ -13,7 +13,7 @@ import {
 } from "@/app/lib/db/club";
 import { postgresImageStorage } from "@/app/lib/image-storage";
 import type { ActionResult, ActionResultWith } from "@/app/lib/action-result";
-import { SlugConflictError } from "@/app/lib/db/errors";
+import { SlugConflictError, ReservedSlugError } from "@/app/lib/db/errors";
 
 class ClubNotFoundError extends Error {}
 
@@ -92,7 +92,10 @@ export async function updateClubSettingsAction(
     if (error instanceof ClubNotFoundError) {
       return { error: "clubSettings.error.notFound" };
     }
-    if (error instanceof SlugConflictError) {
+    if (
+      error instanceof SlugConflictError ||
+      error instanceof ReservedSlugError
+    ) {
       return { error: "clubSettings.error.nameTaken" };
     }
     console.error("[updateClubSettingsAction] Failed:", { clubId, error });
@@ -132,6 +135,6 @@ export async function regenerateInviteCodeAction(
     return { error: "clubSettings.error.serverError" };
   }
 
-  revalidateClub(authCheck.clubSlug ?? "");
+  revalidateClub(authCheck.clubSlug);
   return { success: true };
 }

@@ -7,6 +7,7 @@ import { requireAppAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
 import { createClub, joinClub } from "@/app/lib/db/club";
 import { getOrCreatePlayer } from "@/app/lib/db/player";
+import { SlugConflictError, ReservedSlugError } from "@/app/lib/db/errors";
 import type { ActionResult } from "@/app/lib/action-result";
 
 // ── Schemas ─────────────────────────────────────────────
@@ -53,6 +54,12 @@ export async function createClubAction(
       await joinClub(tx, player.id, club.id, "admin");
     });
   } catch (error) {
+    if (
+      error instanceof SlugConflictError ||
+      error instanceof ReservedSlugError
+    ) {
+      return { error: "appAdmin.error.nameTaken" };
+    }
     console.error("[createClubAction] Failed:", { name, adminEmail, error });
     return { error: "appAdmin.error.clubCreationFailed" };
   }

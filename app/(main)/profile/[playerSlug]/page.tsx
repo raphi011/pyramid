@@ -180,6 +180,8 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
       canChallenge={challengeEligible}
       seasonId={seasonId}
       targetTeamId={targetTeamId}
+      clubSlug={sharedClub.clubSlug}
+      seasonSlug={seasons.length > 0 ? seasons[0].slug : null}
     />
   );
 }

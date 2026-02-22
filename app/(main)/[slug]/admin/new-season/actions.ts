@@ -6,7 +6,7 @@ import { sql } from "@/app/lib/db";
 import { requireClubAdmin } from "@/app/lib/require-admin";
 import { parseFormData } from "@/app/lib/action-utils";
 import { createSeason, InvalidSourceSeasonError } from "@/app/lib/db/season";
-import { SlugConflictError } from "@/app/lib/db/errors";
+import { SlugConflictError, ReservedSlugError } from "@/app/lib/db/errors";
 import { routes } from "@/app/lib/routes";
 import type { ActionResultWith } from "@/app/lib/action-result";
 
@@ -109,12 +109,15 @@ export async function createSeasonAction(
     if (error instanceof InvalidSourceSeasonError) {
       return { error: "createSeason.error.invalidSourceSeason" };
     }
-    if (error instanceof SlugConflictError) {
+    if (
+      error instanceof SlugConflictError ||
+      error instanceof ReservedSlugError
+    ) {
       return { error: "createSeason.error.nameTaken" };
     }
     console.error("[createSeasonAction] Failed:", { clubId, error });
     return { error: "createSeason.error.serverError" };
   }
 
-  redirect(routes.admin.season(authCheck.clubSlug ?? "", seasonSlug));
+  redirect(routes.admin.season(authCheck.clubSlug, seasonSlug));
 }

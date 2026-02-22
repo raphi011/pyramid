@@ -35,6 +35,7 @@ import {
 import type { PlayerProfile as PlayerProfileType } from "@/app/lib/db/auth";
 import type { ClubMembership } from "@/app/lib/db/club";
 import type { HeadToHeadRecord } from "@/app/lib/db/match";
+import { routes } from "@/app/lib/routes";
 import type {
   SerializedMatch,
   StatsScope,
@@ -53,6 +54,8 @@ type ProfileViewProps = {
   recentMatches: SerializedMatch[];
   headToHead: HeadToHeadRecord[];
   seasonId: number | null;
+  clubSlug: string | null;
+  seasonSlug: string | null;
 };
 
 function ProfileView({
@@ -66,6 +69,8 @@ function ProfileView({
   recentMatches,
   headToHead,
   seasonId,
+  clubSlug,
+  seasonSlug,
 }: ProfileViewProps) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
@@ -226,7 +231,11 @@ function ProfileView({
                   data={rankHistory}
                   emptyLabel={t("noRankData")}
                   tooltipLabel={t("rankTooltip")}
-                  onDotClick={(matchId) => router.push(`/matches/${matchId}`)}
+                  onDotClick={(matchId) =>
+                    clubSlug && seasonSlug
+                      ? router.push(routes.match(clubSlug, seasonSlug, matchId))
+                      : undefined
+                  }
                 />
               </CardContent>
             </Card>
@@ -347,7 +356,12 @@ function ProfileView({
                 team1Score={m.team1Score}
                 team2Score={m.team2Score}
                 created={new Date(m.created)}
-                onClick={() => router.push(`/matches/${m.id}`)}
+                onClick={
+                  clubSlug && seasonSlug
+                    ? () =>
+                        router.push(routes.match(clubSlug, seasonSlug, m.id))
+                    : undefined
+                }
               />
             )}
           />

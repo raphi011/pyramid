@@ -34,12 +34,14 @@ function RankChart({
 }: RankChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(
+    () =>
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark"),
+  );
 
   useEffect(() => {
     const el = document.documentElement;
-    setIsDark(el.classList.contains("dark"));
-
     const observer = new MutationObserver(() => {
       setIsDark(el.classList.contains("dark"));
     });

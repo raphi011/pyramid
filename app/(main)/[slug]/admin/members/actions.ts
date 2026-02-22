@@ -43,7 +43,7 @@ export async function inviteMemberAction(
     clubId,
     "memberManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     await sql.begin(async (tx) => {
@@ -77,7 +77,7 @@ export async function inviteMemberAction(
     return { error: "memberManagement.error.serverError" };
   }
 
-  revalidatePath(routes.admin.members(authCheck.clubSlug ?? ""));
+  revalidatePath(routes.admin.members(authCheck.clubSlug));
   return { success: true };
 }
 
@@ -94,7 +94,7 @@ export async function updateMemberRoleAction(
     clubId,
     "memberManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     const result = await sql.begin(async (tx) => {
@@ -130,7 +130,7 @@ export async function updateMemberRoleAction(
     return { error: "memberManagement.error.serverError" };
   }
 
-  revalidatePath(routes.admin.members(authCheck.clubSlug ?? ""));
+  revalidatePath(routes.admin.members(authCheck.clubSlug));
   return { success: true };
 }
 
@@ -147,7 +147,7 @@ export async function removeMemberAction(
     clubId,
     "memberManagement.error.unauthorized",
   );
-  if (authCheck.error) return { error: authCheck.error };
+  if (authCheck.error !== null) return { error: authCheck.error };
 
   try {
     const result = await sql.begin(async (tx) => {
@@ -186,6 +186,6 @@ export async function removeMemberAction(
     return { error: "memberManagement.error.serverError" };
   }
 
-  revalidatePath(routes.admin.members(authCheck.clubSlug ?? ""));
+  revalidatePath(routes.admin.members(authCheck.clubSlug));
   return { success: true };
 }

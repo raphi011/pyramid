@@ -20,6 +20,16 @@ type AppShellWrapperProps = {
   children: React.ReactNode;
 };
 
+/**
+ * Check if the current path is a season/rankings page (/{clubSlug}/{seasonSlug}).
+ * Matches any path that starts with a known club slug and has exactly one more segment.
+ */
+function isSeasonPage(pathname: string, clubs: NavClub[]): boolean {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length !== 2) return false;
+  return clubs.some((c) => c.slug === segments[0]);
+}
+
 export function AppShellWrapper({
   player,
   clubs,
@@ -50,7 +60,7 @@ export function AppShellWrapper({
               onClick: () => router.push(activeMatchUrl),
               variant: "active",
             }
-          : pathname.endsWith("/rankings")
+          : isSeasonPage(pathname, clubs)
             ? {
                 icon: <PlusIcon />,
                 label: t("challenge"),

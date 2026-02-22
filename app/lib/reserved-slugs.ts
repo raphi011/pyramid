@@ -11,7 +11,14 @@ const RESERVED_CLUB_SLUGS = new Set([
   "api",
 ]);
 
-const RESERVED_SEASON_SLUGS = new Set(["admin"]);
+// Must stay in sync with static folders under app/(main)/[slug]/admin/
+const RESERVED_SEASON_SLUGS = new Set([
+  "admin",
+  "settings",
+  "members",
+  "announcements",
+  "new-season",
+]);
 
 export function isReservedClubSlug(slug: string): boolean {
   return RESERVED_CLUB_SLUGS.has(slug);

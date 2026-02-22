@@ -31,7 +31,7 @@ export async function sendAnnouncementAction(
     clubId,
     "announcements.error.unauthorized",
   );
-  if (auth.error) return { error: auth.error };
+  if (auth.error !== null) return { error: auth.error };
   const playerId = auth.id;
 
   try {
@@ -52,6 +52,6 @@ export async function sendAnnouncementAction(
 
   // TODO: If sendAsEmail is true, send email blast to all club members
 
-  revalidatePath(routes.admin.announcements(auth.clubSlug ?? ""));
+  revalidatePath(routes.admin.announcements(auth.clubSlug));
   return { success: true };
 }

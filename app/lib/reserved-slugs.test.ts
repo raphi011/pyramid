@@ -20,6 +20,10 @@ describe("isReservedClubSlug", () => {
 describe("isReservedSeasonSlug", () => {
   it("returns true for reserved club-level slugs", () => {
     expect(isReservedSeasonSlug("admin")).toBe(true);
+    expect(isReservedSeasonSlug("settings")).toBe(true);
+    expect(isReservedSeasonSlug("members")).toBe(true);
+    expect(isReservedSeasonSlug("announcements")).toBe(true);
+    expect(isReservedSeasonSlug("new-season")).toBe(true);
   });
 
   it("returns false for non-reserved slugs", () => {
